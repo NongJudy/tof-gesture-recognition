@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "my_tof.h"        // โปรแกรมอ่านค่า ToF ที่เราเขียนเอง
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -87,8 +87,10 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_TOF_Init();
+  // MX_TOF_Init();          // ปิด init ของโปรแกรม demo (ST)
   /* USER CODE BEGIN 2 */
+
+  my_tof_init();             // เรียก init ของเราเอง (8x8 + เริ่มวัด)
 
   /* USER CODE END 2 */
 
@@ -98,8 +100,16 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
-  MX_TOF_Process();
+  // MX_TOF_Process();        // ปิด loop ของโปรแกรม demo (ST)
+
     /* USER CODE BEGIN 3 */
+
+    /* อ่านค่าเข้าหน่วยความจำ MCU แล้วส่งออก UART */
+    if (my_tof_read_frame())   // ถ้าอ่านได้ข้อมูลใหม่
+    {
+      my_tof_send_frame();     // ส่งออกเป็น CSV
+    }
+
   }
   /* USER CODE END 3 */
 }
