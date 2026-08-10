@@ -1,3 +1,0 @@
-C:/Users/gaming/STM32Cube/Example/53L8A1_SimpleRanging/Drivers/BSP/Components/vl53l8cx/modules/vl53l8cx_plugin_motion_indicator.c:16:9:vl53l8cx_motion_indicator_init	1
-C:/Users/gaming/STM32Cube/Example/53L8A1_SimpleRanging/Drivers/BSP/Components/vl53l8cx/modules/vl53l8cx_plugin_motion_indicator.c:48:9:vl53l8cx_motion_indicator_set_distance_motion	4
-C:/Users/gaming/STM32Cube/Example/53L8A1_SimpleRanging/Drivers/BSP/Components/vl53l8cx/modules/vl53l8cx_plugin_motion_indicator.c:83:9:vl53l8cx_motion_indicator_set_resolution	7
