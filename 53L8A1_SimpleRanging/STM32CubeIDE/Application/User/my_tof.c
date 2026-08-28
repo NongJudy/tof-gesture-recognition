@@ -18,7 +18,7 @@ extern uint32_t my_platform_cycles_to_us(uint32_t cycles);
 extern void     my_platform_stats_reset(void);
 extern volatile uint32_t g_rd_calls, g_rd_bytes, g_rd_cycles;
 extern volatile uint32_t g_rd_max_bytes, g_rd_max_cycles;
-
+extern void my_uart_init(void);
 /* ===== โหมดการทำงาน =====
    1 = โหมดวัดเวลา  พิมพ์เฉพาะบรรทัด T (ปิดการส่งข้อมูล 64 ค่า
        เพื่อไม่ให้ UART ไปกวนค่าเวลาที่วัด)
@@ -56,7 +56,7 @@ uint8_t my_tof_init(void)
     /* --- 0. เปิด UART และรีเซ็ตเซ็นเซอร์ (จำเป็นก่อนใช้งาน) --- */
     BSP_COM_Init(COM1);          // เปิด Virtual COM Port ให้ printf ส่งออกได้
     HAL_Delay(100);              // รอ UART ตั้งตัว ไม่งั้นตัวอักษรแรก ๆ หาย
-
+    my_uart_init();              // เปิด UART แบบ interrupt
     my_platform_dwt_init();      // เปิดตัวนับ cycle ของ Cortex-M4
 
     /* รีเซ็ตเซ็นเซอร์: ปิดไฟ -> รอ -> เปิดไฟ */
