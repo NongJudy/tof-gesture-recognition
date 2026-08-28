@@ -18,11 +18,25 @@ extern uint32_t my_platform_cycles_to_us(uint32_t cycles);
 extern void     my_platform_stats_reset(void);
 extern volatile uint32_t g_rd_calls, g_rd_bytes, g_rd_cycles;
 extern volatile uint32_t g_rd_max_bytes, g_rd_max_cycles;
+
+/* ===== ฟังก์ชันจาก my_uart.c ===== */
 extern void my_uart_init(void);
-/* ===== โหมดการทำงาน =====
-   1 = โหมดวัดเวลา  พิมพ์เฉพาะบรรทัด T (ปิดการส่งข้อมูล 64 ค่า
-       เพื่อไม่ให้ UART ไปกวนค่าเวลาที่วัด)
-   0 = โหมดปกติ     พิมพ์บรรทัด F ตามเดิม                        */
+
+/* ===== ธงจากขา INT ของเซ็นเซอร์ =====
+   ประกาศจริงใน app_tof.c บรรทัด 47
+   ถูกตั้งเป็น 1 ใน HAL_GPIO_EXTI_Callback (app_tof_pin_conf.c)
+   เมื่อขา GPIO1 ของเซ็นเซอร์ดึง PA4 ลงต่ำ = วัดเสร็จแล้ว */
+extern volatile uint8_t ToF_EventDetected;
+
+/* ===== สวิตช์เปรียบเทียบ =====
+   เปลี่ยนค่าเดียว เงื่อนไขอื่นเหมือนกันหมด -> เทียบผลได้อย่างเป็นธรรม
+
+   MY_TOF_USE_INT  1 = รอขา INT บอก (ASYNC)  ไม่ยิง I2C ถามเลย
+                   0 = วน poll เอง (BLOCKING) ของเดิม ~120 ครั้ง/เฟรม
+
+   MY_TOF_TIMING_MODE  1 = พิมพ์เฉพาะบรรทัด T (โหมดวัดเวลา)
+                       0 = พิมพ์บรรทัด F ข้อมูล 64 ค่า (โหมดปกติ)      */
+#define MY_TOF_USE_INT       1
 #define MY_TOF_TIMING_MODE   1
 
 /* ===== ค่าตั้งต้นของเซ็นเซอร์ ===== */
@@ -56,7 +70,8 @@ uint8_t my_tof_init(void)
     /* --- 0. เปิด UART และรีเซ็ตเซ็นเซอร์ (จำเป็นก่อนใช้งาน) --- */
     BSP_COM_Init(COM1);          // เปิด Virtual COM Port ให้ printf ส่งออกได้
     HAL_Delay(100);              // รอ UART ตั้งตัว ไม่งั้นตัวอักษรแรก ๆ หาย
-    my_uart_init();              // เปิด UART แบบ interrupt
+
+    my_uart_init();              // เปิด UART แบบ interrupt (ring buffer)
     my_platform_dwt_init();      // เปิดตัวนับ cycle ของ Cortex-M4
 
     /* รีเซ็ตเซ็นเซอร์: ปิดไฟ -> รอ -> เปิดไฟ */
@@ -75,8 +90,7 @@ uint8_t my_tof_init(void)
 
     /* --- T1: เช็คว่าเซ็นเซอร์ตอบ ACK ที่ address 0x52 ---
        ★ ต้องอยู่ "หลัง" RANGING_SENSOR_Init เท่านั้น
-         เพราะฮาร์ดแวร์ I2C1 เพิ่งถูกเปิดใช้งานภายในฟังก์ชันนั้น
-         (ลำดับ: RANGING_SENSOR_Init -> RegisterBusIO -> BSP_I2C1_Init) */
+         เพราะฮาร์ดแวร์ I2C1 เพิ่งถูกเปิดใช้งานภายในฟังก์ชันนั้น */
     if (my_platform_i2c_probe(0x52) == 0) {
         printf("T1 PASS: sensor ACK at 0x52\r\n");
     } else {
@@ -93,14 +107,31 @@ uint8_t my_tof_init(void)
     VL53L8A1_RANGING_SENSOR_ConfigProfile(VL53L8A1_DEV_CENTER, &Profile);
 
     /* --- 3. สั่งเริ่มวัด --- */
-    status = VL53L8A1_RANGING_SENSOR_Start(VL53L8A1_DEV_CENTER, RS_MODE_BLOCKING_CONTINUOUS);
+#if MY_TOF_USE_INT
+    /* ASYNC = GetDistance เช็คครั้งเดียวแล้วกลับทันที ไม่วนรอ
+       (ดู vl53l8cx.c บรรทัด 438: IsBlocking=0 -> poll timeout = 0)
+       เราคุมจังหวะเรียกเองด้วยธงจากขา INT แทน */
+    ToF_EventDetected = 0;
+    status = VL53L8A1_RANGING_SENSOR_Start(VL53L8A1_DEV_CENTER,
+                                           RS_MODE_ASYNC_CONTINUOUS);
+#else
+    status = VL53L8A1_RANGING_SENSOR_Start(VL53L8A1_DEV_CENTER,
+                                           RS_MODE_BLOCKING_CONTINUOUS);
+#endif
     if (status != BSP_ERROR_NONE)
     {
         printf("ERROR: sensor start failed (%ld)\r\n", (long)status);
         return 1;
     }
 
-    printf("MY_TOF: init OK (8x8 @ %d Hz)\r\n", MY_TOF_FREQ_HZ);
+    printf("MY_TOF: init OK (8x8 @ %d Hz, %s)\r\n",
+           MY_TOF_FREQ_HZ,
+#if MY_TOF_USE_INT
+           "INT/async"
+#else
+           "polling/blocking"
+#endif
+           );
 
     /* บอกความถี่ CPU จริง เพื่อให้ตรวจสอบการแปลง cycle -> us ย้อนหลังได้ */
     printf("CLK,%lu\r\n", (unsigned long)SystemCoreClock);
@@ -116,15 +147,26 @@ uint8_t my_tof_init(void)
 
 /* =====================================================================
  *  my_tof_read_frame : อ่าน 1 เฟรมเข้าหน่วยความจำของเรา
+ *  คืนค่า 1 = ได้ข้อมูลใหม่, 0 = ยังไม่มี
  * ===================================================================== */
 uint8_t my_tof_read_frame(void)
 {
     uint32_t i;
     int32_t  status;
 
+#if MY_TOF_USE_INT
+    /* ยังไม่มีสัญญาณจากขา INT -> ออกทันที ไม่ยิง I2C ถามเลยแม้แต่ครั้งเดียว
+       << นี่คือหัวใจของ interrupt: เลิกถาม รอให้เขาบอก >>            */
+    if (ToF_EventDetected == 0U)
+    {
+        return 0;
+    }
+    ToF_EventDetected = 0;      // ล้างธง รอสัญญาณรอบถัดไป
+#endif
+
     my_platform_stats_reset();   // ล้างตัวนับก่อนอ่านเฟรมนี้
 
-    /* ขอข้อมูลล่าสุดจากเซ็นเซอร์ (blocking = รอจนกว่าจะได้) */
+    /* ขอข้อมูลล่าสุดจากเซ็นเซอร์ */
     status = VL53L8A1_RANGING_SENSOR_GetDistance(VL53L8A1_DEV_CENTER, &Result);
     if (status != BSP_ERROR_NONE)
     {
@@ -160,7 +202,8 @@ void my_tof_send_frame(void)
 
 #if MY_TOF_TIMING_MODE
 
-    /* โหมดวัดเวลา: พิมพ์เฉพาะสถิติ */
+    /* โหมดวัดเวลา: พิมพ์เฉพาะสถิติ
+       T,<เฟรม>,<ครั้ง>,<ไบต์รวม>,<us รวม>,<ไบต์ก้อนใหญ่>,<us ก้อนนั้น>,<us UART> */
     t0 = my_platform_cycles();
 
     printf("T,%lu,%lu,%lu,%lu,%lu,%lu,%lu\r\n",
