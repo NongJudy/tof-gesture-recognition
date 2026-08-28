@@ -10,6 +10,9 @@
 #include "stm32f4xx_nucleo.h"         // BSP_COM_Init (เปิด Virtual COM Port)
 #include "app_tof_pin_conf.h"         // ชื่อขา PWR_EN / LPn ของเซ็นเซอร์
 
+/* ฟังก์ชันทดสอบที่เราเขียนไว้ใน my_platform.c (Stage 1) */
+extern uint8_t my_platform_i2c_probe(uint16_t address);
+
 /* ===== ค่าตั้งต้นของเซ็นเซอร์ ===== */
 #define MY_TIMING_BUDGET   (30U)   // เวลาเก็บแสงต่อการวัด (ms) ต้องอยู่ระหว่าง 5-100 ms
 
@@ -32,6 +35,7 @@ uint8_t my_tof_init(void)
 
     /* --- 0. เปิด UART และรีเซ็ตเซ็นเซอร์ (จำเป็นก่อนใช้งาน) --- */
     BSP_COM_Init(COM1);          // เปิด Virtual COM Port ให้ printf ส่งออกได้
+    HAL_Delay(100);              // รอ UART ตั้งตัว ไม่งั้นตัวอักษรแรก ๆ หาย
 
     /* รีเซ็ตเซ็นเซอร์: ปิดไฟ -> รอ -> เปิดไฟ */
     HAL_GPIO_WritePin(VL53L8A1_PWR_EN_C_PORT, VL53L8A1_PWR_EN_C_PIN, GPIO_PIN_RESET);
@@ -45,6 +49,17 @@ uint8_t my_tof_init(void)
     {
         printf("ERROR: sensor init failed (%ld)\r\n", (long)status);
         return 1;   // แจ้งว่าล้มเหลว
+    }
+
+    /* --- T1 (Stage 1): เช็คว่าเซ็นเซอร์ตอบ ACK ที่ address 0x52 ---
+       ★ ต้องอยู่ "หลัง" RANGING_SENSOR_Init เท่านั้น
+         เพราะฮาร์ดแวร์ I2C1 เพิ่งถูกเปิดใช้งานภายในฟังก์ชันนั้น
+         (ลำดับ: RANGING_SENSOR_Init -> RegisterBusIO -> BSP_I2C1_Init)
+         ถ้าวางไว้ก่อนหน้านี้ hi2c1 ยังเป็นโครงสร้างเปล่า -> FAIL เสมอ */
+    if (my_platform_i2c_probe(0x52) == 0) {
+        printf("T1 PASS: sensor ACK at 0x52\r\n");
+    } else {
+        printf("T1 FAIL: no ACK at 0x52\r\n");
     }
 
     /* --- 2. ตั้งค่าโปรไฟล์การวัด --- */
