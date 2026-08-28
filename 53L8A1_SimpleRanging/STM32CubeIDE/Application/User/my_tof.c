@@ -10,8 +10,20 @@
 #include "stm32f4xx_nucleo.h"         // BSP_COM_Init (เปิด Virtual COM Port)
 #include "app_tof_pin_conf.h"         // ชื่อขา PWR_EN / LPn ของเซ็นเซอร์
 
-/* ฟังก์ชันทดสอบที่เราเขียนไว้ใน my_platform.c (Stage 1) */
-extern uint8_t my_platform_i2c_probe(uint16_t address);
+/* ===== ฟังก์ชันจาก my_platform.c (โค้ดที่เราเขียนเอง) ===== */
+extern uint8_t  my_platform_i2c_probe(uint16_t address);
+extern void     my_platform_dwt_init(void);
+extern uint32_t my_platform_cycles(void);
+extern uint32_t my_platform_cycles_to_us(uint32_t cycles);
+extern void     my_platform_stats_reset(void);
+extern volatile uint32_t g_rd_calls, g_rd_bytes, g_rd_cycles;
+extern volatile uint32_t g_rd_max_bytes, g_rd_max_cycles;
+
+/* ===== โหมดการทำงาน =====
+   1 = โหมดวัดเวลา  พิมพ์เฉพาะบรรทัด T (ปิดการส่งข้อมูล 64 ค่า
+       เพื่อไม่ให้ UART ไปกวนค่าเวลาที่วัด)
+   0 = โหมดปกติ     พิมพ์บรรทัด F ตามเดิม                        */
+#define MY_TOF_TIMING_MODE   1
 
 /* ===== ค่าตั้งต้นของเซ็นเซอร์ ===== */
 #define MY_TIMING_BUDGET   (30U)   // เวลาเก็บแสงต่อการวัด (ms) ต้องอยู่ระหว่าง 5-100 ms
@@ -20,6 +32,14 @@ extern uint8_t my_platform_i2c_probe(uint16_t address);
 static uint16_t g_distance_mm[MY_TOF_ZONES];  // ระยะทาง 64 ค่า (mm)
 static uint8_t  g_status[MY_TOF_ZONES];       // สถานะ 64 ค่า
 static uint32_t g_frame_count = 0;            // นับจำนวนเฟรมที่อ่านมา
+
+/* ===== ค่าที่วัดได้ของเฟรมล่าสุด ===== */
+static uint32_t m_rd_calls  = 0;   // เรียก RdMulti กี่ครั้ง
+static uint32_t m_rd_bytes  = 0;   // ไบต์รวมที่อ่าน
+static uint32_t m_rd_us     = 0;   // เวลารวม (us)
+static uint32_t m_max_bytes = 0;   // ไบต์ของก้อนใหญ่สุด
+static uint32_t m_max_us    = 0;   // เวลาของก้อนใหญ่สุดนั้น (us)
+static uint32_t m_uart_us   = 0;   // เวลาที่ UART ใช้ (us)
 
 /* ตัวแปรรับข้อมูลดิบจาก driver */
 static RANGING_SENSOR_Result_t Result;
@@ -37,6 +57,8 @@ uint8_t my_tof_init(void)
     BSP_COM_Init(COM1);          // เปิด Virtual COM Port ให้ printf ส่งออกได้
     HAL_Delay(100);              // รอ UART ตั้งตัว ไม่งั้นตัวอักษรแรก ๆ หาย
 
+    my_platform_dwt_init();      // เปิดตัวนับ cycle ของ Cortex-M4
+
     /* รีเซ็ตเซ็นเซอร์: ปิดไฟ -> รอ -> เปิดไฟ */
     HAL_GPIO_WritePin(VL53L8A1_PWR_EN_C_PORT, VL53L8A1_PWR_EN_C_PIN, GPIO_PIN_RESET);
     HAL_Delay(2);
@@ -51,11 +73,10 @@ uint8_t my_tof_init(void)
         return 1;   // แจ้งว่าล้มเหลว
     }
 
-    /* --- T1 (Stage 1): เช็คว่าเซ็นเซอร์ตอบ ACK ที่ address 0x52 ---
+    /* --- T1: เช็คว่าเซ็นเซอร์ตอบ ACK ที่ address 0x52 ---
        ★ ต้องอยู่ "หลัง" RANGING_SENSOR_Init เท่านั้น
          เพราะฮาร์ดแวร์ I2C1 เพิ่งถูกเปิดใช้งานภายในฟังก์ชันนั้น
-         (ลำดับ: RANGING_SENSOR_Init -> RegisterBusIO -> BSP_I2C1_Init)
-         ถ้าวางไว้ก่อนหน้านี้ hi2c1 ยังเป็นโครงสร้างเปล่า -> FAIL เสมอ */
+         (ลำดับ: RANGING_SENSOR_Init -> RegisterBusIO -> BSP_I2C1_Init) */
     if (my_platform_i2c_probe(0x52) == 0) {
         printf("T1 PASS: sensor ACK at 0x52\r\n");
     } else {
@@ -80,6 +101,15 @@ uint8_t my_tof_init(void)
     }
 
     printf("MY_TOF: init OK (8x8 @ %d Hz)\r\n", MY_TOF_FREQ_HZ);
+
+    /* บอกความถี่ CPU จริง เพื่อให้ตรวจสอบการแปลง cycle -> us ย้อนหลังได้ */
+    printf("CLK,%lu\r\n", (unsigned long)SystemCoreClock);
+
+#if MY_TOF_TIMING_MODE
+    /* หัวตารางของบรรทัด T ให้ Python อ่านง่าย */
+    printf("H,frame,rd_calls,rd_bytes,rd_us,max_bytes,max_us,uart_us\r\n");
+#endif
+
     return 0;   // สำเร็จ
 }
 
@@ -92,12 +122,21 @@ uint8_t my_tof_read_frame(void)
     uint32_t i;
     int32_t  status;
 
+    my_platform_stats_reset();   // ล้างตัวนับก่อนอ่านเฟรมนี้
+
     /* ขอข้อมูลล่าสุดจากเซ็นเซอร์ (blocking = รอจนกว่าจะได้) */
     status = VL53L8A1_RANGING_SENSOR_GetDistance(VL53L8A1_DEV_CENTER, &Result);
     if (status != BSP_ERROR_NONE)
     {
         return 0;   // ยังไม่มีข้อมูลใหม่
     }
+
+    /* เก็บค่าที่วัดได้ทันที ก่อนอย่างอื่นจะไปแก้ตัวนับ */
+    m_rd_calls  = g_rd_calls;
+    m_rd_bytes  = g_rd_bytes;
+    m_rd_us     = my_platform_cycles_to_us(g_rd_cycles);
+    m_max_bytes = g_rd_max_bytes;
+    m_max_us    = my_platform_cycles_to_us(g_rd_max_cycles);
 
     /* คัดลอกข้อมูลจาก driver ลง array ของเราเอง
        << นี่คือ "อ่านข้อมูลเข้าสู่หน่วยความจำของ MCU" >> */
@@ -113,19 +152,49 @@ uint8_t my_tof_read_frame(void)
 
 
 /* =====================================================================
- *  my_tof_send_frame : ส่งเฟรมล่าสุดออก UART เป็น CSV
- *  รูปแบบ:  F,<เลขเฟรม>,<d0>,<d1>,...,<d63>
+ *  my_tof_send_frame : ส่งข้อมูลออก UART
  * ===================================================================== */
 void my_tof_send_frame(void)
 {
+    uint32_t t0, t1;
+
+#if MY_TOF_TIMING_MODE
+
+    /* โหมดวัดเวลา: พิมพ์เฉพาะสถิติ */
+    t0 = my_platform_cycles();
+
+    printf("T,%lu,%lu,%lu,%lu,%lu,%lu,%lu\r\n",
+           (unsigned long)g_frame_count,
+           (unsigned long)m_rd_calls,
+           (unsigned long)m_rd_bytes,
+           (unsigned long)m_rd_us,
+           (unsigned long)m_max_bytes,
+           (unsigned long)m_max_us,
+           (unsigned long)m_uart_us);
+
+    t1 = my_platform_cycles();
+
+    /* เวลา UART วัดจากเฟรมนี้ แต่รายงานในบรรทัดถัดไป
+       เพราะพิมพ์ค่าของตัวเองลงในบรรทัดตัวเองไม่ได้ */
+    m_uart_us = my_platform_cycles_to_us(t1 - t0);
+
+#else
+
+    /* โหมดปกติ: ส่งข้อมูล 64 ค่าเป็น CSV
+       รูปแบบ:  F,<เลขเฟรม>,<d0>,<d1>,...,<d63> */
     uint32_t i;
 
-    printf("F,%lu", (unsigned long)g_frame_count);   // ขึ้นต้นด้วย F + เลขเฟรม
+    t0 = my_platform_cycles();
 
+    printf("F,%lu", (unsigned long)g_frame_count);
     for (i = 0; i < MY_TOF_ZONES; i++)
     {
-        printf(",%u", (unsigned int)g_distance_mm[i]);   // ระยะทาง 64 ค่า
+        printf(",%u", (unsigned int)g_distance_mm[i]);
     }
+    printf("\r\n");
 
-    printf("\r\n");   // จบ 1 เฟรม ขึ้นบรรทัดใหม่
+    t1 = my_platform_cycles();
+    m_uart_us = my_platform_cycles_to_us(t1 - t0);
+
+#endif
 }
