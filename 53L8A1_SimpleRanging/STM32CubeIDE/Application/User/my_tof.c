@@ -37,7 +37,7 @@ extern volatile uint8_t ToF_EventDetected;
    MY_TOF_TIMING_MODE  1 = พิมพ์เฉพาะบรรทัด T (โหมดวัดเวลา)
                        0 = พิมพ์บรรทัด F ข้อมูล 64 ค่า (โหมดปกติ)      */
 #define MY_TOF_USE_INT       1
-#define MY_TOF_TIMING_MODE   1
+#define MY_TOF_TIMING_MODE   0
 
 /* ===== ค่าตั้งต้นของเซ็นเซอร์ ===== */
 #define MY_TIMING_BUDGET   (30U)   // เวลาเก็บแสงต่อการวัด (ms) ต้องอยู่ระหว่าง 5-100 ms
