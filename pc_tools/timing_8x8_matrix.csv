@@ -1,0 +1,9 @@
+run,config,payload_fields,acquisition,driver_path,i2c_calls,payload_bytes,transfer_us,i2c_total_us,uart_us,frames,elapsed_ms,dup,clock
+A,8x8@15Hz,all,polling,bsp,115.8,1444,32798,55300,188,60,3970,0,HSE
+B,8x8@15Hz,all,int,bsp,4.0,1444,32797,33735,184,60,3970,0,HSE
+C,8x8@15Hz,slim,int,bsp,4.0,580,13255,14192,180,60,3970,0,HSE
+D,8x8@15Hz,slim,int,direct,1.0,580,13255,13255,180,60,3970,0,HSE
+E,4x4@60Hz,all,polling,bsp,22.0,532,12175,13140,132,60,1482,0,HSI
+F,4x4@60Hz,all,int,bsp,4.0,532,12175,13140,134,60,1471,0,HSI
+G,4x4@60Hz,slim,int,bsp,4.0,196,4512,5450,120,60,1006,0,HSI
+H,4x4@60Hz,slim,int,direct,1.0,196,4512,4512,174,60,993,0,HSE

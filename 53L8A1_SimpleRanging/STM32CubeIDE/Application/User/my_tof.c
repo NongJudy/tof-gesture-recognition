@@ -31,7 +31,7 @@ extern void *VL53L8A1_RANGING_SENSOR_CompObj[];
 
 /* ===== สวิตช์เปรียบเทียบ ===== */
 #define MY_TOF_USE_INT       1   // 1 = รอขา INT | 0 = วน poll
-#define MY_TOF_TIMING_MODE   1   // 1 = บรรทัด T | 0 = บรรทัด F + S + G
+#define MY_TOF_TIMING_MODE    1  // 1 = บรรทัด T | 0 = บรรทัด F + S + G
 
 /* ===== สวิตช์อ่านตรง =====
    1 = เรียก vl53l8cx_get_ranging_data() ตรง ยิง I2C ครั้งเดียว
