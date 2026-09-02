@@ -37,7 +37,7 @@ extern void *VL53L8A1_RANGING_SENSOR_CompObj[];
    1 = เรียก vl53l8cx_get_ranging_data() ตรง ยิง I2C ครั้งเดียว
    0 = ผ่าน BSP ยิง I2C 4 ครั้ง (2 ครั้งซ้ำซ้อน: check_data_ready + get_resolution)
    ★ โหมด 1 ได้ target_status แบบดิบ (5 = ถูกต้อง) ตรงกับชุดข้อมูลของ ST */
-#define MY_TOF_FAST_READ     1
+#define MY_TOF_FAST_READ     0
 
 /* ===== การทดลองหน่วงเวลา (จบแล้ว) =====
    ผล: คาบ = 23.24 + 0.981 x หน่วง   (R^2 = 0.9997, 6 จุด) */
