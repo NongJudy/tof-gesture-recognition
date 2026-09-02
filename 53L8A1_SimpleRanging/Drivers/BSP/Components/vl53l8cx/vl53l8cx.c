@@ -749,7 +749,11 @@ static int32_t vl53l8cx_get_result(VL53L8CX_Object_t *pObj, VL53L8CX_Result_t *p
         if (pObj->IsAmbientEnabled == 1U)
         {
           /* apply ambient value to all targets in a given zone */
+#ifndef VL53L8CX_DISABLE_AMBIENT_PER_SPAD
           pResult->ZoneResult[i].Ambient[j] = (float_t)data.ambient_per_spad[i];
+#else
+          pResult->ZoneResult[i].Ambient[j] = 0.0f;   /* ปิด output นี้ใน platform.h */
+#endif
         }
         else
         {

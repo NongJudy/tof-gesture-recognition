@@ -90,7 +90,7 @@ int main(void)
   // MX_TOF_Init();          // ปิด init ของโปรแกรม demo (ST)
   /* USER CODE BEGIN 2 */
 
-  my_tof_init();             // เรียก init ของเราเอง (8x8 + เริ่มวัด)
+  my_tof_init();             // เรียก init ของเราเอง
 
   /* USER CODE END 2 */
 
@@ -128,18 +128,34 @@ void SystemClock_Config(void)
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
 
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  /* =====================================================================
+     ใช้นาฬิกาคริสตัลจาก ST-LINK (HSE) แทนวงจร RC ในชิป (HSI)
+
+     ปัญหาที่พบ: HSI คลาดเคลื่อน +-1% ทำให้ตัวเลขเวลาที่วัดทั้งหมด
+        เชื่อถือได้ไม่เกินระดับนั้น เราวัดอัตราเฟรมได้ 59.63 Hz
+        จากที่ตั้ง 60 Hz คลาด -0.62% ซึ่งอยู่ในช่วงความคลาดของ HSI เอง
+        จึงแยกไม่ออกว่าเป็นเพราะระบบช้า หรือเพราะนาฬิกาที่ใช้วัดเพี้ยน
+
+     ทางแก้: บอร์ด NUCLEO รหัส MB1136 C-02 ขึ้นไป ต่อสัญญาณ MCO 8 MHz
+        จาก ST-LINK เข้าขา OSC_IN ของ MCU มาให้แล้วจากโรงงาน
+        บอร์ดเราเป็น MB1136-F411RE-C04 จึงเปิดใช้ได้ทันที ไม่ต้องบัดกรี
+        (อ้างอิง: Mastering STM32 2nd ed. หัวข้อ 10.1.3.1.1 OSC Clock Supply)
+
+     BYPASS = รับสัญญาณที่สร้างเสร็จแล้วจากภายนอก ไม่ได้ต่อคริสตัลเอง
+     ความแม่นยำ: คริสตัลราว 0.005%  เทียบกับ HSI +-1%  ดีขึ้นราว 200 เท่า
+
+     ความเร็ว CPU เท่าเดิมทุกประการ เปลี่ยนแค่ PLLM:
+        เดิม HSI: 16 MHz / 16 = 1 MHz x 336 / 4 = 84 MHz
+        ใหม่ HSE:  8 MHz /  8 = 1 MHz x 336 / 4 = 84 MHz
+     ===================================================================== */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 16;
-  RCC_OscInitStruct.PLL.PLLN = 336;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;
-  RCC_OscInitStruct.PLL.PLLQ = 7;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 8;               // 8 MHz / 8 = 1 MHz
+  RCC_OscInitStruct.PLL.PLLN = 336;             // 1 MHz x 336 = 336 MHz
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;   // 336 MHz / 4 = 84 MHz
+  RCC_OscInitStruct.PLL.PLLQ = 7;               // สำหรับ USB/SDIO ไม่ได้ใช้
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -186,7 +202,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
 
-  /*Configure GPIO pin : PA4 */
+  /*Configure GPIO pin : PA4  (ขา INT จากเซ็นเซอร์ ToF) */
   GPIO_InitStruct.Pin = GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -206,7 +222,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /* EXTI interrupt init*/
+  /* EXTI interrupt init */
   HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 

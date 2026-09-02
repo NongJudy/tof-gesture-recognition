@@ -13,7 +13,22 @@
 #ifndef _PLATFORM_H_
 #define _PLATFORM_H_
 #pragma once
+/* ===== ลดขนาดข้อมูลที่เซ็นเซอร์ส่งมาต่อเฟรม =====
+   เซ็นเซอร์ส่งข้อมูล 9 ชนิดต่อช่อง แต่งานเราใช้จริง 4 ชนิด
+   การปิดตรงนี้ทำให้ ULD ไม่ขอข้อมูลชนิดนั้นจากเซ็นเซอร์ตั้งแต่แรก
+   จึงลดจำนวนไบต์ที่ขนผ่าน I2C จริง ไม่ใช่แค่ไม่เอามาใช้
 
+   ที่เก็บไว้ 4 ชนิด: distance_mm, signal_per_spad, target_status,
+   nb_target_detected  -- ตามที่ชุดข้อมูลและโมเดลของ ST ใช้ (input 8x8x2)
+
+   ต้องวางในไฟล์นี้ เพราะ vl53l8cx_api.h include platform.h ที่บรรทัด 22
+   แล้วตรวจ #ifndef เหล่านี้ที่บรรทัด 189 จึงทันพอดี */
+
+#define VL53L8CX_DISABLE_AMBIENT_PER_SPAD      // แสงรอบข้าง
+#define VL53L8CX_DISABLE_NB_SPADS_ENABLED      // จำนวนตัวรับแสงที่เปิดใช้
+#define VL53L8CX_DISABLE_RANGE_SIGMA_MM        // ค่าความคลาดเคลื่อนของระยะ
+#define VL53L8CX_DISABLE_REFLECTANCE_PERCENT   // เปอร์เซ็นต์การสะท้อน
+#define VL53L8CX_DISABLE_MOTION_INDICATOR      // ตัวชี้การเคลื่อนไหว
 #include <stdint.h>
 #include <string.h>
 
