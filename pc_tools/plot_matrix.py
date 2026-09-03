@@ -77,7 +77,13 @@ def table(rows: List[Dict[str, str]]) -> None:
 
 
 def deltas(rows: List[Dict[str, str]], group: str) -> None:
-    """แยกว่าแต่ละขั้นการปรับปรุงประหยัดเวลาได้เท่าไหร่"""
+    """แยกว่าแต่ละขั้นการปรับปรุงให้ผลอะไรบ้าง
+
+    รายงานทั้งเวลาที่ประหยัดได้ และอัตราเฟรมที่เปลี่ยนไป
+    เพราะสองอย่างนี้ไม่ได้ไปด้วยกันเสมอ:
+      - ที่ 8x8 เวลาต่อเฟรมเหลือเฟือ ประหยัดเวลาได้แต่อัตราเฟรมคงเดิม
+      - ที่ 4x4 เวลาตึง การประหยัดเวลาทำให้อัตราเฟรมเพิ่มจริง
+    """
     sel = [r for r in rows if r["config"] == group]
     if len(sel) < 2:
         return
@@ -85,8 +91,10 @@ def deltas(rows: List[Dict[str, str]], group: str) -> None:
     for prev, cur in zip(sel, sel[1:]):
         dp, dc = derive(prev), derive(cur)
         saved = dp["work"] - dc["work"]
+        drate = dc["rate"] - dp["rate"]
+        note = "อัตราเฟรมคงเดิม" if abs(drate) < 0.5 else f"อัตราเฟรม {drate:+.2f} Hz"
         print(f"  {prev['run']} -> {cur['run']}: ประหยัด {saved:6.2f} ms"
-              f"   ({dp['work']:.2f} -> {dc['work']:.2f})")
+              f"   ({dp['work']:6.2f} -> {dc['work']:6.2f})   {note}")
     first, last = derive(sel[0]), derive(sel[-1])
     print(f"  รวม {sel[0]['run']} -> {sel[-1]['run']}: "
           f"ลดลง {(first['work']-last['work'])/first['work']*100:.1f}%"
@@ -101,6 +109,46 @@ def headroom(rows: List[Dict[str, str]]) -> None:
         fits = int(d["idle"] / INFERENCE_MS)
         print(f"  {r['run']} ({r['config']:<9}): ใช้ {used:5.1f}% ของคาบ"
               f"   รัน inference ได้ {fits:3d} ครั้งในเวลาที่เหลือ")
+
+
+# จังหวะพื้นฐานภายในเซ็นเซอร์ (ms) วัดจากโหมด 4x4 ที่ delta = 1
+SENSOR_TICK_MS = 16.55
+
+
+def margin(rows: List[Dict[str, str]]) -> None:
+    """ตรวจว่างาน MCU ทันจังหวะของเซ็นเซอร์หรือไม่
+
+    เซ็นเซอร์เดินด้วยจังหวะคงที่ ~60.4 Hz ทุกโหมด
+    8x8 ใช้ 4 จังหวะต่อเฟรม, 4x4 ใช้ 1 จังหวะ
+    ถ้างานต่อเฟรมเกินจังหวะ (หรือเฉียดเกินไป) จะพลาดบางจังหวะ
+    เห็นได้จาก delta ที่ไม่คงที่
+    """
+    print(f"\nระยะเผื่อเทียบจังหวะเซ็นเซอร์ ({SENSOR_TICK_MS} ms ต่อจังหวะ)")
+    for r in rows:
+        d = derive(r)
+        ticks = round(d["period"] / SENSOR_TICK_MS)      # กี่จังหวะต่อเฟรม
+        budget = SENSOR_TICK_MS * ticks
+        head = budget - d["work"]
+        da = float(r.get("delta_avg", 0) or 0)
+        stable = "เสถียร" if abs(da - round(da)) < 0.01 else "พลาดบางจังหวะ"
+        print(f"  {r['run']}: งาน {d['work']:6.2f} ms / งบ {budget:6.2f} ms"
+              f"   เผื่อ {head:6.2f} ms   delta {da:.1f}  {stable}")
+
+
+def margin(rows: List[Dict[str, str]]) -> None:
+    """เทียบงาน CPU กับจังหวะภายในของเซ็นเซอร์ (16.55 ms)
+
+    อธิบายว่าทำไมโหมด 4x4 ถึงกระโดดจาก 40 เป็น 60 Hz ตอนลดขนาดข้อมูล
+    ไม่ใช่ตอนเปลี่ยนเป็น interrupt: เพราะ 60 Hz ต้องทำงานให้เสร็จ
+    ภายใน 1 จังหวะ และต้องมีระยะเผื่อพอ ไม่ใช่แค่ทันเฉียด ๆ"""
+    TICK = 16.55
+    print(f"\nระยะเผื่อเทียบจังหวะภายในเซ็นเซอร์ ({TICK} ms/tick)")
+    for r in rows:
+        d = derive(r)
+        slack = TICK - d["work"]
+        note = "ทันทุกจังหวะ" if slack > 8 else ("เฉียด" if slack > 0 else "ไม่ทัน")
+        print(f"  {r['run']} ({r['config']:<9}): work {d['work']:5.2f} ms"
+              f"  slack {slack:6.2f} ms  delta {float(r['delta_avg']):.1f}  {note}")
 
 
 def plot(rows: List[Dict[str, str]]) -> None:
@@ -133,16 +181,24 @@ def plot(rows: List[Dict[str, str]]) -> None:
         ax.set_xticks(list(x))
         ax.set_xticklabels(labels)
         ax.set_title(g, fontsize=9)
+        ax.set_ylim(0, max(v["period"] for v in d) * 1.28)
         ax.set_ylabel("per-frame time (ms)" if g == groups[0] else "")
         ax.grid(axis="y", alpha=0.25, ls=":")
         ax.set_axisbelow(True)
 
-        # เขียน % ที่ MCU ใช้ ไว้บนแท่ง
-        for xi, v in zip(x, d):
-            ax.text(xi, v["period"] * 1.02, f"{v['load']:.0f}%",
-                    ha="center", va="bottom", fontsize=7.5)
+        # เส้นบอกจังหวะพื้นฐานของเซ็นเซอร์ (เห็นชัดเฉพาะฝั่ง 4x4)
+        if g.startswith("4x4"):
+            ax.axhline(SENSOR_TICK_MS, color="#c0392b", lw=0.9, ls="--", zorder=3)
+            ax.text(-0.42, SENSOR_TICK_MS + 0.3, "sensor tick 16.55 ms",
+                    fontsize=6.5, color="#c0392b", ha="left", va="bottom")
 
-    axes[0].legend(fontsize=7, loc="upper right", framealpha=0.95)
+        # เขียนอัตราเฟรมและ % ที่ MCU ใช้ ไว้บนแท่ง
+        for xi, v in zip(x, d):
+            ax.text(xi, v["period"] * 1.02,
+                    f"{v['rate']:.1f} Hz\n{v['load']:.0f}%",
+                    ha="center", va="bottom", fontsize=7)
+
+    axes[0].legend(fontsize=6.5, loc="center right", framealpha=0.95)
     fig.tight_layout()
     fig.savefig("fig_matrix.png", dpi=300, bbox_inches="tight")
     fig.savefig("fig_matrix.pdf", bbox_inches="tight")
@@ -155,13 +211,16 @@ def main() -> None:
     for g in ["8x8@15Hz", "4x4@60Hz"]:
         deltas(rows, g)
     headroom(rows)
+    margin(rows)
     plot(rows)
 
     print("\nหมายเหตุ")
-    print("  - แถว E,F,G วัดด้วยนาฬิกา HSI ซึ่งเดินช้ากว่าความจริง 1.36%")
-    print("    ค่าจริงต่ำกว่าที่แสดงประมาณ 1.36% ยังไม่ได้วัดซ้ำด้วย HSE")
-    print("  - แถว A-D และ H วัดด้วยนาฬิกาคริสตัล HSE แล้ว")
+    print("  - ทั้ง 8 แถววัดด้วยนาฬิกาคริสตัล HSE (MCO 8 MHz จาก ST-LINK)")
     print("  - dup = 0 ทุกแถว ตรวจด้วย streamcount ของเซ็นเซอร์เอง")
+    print("  - อัตราเฟรมสูงสุดที่ทำได้ 15.11 Hz (8x8) และ 60.42 Hz (4x4)")
+    print("    ตรงกับสเปก 15 และ 60 Hz โดยเกินไป +0.7% เท่ากันทั้งสองโหมด")
+    print("    ยังระบุไม่ได้ว่ามาจากนาฬิกาเซ็นเซอร์หรือนาฬิกาบอร์ด")
+    print("    ต้องวัดจากภายนอกด้วย logic analyzer จึงจะแยกได้")
 
 
 if __name__ == "__main__":
