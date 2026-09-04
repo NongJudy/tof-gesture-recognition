@@ -111,6 +111,63 @@ was 1.36% too high.** Superseded values are in §3. Do not quote the old numbers
 | UART | USART2 / PA2, **460800 baud**, COM3 | `[CODE]` |
 | I2C address | **0x52, sent directly, NOT shifted** | HAL expects 8-bit format |
 
+## 1.4 Logic analyser — verified on this unit, 4 Sep 2026
+
+Cheap "24MHz 8CH" clone. Everything below was read off **this** unit with
+`sigrok-cli --driver fx2lafw --show`, not taken from a web page.
+
+| Property | Value | Source |
+|---|---|---|
+| Chip | Cypress CY7C68012A / FX2LP | `[WEB]` sigrok wiki |
+| USB VID:PID | **0925:3881** — "Lakeview Research Saleae Logic" | `[MEASURED]` Zadig + sigrok-cli |
+| Reported as | `Saleae Logic [S/N: Saleae Logic] with 8 channels` | `[MEASURED]` |
+| Channels | **D0–D7**, matching the CH0–CH7 silkscreen | `[MEASURED]` |
+| Samplerates | 20k 25k 50k 100k 200k 250k 500k · 1M 2M 3M 4M 6M 8M 12M 16M **24M 48M** | `[MEASURED]` |
+| Triggers | **`0 1 r f e`** — level low/high, rising, falling, either | `[MEASURED]` |
+| Timebase | **24 MHz crystal** (not a ceramic resonator) | `[WEB]` sigrok: *"All devices use a 24MHz crystal"* |
+| Measured crystal error | **≈79 ppm = 0.0079%** on an FX2 device | `[WEB]` fx2adc project |
+| Max input voltage | 5.25 V (FX2 hardware manual). Our signals are 3.3 V | `[WEB]` |
+| Series resistance | 100 Ω per channel; some clones have a 74HC245 buffer, some do not | `[WEB]` |
+
+**Why the crystal matters:** TRAP #12 needs a 0.7% discrepancy resolved. A crystal at
+79 ppm is ~89× finer than that, so this instrument *can* settle it. A ceramic resonator
+(±0.5%) could not have. This was the single most important thing to check before
+trusting any number from it.
+
+**Why 12 MHz and 1 MHz were chosen:** every listed rate is an exact integer division of
+48 MHz (12 = 48/4, 1 = 48/48), so no fractional-divider error is added on top of the
+crystal. 10 MHz and 20 MHz are **not** offered — do not assume an arbitrary rate exists.
+
+**48 MHz is listed but must not be used.** It implies 48 MB/s over USB 2.0, well past
+what the link sustains; it will drop samples. Note that the sigrok pages consulted
+beforehand listed only up to 24 MHz — the extra rate appeared only on the real unit,
+which is the argument for checking hardware rather than trusting a wiki table.
+
+### ⚠️ TRAP #19 — one program at a time
+
+`LIBUSB_ERROR_ACCESS` while PulseView is open. USB devices are claimed exclusively:
+whichever program grabs it first holds it.
+
+> Before blaming drivers, cables or the device: **close the other program.**
+> This cost time once already; it will look like a driver fault every time.
+
+### Windows install sequence that actually worked
+
+1. PulseView **and** sigrok-cli from sigrok.org, **Nightly** build.
+   Nightly, not Release — the tri-state fix (fx2lafw 0.1.2, 2014) matters: older
+   firmware left the data pins **driven** rather than tri-stated after a capture,
+   which can contend with an MCU pin driving the same net.
+2. Run **Zadig (PulseView)** as administrator, `Options → List All Devices`,
+   select `Unknown Device #1`, **confirm USB ID reads 0925:3881**, install **WinUSB**.
+   The list also contains the mouse, keyboard, Bluetooth and camera — selecting the
+   wrong row breaks that device immediately.
+3. Run `sigrok-cli --scan`. This uploads the firmware, after which the device
+   **renames itself** from `Unknown Device #1` to `Saleae Logic`. PulseView only sees
+   it after this step — scanning in PulseView before it will fail, which looks like
+   a failed driver install but is not.
+4. `sigrok-cli --scan -l 5` is the diagnostic to reach for: PulseView fails silently,
+   sigrok-cli prints the actual libusb error.
+
 ---
 
 # 2. SOFTWARE / DRIVER FACTS
@@ -864,8 +921,9 @@ gone into the thesis if the student had not said *"go and find out"*.
 
 ---
 
-*Last updated: 2026-09-03 (evening) · Phase 0 complete · Phase 2 loader written and
-verified against ST 162/162 · three §5.1 figures corrected, see TRAP #16–#18.*
+*Last updated: 2026-09-04 · Phase 0 complete · Phase 2 loader written and verified
+against ST 162/162 · three §5.1 figures corrected (TRAP #16–#18) · logic analyser
+installed and its capabilities verified on the actual unit (§1.4, TRAP #19).*
 
 ---
 
