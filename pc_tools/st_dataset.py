@@ -293,7 +293,8 @@ def summarise(data: HandPostureData) -> None:
 
     ใช้ตรวจว่าข้อมูลสมดุลพอจะทำ subject-independent split หรือไม่
     """
-    users = sorted(set(data.groups))
+    # .tolist() แปลง np.str_ เป็น str ธรรมดา เพื่อให้พิมพ์ออกมาอ่านง่าย
+    users = sorted(set(data.groups.tolist()))
 
     print("\n--- จำนวนเฟรม: คลาส x คน ---")
     header = f"{'คลาส':<14}" + "".join(f"{u:>9}" for u in users) + f"{'รวม':>9}"
