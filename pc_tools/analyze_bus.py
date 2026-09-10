@@ -70,6 +70,13 @@ class BusResult:
     scl_khz_max: float
     n_scl_clocks: int          # จำนวนขอบขาขึ้นของ SCL ทั้งหมด
 
+    # วัดแบบข้ามหลายพัลส์ ละเอียดกว่ามาก ใช้ค่านี้ตอบ H4
+    scl_khz_long: float        # ความถี่จากการวัดข้ามหลายพัลส์
+    scl_long_runs: int         # จำนวนช่วงต่อเนื่องที่ใช้
+    scl_long_pulses: int       # จำนวนพัลส์ที่ใช้ทั้งหมด
+    scl_long_longest: int      # ช่วงที่ยาวที่สุด
+    scl_long_res_ppm: float    # ความละเอียดโดยประมาณ
+
     # ---- H3 บัสว่างกี่เปอร์เซ็นต์ ----
     n_bursts: int              # จำนวนชุดการคุย
     burst_ms_mean: float       # ความยาวเฉลี่ยของหนึ่งชุด
@@ -88,6 +95,88 @@ class BusResult:
     clocks_per_burst: float    # จำนวนพัลส์ SCL เฉลี่ยต่อชุด
     est_bytes_per_burst: float # ประมาณจำนวนไบต์ หารด้วย 9 เพราะมีบิต ACK
     int_pulse_us_median: float # ความกว้างพัลส์ INT
+
+
+def scl_freq_long_run(
+    scl_rise: np.ndarray,
+    samplerate: float,
+    tol: float = 0.25,
+    min_run: int = 50,
+) -> tuple[float, int, int, int, float]:
+    """วัดความถี่ SCL แบบข้ามหลายพัลส์ เพื่อให้ละเอียดพอใช้งาน
+
+    ทำไมต้องมีฟังก์ชันนี้
+    ---------------------
+    การวัดคาบทีละพัลส์มีปัญหาความละเอียด
+    ที่อัตราสุ่ม 12 MHz คาบ SCL 400 kHz เท่ากับ 30 ตัวอย่างพอดี
+    ตัวนับเป็นจำนวนเต็ม จึงวัดได้แค่ 29 30 หรือ 31 ตัวอย่าง
+    ซึ่งแปลเป็น 413.79  400.00  387.10 kHz
+    ค่าจริงที่ใดก็ได้ระหว่าง 393 ถึง 407 kHz จะถูกปัดมาเป็น 400.00 เหมือนกันหมด
+
+    ทางแก้คือวัดระยะรวมของพัลส์ติดกันหลายพันตัว แล้วหารด้วยจำนวนพัลส์
+    ความคลาดจากการปัดยังเท่าเดิมคือประมาณ 1 ตัวอย่าง
+    แต่หารด้วยระยะที่ยาวขึ้นเป็นพันเท่า ความละเอียดจึงดีขึ้นเป็นพันเท่า
+
+    เป็นหลักการเดียวกับที่ใช้วัดคลื่นสอบเทียบ 1 kHz
+    ซึ่งได้ความละเอียดถึง 0.1 ppm
+
+    ทำไมต้องคัดพัลส์
+    ----------------
+    ในหนึ่งชุดการคุย ไม่ใช่ทุกช่องว่างจะเท่ากัน
+    ระหว่างไบต์ หรือช่วงที่อุปกรณ์ยืดสัญญาณนาฬิกา ช่องว่างจะยาวกว่าปกติ
+    ถ้ารวมช่วงเหล่านั้นเข้าไปด้วย ค่าเฉลี่ยจะยาวเกินจริง ความถี่จึงต่ำเกินจริง
+
+    จึงเก็บเฉพาะช่วงที่ช่องว่างใกล้เคียงค่ากลาง แล้วหาช่วงที่ต่อเนื่องกันยาว ๆ
+
+    Args:
+        scl_rise: ตำแหน่งขอบขาขึ้นของ SCL
+        samplerate: อัตราสุ่ม หน่วย Hz
+        tol: ช่องว่างที่ต่างจากค่ากลางไม่เกินสัดส่วนนี้ ถือว่าเป็นพัลส์ปกติ
+        min_run: ความยาวขั้นต่ำของช่วงต่อเนื่องที่จะนำมาใช้
+
+    Returns:
+        (ความถี่ kHz, จำนวนช่วง, จำนวนพัลส์ที่ใช้, ช่วงที่ยาวที่สุด, ความละเอียด ppm)
+    """
+    gaps = np.diff(scl_rise)
+    if gaps.size < min_run:
+        return (float("nan"), 0, 0, 0, float("nan"))
+
+    g0 = float(np.median(gaps))
+    ok = np.abs(gaps - g0) <= tol * g0
+
+    # หาช่วงที่ ok ต่อเนื่องกัน
+    # เติม False หัวท้าย เพื่อให้จับขอบเริ่มและขอบจบได้ครบ
+    padded = np.concatenate(([False], ok, [False]))
+    change = np.diff(padded.astype(np.int8))
+    run_start = np.flatnonzero(change == 1)
+    run_end = np.flatnonzero(change == -1)
+
+    total_span = 0.0
+    total_n = 0
+    n_runs = 0
+    longest = 0
+
+    for s, e in zip(run_start, run_end):
+        length = e - s
+        if length < min_run:
+            continue
+        # ผลรวมของช่องว่างในช่วงนี้ เท่ากับระยะจากขอบแรกถึงขอบสุดท้ายพอดี
+        total_span += float(np.sum(gaps[s:e]))
+        total_n += int(length)
+        n_runs += 1
+        longest = max(longest, int(length))
+
+    if total_n == 0:
+        return (float("nan"), 0, 0, 0, float("nan"))
+
+    mean_period = total_span / total_n
+    freq_khz = samplerate / mean_period / 1000.0
+
+    # ความละเอียดโดยประมาณ
+    # ความคลาดประมาณ 1 ตัวอย่างต่อหนึ่งช่วง รวมกันแบบรากที่สอง
+    res_ppm = (np.sqrt(n_runs) / total_span) * 1e6 if total_span else float("nan")
+
+    return (freq_khz, n_runs, total_n, longest, float(res_ppm))
 
 
 def _edges(bits: np.ndarray, rising: bool) -> np.ndarray:
@@ -172,6 +261,10 @@ def analyse_bus(
     scl_khz_min = samplerate / float(np.max(in_burst)) / 1000.0
     scl_khz_max = samplerate / float(np.min(in_burst)) / 1000.0
 
+    # วัดแบบข้ามหลายพัลส์ ใช้ค่านี้เป็นคำตอบของ H4
+    (scl_khz_long, scl_long_runs, scl_long_pulses,
+     scl_long_longest, scl_long_res_ppm) = scl_freq_long_run(scl_rise, samplerate)
+
     # ==== H3 บัสว่างกี่เปอร์เซ็นต์ ====
     #
     # แบ่งขอบ SCL ออกเป็นชุด โดยใช้ช่องว่างที่ยาวเป็นตัวแบ่ง
@@ -241,6 +334,11 @@ def analyse_bus(
         scl_khz_min=scl_khz_min,
         scl_khz_max=scl_khz_max,
         n_scl_clocks=int(scl_rise.size),
+        scl_khz_long=scl_khz_long,
+        scl_long_runs=scl_long_runs,
+        scl_long_pulses=scl_long_pulses,
+        scl_long_longest=scl_long_longest,
+        scl_long_res_ppm=scl_long_res_ppm,
         n_bursts=n_bursts,
         burst_ms_mean=float(np.mean(burst_len)) / samplerate * 1000.0,
         busy_percent=busy_percent,
@@ -263,7 +361,11 @@ def report(res: BusResult) -> None:
     print(f"  ระยะเวลาที่วิเคราะห์ : {res.duration_s:.4f} วินาที")
     print()
     print("  [H4] ความถี่สัญญาณนาฬิกา SCL")
-    print(f"    ค่ากลาง            : {res.scl_khz_median:8.2f} kHz   <- ใช้ค่านี้")
+    print(f"    วัดข้ามหลายพัลส์    : {res.scl_khz_long:8.4f} kHz  <- ใช้ค่านี้")
+    print(f"      ช่วงที่ใช้         : {res.scl_long_runs:,} ช่วง  "
+          f"{res.scl_long_pulses:,} พัลส์  ยาวสุด {res.scl_long_longest:,}")
+    print(f"      ความละเอียด       : {res.scl_long_res_ppm:8.2f} ppm")
+    print(f"    วัดทีละพัลส์ (หยาบ) : {res.scl_khz_median:8.2f} kHz")
     print(f"    ค่าเฉลี่ย           : {res.scl_khz_mean:8.2f} kHz")
     print(f"    ต่ำสุด / สูงสุด     : {res.scl_khz_min:.2f} / {res.scl_khz_max:.2f} kHz")
     print(f"    จำนวนพัลส์ทั้งหมด   : {res.n_scl_clocks:,}")
@@ -301,7 +403,7 @@ def compare(results: list[BusResult]) -> None:
     for r in results:
         print(
             f"  {Path(r.path).name:<20}"
-            f"{r.scl_khz_median:>10.2f}"
+            f"{r.scl_khz_long:>10.4f}"
             f"{r.idle_percent:>10.3f}"
             f"{r.int_to_scl_us_median:>14.2f}"
             f"{r.frame_period_ms:>11.4f}"
@@ -309,7 +411,7 @@ def compare(results: list[BusResult]) -> None:
 
     if len(results) >= 2:
         arrs = {
-            "SCL kHz": np.array([r.scl_khz_median for r in results]),
+            "SCL kHz": np.array([r.scl_khz_long for r in results]),
             "ว่าง %": np.array([r.idle_percent for r in results]),
             "INT->SCL us": np.array([r.int_to_scl_us_median for r in results]),
             "คาบ ms": np.array([r.frame_period_ms for r in results]),
