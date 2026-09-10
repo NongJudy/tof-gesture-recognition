@@ -43,6 +43,24 @@ extern void *VL53L8A1_RANGING_SENSOR_CompObj[];
    ผล: คาบ = 23.24 + 0.981 x หน่วง   (R^2 = 0.9997, 6 จุด) */
 #define MY_TOF_DELAY_US      0
 
+/* ===== จำนวนที่ streamcount ควรเพิ่มต่อหนึ่งเฟรม =====
+   streamcount ของเซ็นเซอร์นับ "การวัดภายใน" ไม่ใช่ "เฟรมที่ส่งออก"
+   (vl53l8cx_api.h:276 ระบุว่า auto-incremented at each range)
+
+   วัดจริง 10 ก.ย. 2026 พบว่า
+     โหมด 4x4 : delta = 1 คงที่ทุกเฟรม
+     โหมด 8x8 : delta = 4 คงที่ทุกเฟรม ไม่แกว่งเลย
+   ถ้าเป็นเฟรมหายจริง ค่าต้องแกว่งไม่แน่นอน
+   การที่คงที่เป๊ะแสดงว่าเป็นพฤติกรรมปกติของเซ็นเซอร์
+
+   ก่อนแก้จุดนี้ โค้ดนับ skip เพิ่มทีละ 3 ทุกเฟรมในโหมด 8x8
+   ทั้งที่ไม่มีเฟรมหายจริงแม้แต่เฟรมเดียว */
+#if MY_TOF_USE_4X4
+  #define MY_TOF_STREAM_STEP   1U
+#else
+  #define MY_TOF_STREAM_STEP   4U
+#endif
+
 /* ===== เวลาเก็บแสงต่อการวัด (ms) ต้องน้อยกว่าคาบ ===== */
 #if MY_TOF_USE_4X4
   #define MY_TIMING_BUDGET   (10U)
@@ -80,6 +98,7 @@ static uint32_t m_rate_t0 = 0, m_rate_n = 0;
 static VL53L8CX_Configuration *m_dev = NULL;
 static uint8_t  m_stream = 0, m_stream_prev = 0, m_stream_delta = 0;
 static uint32_t m_dup = 0, m_skip = 0;
+static uint32_t m_anomaly = 0;      /* delta ที่ไม่ใช่พหุคูณของ MY_TOF_STREAM_STEP */
 
 /* ===== ตัวรับข้อมูลดิบ ===== */
 #if MY_TOF_FAST_READ
@@ -191,7 +210,7 @@ uint8_t my_tof_init(void)
 #if MY_TOF_TIMING_MODE
     /* หัวตาราง: 4 ช่องท้ายคือตัวตรวจสอบความถูกต้องของการนับเฟรม */
     printf("H,frame,rd_calls,rd_bytes,rd_us,max_bytes,max_us,uart_us,"
-           "stream,delta,dup,skip\r\n");
+           "stream,delta,dup,skip,anomaly\r\n");
 #endif
 
     m_rate_t0 = HAL_GetTick();
@@ -279,9 +298,17 @@ uint8_t my_tof_read_frame(void)
         {
             m_dup++;                 /* อ่านข้อมูลเดิมซ้ำ */
         }
-        else if (m_stream_delta > 1U)
+        else if ((m_stream_delta % MY_TOF_STREAM_STEP) != 0U)
         {
-            m_skip += (uint32_t)(m_stream_delta - 1U);   /* มีเฟรมที่เราอ่านไม่ทัน */
+            /* ค่าที่ได้ไม่ใช่พหุคูณของค่าที่ควรเป็น
+               แปลว่าสมมติฐานเรื่อง STREAM_STEP ผิด หรือมีอะไรผิดปกติ
+               นับแยกไว้ ไม่ปนกับ skip เพื่อไม่ให้ตีความผิด */
+            m_anomaly++;
+        }
+        else if (m_stream_delta > MY_TOF_STREAM_STEP)
+        {
+            /* เฟรมที่อ่านไม่ทันจริง */
+            m_skip += (uint32_t)(m_stream_delta / MY_TOF_STREAM_STEP) - 1U;
         }
     }
 
@@ -313,13 +340,14 @@ void my_tof_send_frame(void)
 #if MY_TOF_TIMING_MODE
 
     t0 = my_platform_cycles();
-    printf("T,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%u,%u,%lu,%lu\r\n",
+    printf("T,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%u,%u,%lu,%lu,%lu\r\n",
            (unsigned long)g_frame_count, (unsigned long)m_rd_calls,
            (unsigned long)m_rd_bytes,    (unsigned long)m_rd_us,
            (unsigned long)m_max_bytes,   (unsigned long)m_max_us,
            (unsigned long)m_uart_us,
            (unsigned int)m_stream, (unsigned int)m_stream_delta,
-           (unsigned long)m_dup,   (unsigned long)m_skip);
+           (unsigned long)m_dup,   (unsigned long)m_skip,
+           (unsigned long)m_anomaly);
     t1 = my_platform_cycles();
     m_uart_us = my_platform_cycles_to_us(t1 - t0);
 
@@ -360,9 +388,10 @@ void my_tof_send_frame(void)
     {
         now = HAL_GetTick();
         ms  = now - m_rate_t0;
-        printf("R,%lu,%lu,%lu,%lu,%lu\r\n",
+        printf("R,%lu,%lu,%lu,%lu,%lu,%lu\r\n",
                (unsigned long)g_frame_count, (unsigned long)m_rate_n,
-               (unsigned long)ms, (unsigned long)m_dup, (unsigned long)m_skip);
+               (unsigned long)ms, (unsigned long)m_dup, (unsigned long)m_skip,
+               (unsigned long)m_anomaly);
         m_rate_t0 = now;
         m_rate_n  = 0;
     }
