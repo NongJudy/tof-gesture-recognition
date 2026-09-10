@@ -51,7 +51,7 @@ extern "C" {
  * คือเปลี่ยนทีละตัวแปรเดียวต่อการทดลองหนึ่งครั้ง
  */
 #ifndef MY_CAL_ENABLE
-#define MY_CAL_ENABLE 1
+#define MY_CAL_ENABLE 0
 #endif
 
 /* ความถี่เป้าหมายของคลื่นสี่เหลี่ยม หน่วย Hz

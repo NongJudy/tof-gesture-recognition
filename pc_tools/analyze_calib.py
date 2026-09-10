@@ -167,6 +167,7 @@ def analyse(
     expected_hz: float,
     channel_bit: int,
     outlier_tolerance: float,
+    edge: str = "rising",
 ) -> CalibResult:
     """วิเคราะห์ไฟล์หนึ่งไฟล์
 
@@ -176,14 +177,29 @@ def analyse(
         expected_hz: ความถี่ที่บอร์ดรายงานว่าปล่อยออกมา
         channel_bit: บิตที่เก็บช่องสัญญาณ D0 คือบิต 0
         outlier_tolerance: คาบที่ต่างจากค่ากลางเกินสัดส่วนนี้ นับเป็นค่าผิดปกติ
+        edge: "rising" นับขอบขาขึ้น หรือ "falling" นับขอบขาลง
+
+    ทำไมต้องเลือกขอบได้
+    -------------------
+    สำหรับคลื่นสี่เหลี่ยมสมมาตร ขอบไหนก็ให้คาบเท่ากัน
+
+    แต่สำหรับสัญญาณ INT ของเซ็นเซอร์ ขอบสองข้างมีความหมายต่างกัน
+      ขอบขาลง  = เซ็นเซอร์ยิงบอกว่าเฟรมพร้อม  <- จังหวะของเซ็นเซอร์แท้
+      ขอบขาขึ้น = สัญญาณถูกปล่อยกลับ           <- อาจขึ้นกับฝั่ง MCU
+
+    ถ้าจะวัดจังหวะของเซ็นเซอร์ ต้องใช้ขอบขาลง
+    การเทียบผลจากทั้งสองขอบ เป็นการตรวจสอบตัวเองว่าเข้าใจสัญญาณถูกหรือไม่
 
     Returns:
         CalibResult
 
     Raises:
         FileNotFoundError: หาไฟล์ไม่เจอ
-        ValueError: ข้อมูลน้อยเกินไป หรือไม่พบขอบสัญญาณ
+        ValueError: ข้อมูลน้อยเกินไป ไม่พบขอบสัญญาณ หรือระบุชนิดขอบผิด
     """
+    if edge not in ("rising", "falling"):
+        raise ValueError(f"edge ต้องเป็น rising หรือ falling (ได้ {edge})")
+
     if not path.is_file():
         raise FileNotFoundError(f"ไม่พบไฟล์: {path}")
 
@@ -198,14 +214,15 @@ def analyse(
     # ดึงเฉพาะบิตของช่องที่สนใจ ได้อาร์เรย์ที่มีแต่ 0 กับ 1
     bits = (core >> channel_bit) & 1
 
-    # หาขอบขาขึ้น คือตำแหน่งที่ค่าเปลี่ยนจาก 0 เป็น 1
+    # หาขอบตามชนิดที่เลือก
     diff = np.diff(bits.astype(np.int8))
-    rising = np.flatnonzero(diff == 1) + 1
+    want = 1 if edge == "rising" else -1
+    edges = np.flatnonzero(diff == want) + 1
 
-    if rising.size < 3:
+    if edges.size < 3:
         raise ValueError(
-            f"พบขอบขาขึ้นเพียง {rising.size} จุด ไม่พอวิเคราะห์ "
-            "ตรวจว่าต่อสายถูกช่องหรือไม่ และบอร์ดกำลังปล่อยคลื่นอยู่หรือไม่"
+            f"พบขอบชนิด {edge} เพียง {edges.size} จุด ไม่พอวิเคราะห์ "
+            "ตรวจว่าต่อสายถูกช่องหรือไม่ และมีสัญญาณอยู่หรือไม่"
         )
 
     # หัวใจของการวัด
@@ -214,15 +231,15 @@ def analyse(
     #
     # ความคลาดจากการสุ่มเกิดที่ปลายทั้งสองข้างเท่านั้น คือประมาณ 1 ตัวอย่าง
     # ยิ่งช่วงยาว ความคลาดต่อคาบยิ่งเล็กลง
-    span = int(rising[-1] - rising[0])
-    n_periods = int(rising.size - 1)
+    span = int(edges[-1] - edges[0])
+    n_periods = int(edges.size - 1)
     mean_period = span / n_periods
 
     freq = samplerate / mean_period
     error_ppm = (freq - expected_hz) / expected_hz * 1e6
 
     # สถิติของคาบรายลูก ใช้ตรวจว่ามีข้อมูลตกหล่นหรือไม่
-    periods = np.diff(rising)
+    periods = np.diff(edges)
     median_period = float(np.median(periods))
     tol = median_period * outlier_tolerance
     n_outliers = int(np.count_nonzero(np.abs(periods - median_period) > tol))
@@ -374,6 +391,13 @@ def _main() -> None:
         help="คาบที่ต่างจากค่ากลางเกินสัดส่วนนี้ นับว่าผิดปกติ ค่าเริ่มต้น 0.10",
     )
     parser.add_argument(
+        "--edge",
+        choices=["rising", "falling"],
+        default="rising",
+        help="นับขอบขาขึ้นหรือขาลง ค่าเริ่มต้น rising "
+             "สำหรับสัญญาณ INT ของเซ็นเซอร์ ขอบขาลงคือจังหวะที่เซ็นเซอร์ยิงจริง",
+    )
+    parser.add_argument(
         "--show-header",
         action="store_true",
         help="แสดงไบต์แรกของไฟล์ เพื่อดูรูปแบบส่วนหัว",
@@ -386,6 +410,8 @@ def _main() -> None:
     print(f"  อัตราสุ่มที่ตั้งไว้ : {args.samplerate:,.0f} Hz")
     print(f"  บอร์ดรายงานว่าปล่อย : {args.expected:.6f} Hz")
     print(f"  ช่องที่อ่าน        : D{args.channel}")
+    edge_th = "ขอบขาขึ้น" if args.edge == "rising" else "ขอบขาลง"
+    print(f"  ขอบที่นับ          : {edge_th} ({args.edge})")
 
     results: list[CalibResult] = []
     for name in args.files:
@@ -401,6 +427,7 @@ def _main() -> None:
                 args.expected,
                 args.channel,
                 args.outlier_tolerance,
+                args.edge,
             )
         except (FileNotFoundError, ValueError) as exc:
             print(f"\n  ข้ามไฟล์ {name}: {exc}")
