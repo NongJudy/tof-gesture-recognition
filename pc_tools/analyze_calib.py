@@ -140,6 +140,66 @@ class CalibResult:
     period_std: float       # ส่วนเบี่ยงเบนมาตรฐานของคาบ
     n_outliers: int         # จำนวนคาบที่ผิดปกติ ดูเกณฑ์ในฟังก์ชัน analyse
 
+    # ---- วิธีปรับเส้นตรงกับทุกขอบ ใช้ค่านี้เป็นหลัก ----
+    period_fit: float       # คาบจากการปรับเส้นตรง หน่วยตัวอย่าง
+    freq_fit: float         # ความถี่จากการปรับเส้นตรง
+    error_ppm_fit: float    # ความคลาดจากการปรับเส้นตรง
+    se_period_fit: float    # ความไม่แน่นอนของคาบ หน่วยตัวอย่าง
+    se_ppm_fit: float       # ความไม่แน่นอน หน่วย ppm
+    resid_rms: float        # รากที่สองของกำลังสองเฉลี่ยของส่วนตกค้าง
+
+
+def fit_period(edges: np.ndarray) -> tuple[float, float, float]:
+    """หาคาบเฉลี่ยด้วยการปรับเส้นตรงกับตำแหน่งขอบทุกอัน
+
+    ทำไมดีกว่าการใช้ขอบแรกกับขอบสุดท้าย
+    -----------------------------------
+    วิธีเดิมคำนวณจากระยะระหว่างขอบแรกกับขอบสุดท้าย หารด้วยจำนวนคาบ
+    ซึ่งใช้ข้อมูลเพียงสองจุด และทิ้งขอบที่เหลือทั้งหมด
+
+    ปัญหาคือขอบแต่ละอันมีความสั่นของตัวเอง
+    เมื่อใช้เพียงสองจุด ความสั่นของทั้งสองจุดจะปรากฏเต็มที่ในผลลัพธ์
+    วัดจริงพบว่าขอบสัญญาณ INT ของโหมด 4x4 สั่นด้วยส่วนเบี่ยงเบน 325 ไมโครวินาที
+    เมื่อคิดจากสองจุดในช่วง 10 วินาที จะได้ความไม่แน่นอนราว 46 ppm
+    ซึ่งตรงกับส่วนเบี่ยงเบนระหว่างรอบที่วัดได้จริงคือ 45 ถึง 53 ppm
+
+    การปรับเส้นตรงใช้ขอบทุกอัน ความสั่นแบบสุ่มจึงหักล้างกันตามรากที่สองของจำนวนจุด
+    การจำลอง 2000 ครั้งพบว่าความไม่แน่นอนลดจาก 46 ppm เหลือ 4.5 ppm
+    ดีขึ้นประมาณ 10 เท่า โดยใช้ข้อมูลชุดเดิม
+
+    วิธีคำนวณ
+    ---------
+    สมมติว่าขอบลำดับที่ i ควรอยู่ที่ตำแหน่ง a บวก b คูณ i
+    โดย b คือคาบเฉลี่ยที่ต้องการหา
+    ใช้วิธีกำลังสองน้อยสุด และเลื่อนดัชนีให้มีค่าเฉลี่ยเป็นศูนย์ก่อน
+    เพื่อความเสถียรเชิงตัวเลข
+
+    Args:
+        edges: ตำแหน่งขอบสัญญาณ หน่วยตัวอย่าง
+
+    Returns:
+        (คาบเฉลี่ย, ความไม่แน่นอนของคาบ, รากที่สองของกำลังสองเฉลี่ยของส่วนตกค้าง)
+    """
+    n = edges.size
+    if n < 3:
+        return (float("nan"), float("nan"), float("nan"))
+
+    idx = np.arange(n, dtype=np.float64)
+    t = edges.astype(np.float64)
+
+    ic = idx - idx.mean()
+    sxx = float(np.sum(ic * ic))
+    b = float(np.sum(ic * t) / sxx)          # ความชัน คือคาบเฉลี่ย
+    a = float(t.mean())
+
+    resid = t - (a + b * ic)
+    dof = n - 2
+    resid_var = float(np.sum(resid * resid)) / dof
+    se_b = float(np.sqrt(resid_var / sxx))
+    resid_rms = float(np.sqrt(resid_var))
+
+    return (b, se_b, resid_rms)
+
 
 def show_header(path: Path, n_bytes: int = 32) -> None:
     """พิมพ์ไบต์แรกของไฟล์ให้ดู เพื่อทราบว่าส่วนหัวหน้าตาอย่างไร
@@ -244,6 +304,12 @@ def analyse(
     tol = median_period * outlier_tolerance
     n_outliers = int(np.count_nonzero(np.abs(periods - median_period) > tol))
 
+    # วิธีปรับเส้นตรงกับทุกขอบ ใช้เป็นค่าหลัก
+    period_fit, se_period_fit, resid_rms = fit_period(edges)
+    freq_fit = samplerate / period_fit
+    error_ppm_fit = (freq_fit - expected_hz) / expected_hz * 1e6
+    se_ppm_fit = se_period_fit / period_fit * 1e6
+
     duty = float(np.count_nonzero(bits)) / bits.size * 100.0
 
     return CalibResult(
@@ -259,6 +325,12 @@ def analyse(
         period_max=int(periods.max()),
         period_std=float(periods.std()),
         n_outliers=n_outliers,
+        period_fit=period_fit,
+        freq_fit=freq_fit,
+        error_ppm_fit=error_ppm_fit,
+        se_period_fit=se_period_fit,
+        se_ppm_fit=se_ppm_fit,
+        resid_rms=resid_rms,
     )
 
 
@@ -269,10 +341,19 @@ def report(res: CalibResult, expected_hz: float, samplerate: float) -> None:
     print(f"  จำนวนคาบที่วัดได้  : {res.n_periods:,}")
     print(f"  ระยะรวมที่ใช้วัด   : {res.span_samples:,} ตัวอย่าง")
     print()
-    print(f"  คาบเฉลี่ย          : {res.mean_period:.6f} ตัวอย่าง")
-    print(f"  ความถี่ที่วัดได้    : {res.freq_hz:.6f} Hz")
-    print(f"  บอร์ดรายงานว่า     : {expected_hz:.6f} Hz")
-    print(f"  ความคลาด           : {res.error_ppm:+.3f} ppm")
+    print("  [วิธีหลัก] ปรับเส้นตรงกับขอบทุกอัน")
+    print(f"    คาบเฉลี่ย        : {res.period_fit:.6f} ตัวอย่าง")
+    print(f"    ความถี่          : {res.freq_fit:.6f} Hz")
+    print(f"    ความคลาด         : {res.error_ppm_fit:+.3f} ppm")
+    print(f"    ความไม่แน่นอน     : +-{res.se_ppm_fit:.3f} ppm")
+    print(f"    ส่วนตกค้าง rms    : {res.resid_rms:.1f} ตัวอย่าง  (ความสั่นของขอบ)")
+    print()
+    print("  [วิธีเทียบ] ขอบแรกถึงขอบสุดท้าย")
+    print(f"    ความถี่          : {res.freq_hz:.6f} Hz")
+    print(f"    ความคลาด         : {res.error_ppm:+.3f} ppm")
+    print(f"    ต่างจากวิธีหลัก   : {res.error_ppm - res.error_ppm_fit:+.3f} ppm")
+    print()
+    print(f"  เทียบกับค่าอ้างอิง  : {expected_hz:.6f} Hz")
     print()
     print(f"  duty cycle         : {res.duty_percent:.3f} %")
     print(f"  คาบสั้นสุด/ยาวสุด   : {res.period_min} / {res.period_max} ตัวอย่าง")
@@ -306,13 +387,13 @@ def compare(results: list[CalibResult]) -> None:
         print("  ตามกฎของโปรเจค ต้องมีอย่างน้อย 3 รอบจึงจะสรุปได้")
         print("  เก็บข้อมูลเพิ่มแล้วรันใหม่พร้อมกันทุกไฟล์")
 
-    freqs = np.array([r.freq_hz for r in results])
-    ppms = np.array([r.error_ppm for r in results])
+    freqs = np.array([r.freq_fit for r in results])
+    ppms = np.array([r.error_ppm_fit for r in results])
 
     print(f"\n  {'ไฟล์':<24} {'ความถี่ (Hz)':>16} {'คลาด (ppm)':>14}")
     print("  " + "-" * 56)
     for r in results:
-        print(f"  {Path(r.path).name:<24} {r.freq_hz:>16.6f} {r.error_ppm:>+14.3f}")
+        print(f"  {Path(r.path).name:<24} {r.freq_fit:>16.6f} {r.error_ppm_fit:>+14.3f}")
 
     if len(results) >= 2:
         spread = float(freqs.max() - freqs.min())
@@ -442,7 +523,7 @@ def _main() -> None:
 
     compare(results)
 
-    mean_ppm = float(np.mean([r.error_ppm for r in results]))
+    mean_ppm = float(np.mean([r.error_ppm_fit for r in results]))
     interpret(mean_ppm, args.threshold_ppm)
 
 

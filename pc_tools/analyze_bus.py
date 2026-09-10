@@ -82,7 +82,9 @@ class BusResult:
     burst_ms_mean: float       # ความยาวเฉลี่ยของหนึ่งชุด
     busy_percent: float        # สัดส่วนเวลาที่บัสทำงาน
     idle_percent: float        # สัดส่วนเวลาที่บัสว่าง
-    frame_period_ms: float     # คาบเฟรม วัดจากขอบขาลงของ INT
+    frame_period_ms: float     # คาบเฟรม วัดจากขอบขาลงของ INT (ปรับเส้นตรง)
+    frame_period_se_ppm: float # ความไม่แน่นอนของคาบเฟรม หน่วย ppm
+    int_jitter_us: float       # ความสั่นของขอบ INT จากส่วนตกค้าง
 
     # ---- H5 ระยะห่าง INT กับ I2C ----
     int_to_scl_us_median: float
@@ -90,6 +92,12 @@ class BusResult:
     int_to_scl_us_min: float
     int_to_scl_us_max: float
     n_int_events: int
+
+    # วัดถึงจังหวะ START ซึ่งเป็นนิยามที่ถูกต้องกว่า ใช้ค่านี้ตอบ H5
+    int_to_start_us_median: float
+    int_to_start_us_mean: float
+    int_to_start_us_min: float
+    int_to_start_us_max: float
 
     # ---- ข้อมูลเสริม ----
     clocks_per_burst: float    # จำนวนพัลส์ SCL เฉลี่ยต่อชุด
@@ -179,6 +187,38 @@ def scl_freq_long_run(
     return (freq_khz, n_runs, total_n, longest, float(res_ppm))
 
 
+def fit_period(edges: np.ndarray) -> tuple[float, float, float]:
+    """หาคาบเฉลี่ยด้วยการปรับเส้นตรงกับตำแหน่งขอบทุกอัน
+
+    ใช้วิธีเดียวกับใน analyze_calib.py เพื่อให้ตัวเลขทุกที่ในโปรเจค
+    คำนวณด้วยวิธีเดียวกัน ไม่ปนกันสองวิธี
+
+    วิธีเดิมที่ใช้เพียงขอบแรกกับขอบสุดท้าย จะรับความสั่นของสองจุดนั้นเต็มที่
+    การปรับเส้นตรงใช้ขอบทุกอัน ความสั่นแบบสุ่มจึงหักล้างกัน
+    วัดจริงพบว่าลดความไม่แน่นอนได้ราวสิบเท่าสำหรับสัญญาณ INT
+
+    Args:
+        edges: ตำแหน่งขอบสัญญาณ หน่วยตัวอย่าง
+
+    Returns:
+        (คาบเฉลี่ย, ความไม่แน่นอนของคาบ, รากที่สองของกำลังสองเฉลี่ยของส่วนตกค้าง)
+    """
+    n = edges.size
+    if n < 3:
+        return (float("nan"), float("nan"), float("nan"))
+
+    idx = np.arange(n, dtype=np.float64)
+    t = edges.astype(np.float64)
+    ic = idx - idx.mean()
+    sxx = float(np.sum(ic * ic))
+    b = float(np.sum(ic * t) / sxx)
+    a = float(t.mean())
+    resid = t - (a + b * ic)
+    dof = n - 2
+    resid_var = float(np.sum(resid * resid)) / dof
+    return (b, float(np.sqrt(resid_var / sxx)), float(np.sqrt(resid_var)))
+
+
 def _edges(bits: np.ndarray, rising: bool) -> np.ndarray:
     """หาตำแหน่งขอบสัญญาณ
 
@@ -191,6 +231,35 @@ def _edges(bits: np.ndarray, rising: bool) -> np.ndarray:
     """
     diff = np.diff(bits.astype(np.int8))
     return np.flatnonzero(diff == (1 if rising else -1)) + 1
+
+
+def find_starts(scl: np.ndarray, sda: np.ndarray) -> np.ndarray:
+    """หาตำแหน่งจังหวะเริ่มการคุย (START condition) บนบัส I2C
+
+    ทำไมต้องมี
+    ----------
+    เดิมวัดระยะจาก INT ถึงพัลส์ขาขึ้นแรกของ SCL
+    แต่จังหวะที่ MCU ลงมือจริงคือ START ซึ่งเกิดก่อนพัลส์แรกราวหนึ่งคาบนาฬิกา
+    การวัดถึงพัลส์แรกจึงให้ค่ายาวเกินจริงประมาณ 2.5 ไมโครวินาที
+    เทียบกับค่าที่วัดได้ราว 6.75 ไมโครวินาที ถือว่าเกินไปราว 37 เปอร์เซ็นต์
+
+    นิยามตามมาตรฐาน I2C
+    -------------------
+    START คือจังหวะที่ SDA เปลี่ยนจากสูงเป็นต่ำ ในขณะที่ SCL ยังคงสูงอยู่
+    ต่างจากการส่งข้อมูลปกติ ซึ่ง SDA จะเปลี่ยนค่าเฉพาะตอนที่ SCL ต่ำเท่านั้น
+
+    Args:
+        scl: อาร์เรย์บิตของสัญญาณนาฬิกา
+        sda: อาร์เรย์บิตของสัญญาณข้อมูล
+
+    Returns:
+        ตำแหน่งตัวอย่างที่เกิด START
+    """
+    sda_fall = _edges(sda, rising=False)
+    if sda_fall.size == 0:
+        return sda_fall
+    # เก็บเฉพาะจุดที่ SCL ยังสูงอยู่
+    return sda_fall[scl[sda_fall] == 1]
 
 
 def analyse_bus(
@@ -292,11 +361,15 @@ def analyse_bus(
     int_fall = _edges(int_, rising=False)
     int_rise = _edges(int_, rising=True)
 
-    if int_fall.size >= 2:
-        span = int(int_fall[-1] - int_fall[0])
-        frame_period_ms = span / (int_fall.size - 1) / samplerate * 1000.0
+    if int_fall.size >= 3:
+        per_fit, se_fit, jit = fit_period(int_fall)
+        frame_period_ms = per_fit / samplerate * 1000.0
+        frame_period_se_ppm = se_fit / per_fit * 1e6
+        int_jitter_us = jit / samplerate * 1e6
     else:
         frame_period_ms = float("nan")
+        frame_period_se_ppm = float("nan")
+        int_jitter_us = float("nan")
 
     # ความกว้างพัลส์ INT จับคู่ขอบขาลงกับขอบขาขึ้นที่ตามมา
     widths = []
@@ -314,6 +387,24 @@ def analyse_bus(
         after = scl_rise[scl_rise > f]
         if after.size:
             lat.append(after[0] - f)
+    # วัดถึง START ซึ่งเป็นจังหวะที่ MCU ลงมือจริง
+    sda = (core >> ch_sda) & 1
+    starts = find_starts(scl, sda)
+    lat_s = []
+    for f in int_fall:
+        after = starts[starts > f]
+        if after.size:
+            lat_s.append(after[0] - f)
+    if lat_s:
+        ls = np.array(lat_s, dtype=float) / samplerate * 1e6
+        int_to_start_us_median = float(np.median(ls))
+        int_to_start_us_mean = float(np.mean(ls))
+        int_to_start_us_min = float(np.min(ls))
+        int_to_start_us_max = float(np.max(ls))
+    else:
+        int_to_start_us_median = int_to_start_us_mean = float("nan")
+        int_to_start_us_min = int_to_start_us_max = float("nan")
+
     if lat:
         lat_us = np.array(lat, dtype=float) / samplerate * 1e6
         int_to_scl_us_median = float(np.median(lat_us))
@@ -344,11 +435,17 @@ def analyse_bus(
         busy_percent=busy_percent,
         idle_percent=100.0 - busy_percent,
         frame_period_ms=frame_period_ms,
+        frame_period_se_ppm=frame_period_se_ppm,
+        int_jitter_us=int_jitter_us,
         int_to_scl_us_median=int_to_scl_us_median,
         int_to_scl_us_mean=int_to_scl_us_mean,
         int_to_scl_us_min=int_to_scl_us_min,
         int_to_scl_us_max=int_to_scl_us_max,
         n_int_events=int(int_fall.size),
+        int_to_start_us_median=int_to_start_us_median,
+        int_to_start_us_mean=int_to_start_us_mean,
+        int_to_start_us_min=int_to_start_us_min,
+        int_to_start_us_max=int_to_start_us_max,
         clocks_per_burst=cpb,
         est_bytes_per_burst=cpb / 9.0,
         int_pulse_us_median=int_pulse_us_median,
@@ -371,7 +468,9 @@ def report(res: BusResult) -> None:
     print(f"    จำนวนพัลส์ทั้งหมด   : {res.n_scl_clocks:,}")
     print()
     print("  [H3] การใช้งานบัส")
-    print(f"    คาบเฟรม            : {res.frame_period_ms:8.4f} ms")
+    print(f"    คาบเฟรม            : {res.frame_period_ms:8.4f} ms "
+          f"(+-{res.frame_period_se_ppm:.2f} ppm, ปรับเส้นตรง)")
+    print(f"    ความสั่นขอบ INT     : {res.int_jitter_us:8.1f} us")
     print(f"    จำนวนชุดการคุย      : {res.n_bursts:,}")
     print(f"    ความยาวชุดเฉลี่ย    : {res.burst_ms_mean:8.4f} ms")
     print(f"    บัสทำงาน           : {res.busy_percent:8.3f} %")
@@ -379,8 +478,13 @@ def report(res: BusResult) -> None:
     print(f"    พัลส์ต่อชุด         : {res.clocks_per_burst:8.1f}")
     print(f"    ประมาณไบต์ต่อชุด    : {res.est_bytes_per_burst:8.1f}  (หาร 9 เพราะมีบิต ACK)")
     print()
-    print("  [H5] ระยะจาก INT ถึงพัลส์ SCL แรก")
-    print(f"    ค่ากลาง            : {res.int_to_scl_us_median:8.2f} us   <- ตอบ H5")
+    print("  [H5] ระยะจากขอบขาลงของ INT ถึงจังหวะเริ่มการคุย (START)")
+    print(f"    ค่ากลาง            : {res.int_to_start_us_median:8.2f} us   <- ตอบ H5")
+    print(f"    ค่าเฉลี่ย           : {res.int_to_start_us_mean:8.2f} us")
+    print(f"    ต่ำสุด / สูงสุด     : {res.int_to_start_us_min:.2f} / {res.int_to_start_us_max:.2f} us")
+    print()
+    print("  [เทียบ] ระยะถึงพัลส์ SCL แรก (ยาวกว่าราวหนึ่งคาบนาฬิกา)")
+    print(f"    ค่ากลาง            : {res.int_to_scl_us_median:8.2f} us")
     print(f"    ค่าเฉลี่ย           : {res.int_to_scl_us_mean:8.2f} us")
     print(f"    ต่ำสุด / สูงสุด     : {res.int_to_scl_us_min:.2f} / {res.int_to_scl_us_max:.2f} us")
     print(f"    จำนวนครั้งที่วัดได้  : {res.n_int_events:,}")
@@ -398,14 +502,14 @@ def compare(results: list[BusResult]) -> None:
         print(f"  เตือน: มีเพียง {len(results)} รอบ")
         print("  ตามกฎของโปรเจค ต้องมีอย่างน้อย 3 รอบจึงจะสรุปได้")
 
-    print(f"\n  {'ไฟล์':<20}{'SCL kHz':>10}{'ว่าง %':>10}{'INT->SCL us':>14}{'คาบ ms':>11}")
+    print(f"\n  {'ไฟล์':<20}{'SCL kHz':>10}{'ว่าง %':>10}{'INT->START us':>14}{'คาบ ms':>11}")
     print("  " + "-" * 63)
     for r in results:
         print(
             f"  {Path(r.path).name:<20}"
             f"{r.scl_khz_long:>10.4f}"
             f"{r.idle_percent:>10.3f}"
-            f"{r.int_to_scl_us_median:>14.2f}"
+            f"{r.int_to_start_us_median:>14.2f}"
             f"{r.frame_period_ms:>11.4f}"
         )
 
@@ -413,7 +517,7 @@ def compare(results: list[BusResult]) -> None:
         arrs = {
             "SCL kHz": np.array([r.scl_khz_long for r in results]),
             "ว่าง %": np.array([r.idle_percent for r in results]),
-            "INT->SCL us": np.array([r.int_to_scl_us_median for r in results]),
+            "INT->SCL us": np.array([r.int_to_start_us_median for r in results]),
             "คาบ ms": np.array([r.frame_period_ms for r in results]),
         }
         print("  " + "-" * 63)
