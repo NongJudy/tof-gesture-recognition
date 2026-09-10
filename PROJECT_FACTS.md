@@ -247,6 +247,14 @@ Method note: Boner et al. 2022 (ETH Zürich) use the same DWT technique — cita
 against the sensor's own `streamcount`.
 Raw data: `pc_tools/timing_8x8_matrix.csv`. Analysis: `pc_tools/plot_matrix.py`.
 
+> ⚠️ **Period and Rate columns are DWT values, ±1013 ppm.** Valid for comparing
+> the eight rows against each other — one instrument, one session — but not the
+> authoritative frame rates. Those are in §3.1b, and they carry a timestamp
+> because the sensor drifts (§3.1d).
+>
+> **The MCU-work column is confirmed accurate.** DWT on this board was verified
+> against an independent calibrated clock three ways (§3.1b, TRAP #12).
+
 | | Config | Fields | Acq. | Path | I2C | Bytes | MCU work | Period | **Rate** | Load | Idle | delta |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | A | 8×8 | all | polling | bsp | 115.8 | 1444 | 55.49 ms | 66.17 | 15.11 Hz | **83.9%** | 10.68 | 4.0 |
@@ -286,8 +294,35 @@ rate — the improvement shows up purely as headroom. At 4×4 the budget is one
 tick, so the same improvement converts into throughput.
 
 **A margin of 3.23 ms was not enough.** Being under the deadline on average is
-not sufficient; per-frame jitter means some frames still overrun. Report margin,
-not just the mean.
+not sufficient. Report margin, not just the mean.
+
+> ### ⚠️ OPEN QUESTION — the old explanation no longer fits
+>
+> This section used to attribute F's missed ticks to "per-frame jitter". The
+> logic-analyser campaign measured that jitter directly: **200 µs at 4×4**
+> (§3.1e). A 3.23 ms margin is **16× that** — jitter alone cannot explain why F
+> missed ticks so often (delta 1.5).
+>
+> Something else is involved. Candidates not yet tested:
+> - the 13.32 ms figure is a mean and the per-frame maximum is much larger
+> - blocking somewhere outside the measured window, e.g. UART back-pressure
+> - the sensor's own timing shifting during the run (§3.1d drift)
+>
+> **[ยังไม่ได้ตรวจ]** Do not repeat the jitter explanation until it is tested.
+> The *conclusion* of TRAP #15 — payload, not interrupt — is unaffected and is
+> now confirmed independently below.
+
+### ✅ Confirmed 10 Sep 2026 — INT is definitively not the bottleneck
+
+Measured on the wire: **INT falling edge → I2C START = 6.61 µs, SD 0.039**,
+identical in 4×4 and 8×8 (§3.1c).
+
+The frame period is 16.55 ms. The MCU begins the transaction **~2500× faster**
+than frames arrive. Interrupt latency was never capable of limiting the rate,
+which is why switching to INT moved 4×4 by only 0.08 Hz.
+
+The bus is idle 72.8% of the time at 4×4 (§3.1c) — direct evidence that the
+constraint is the sensor's production rate, not the MCU's ability to consume.
 
 ### Headroom for inference (1.46 ms, st_cnn2d on F401 @ 84 MHz)
 
@@ -296,12 +331,26 @@ not just the mean.
 | A | 86.1% | 7 |
 | **D** | **22.5%** | **36** |
 
-## 3.1b Frame rate vs. datasheet — both modes at the ceiling
+## 3.1b Frame rate vs. datasheet — RESOLVED 10 Sep 2026
 
-| Mode | UM3109 spec | Measured (HSE) | Ratio | delta | Ticks missed |
-|---|---|---|---|---|---|
-| 8×8 | 15 Hz | **15.11 Hz** | 100.7% | 4.0 exact | **none** |
-| 4×4 | 60 Hz | **60.42 Hz** | 100.7% | 1.0 exact | **none** |
+Superseded by the logic-analyser campaign. The DWT/`HAL_GetTick` figures below
+were the best available until then, but the `R` line has ±1013 ppm of
+quantisation (it counts whole milliseconds over a ~1 s window), which is why the
+two modes appeared to overshoot by the *same* 0.7%. They do not.
+
+**Authoritative values** — logic analyser, calibrated, least-squares fit over all
+edges, interleaved A-B-A design so drift cannot be confused with mode. Full
+method and raw data in `data/phase1_int/RESULTS_phase1.md`.
+
+| Mode | UM3109 spec | Measured | Period | Over spec |
+|---|---|---|---|---|
+| 8×8 | 15 Hz | **15.1150 Hz** | **66.1595 ms** | **+0.767%** |
+| 4×4 | 60 Hz | **60.4178 Hz** | **16.5514 ms** | **+0.696%** |
+
+Difference between modes: **700.2 ± 11.3 ppm, t = 61.7** — highly significant.
+
+> **These are snapshot values.** The sensor drifts (§3.1d). Quoting a frame rate
+> without saying when it was measured is now an error.
 
 `delta` is exact and `dup = 0`, so the system reads **every** frame the sensor
 produces in both modes. There is no remaining rate to recover.
@@ -310,31 +359,131 @@ What is left to optimise is negligible: of D/H's remaining MCU work, the I2C
 payload read is 96% (4.51 of 4.69 ms at 4×4) and is bounded by the 400 kHz bus.
 Eliminating everything else would save 0.18 ms and change no rate.
 
-### ⚠️ TRAP #12 — do not write "we exceeded the datasheet"
+### ✅ TRAP #12 — RESOLVED: the sensor is the fast one
 
-The datasheet says *"up to"* — a configuration ceiling, not a guaranteed exact
-rate. Both modes overshoot by the **same** +0.7%, so it is systematic, not noise.
+**Still do not write "we exceeded the datasheet"** — the datasheet says *"up to"*,
+a configuration ceiling, not a guaranteed exact rate.
 
-Two candidates, **not yet distinguished**:
-- the sensor's internal RC oscillator runs ~0.7% fast (unremarkable for an RC), or
-- the board's HSE reference is off (would need 8.056 MHz; a crystal is ±0.005%,
-  ~140× too small to explain it)
-
-The second is implausible, so the sensor is the likely source — **but proving it
-needs a third, independent clock.** The logic analyser has one. Until then,
-report the deviation; do not attribute it.
-
-### The sensor has one internal tick, ~60.4 Hz
+But the source of the overshoot is now settled. The logic analyser's crystal was
+calibrated against the board's HSE by having the board emit an exact 1000.000000 Hz
+square wave (TIM3 CH3 on PC8, PSC=0 ARR=41999, 0 ppb rounding error):
 
 ```
-8×8:  15.11 Hz × delta 4  =  60.46 ticks/s
-4×4:  60.42 Hz × delta 1  =  60.42 ticks/s
+LA vs board clock:  -95.408 ppm   SD 0.349   n = 3
 ```
 
-Both modes share one timebase, measured independently and agreeing to 0.07%.
-**8×8 is not "a slower mode" — it consumes 4 ticks per frame** (4× the zones).
-Its 15 Hz is 60.4/4, not an independently specified limit. This also explains the
-matched +0.7% overshoot in both modes: it is one clock, seen two ways.
+Two independent crystals agreeing to 95 ppm cannot both be wrong by the same
+amount by chance. That same instrument then measured the sensor at **+7000 ppm**
+above nominal — **73× larger** than the agreement between the two clocks.
+
+A crystal is ±0.005% (50 ppm). It cannot produce 7000 ppm. **The sensor's RC
+oscillator is the source.**
+
+**The mode difference clinches it.** If the board clock were at fault, both modes
+would be off by exactly the same amount. They differ by 700 ppm.
+
+**Consequence: every figure in the §3.1 timing matrix is trustworthy.** DWT on
+this board is confirmed correct by three independent routes — the 1 kHz
+calibration (95 ppm), the frame period, and the SCL clock (132 ppm from nominal).
+
+### ⚠️ The "one tick" model is an approximation, not a mechanism
+
+The old text claimed a single internal tick shared by both modes. Precise
+measurement shows this is wrong.
+
+```
+period ratio 8×8 / 4×4  =  3.99721,  not 4.00000   (-0.070%)
+
+internal measurement period (streamcount steps by 1 at 4×4, by 4 at 8×8):
+  4×4:  16.5514 ms   →  60.4178 ticks/s
+  8×8:  16.5399 ms   →  60.4599 ticks/s
+  difference: 698 ppm
+```
+
+698 ppm from the ratio and 700.2 ± 11.3 ppm from the A-B-A experiment are the
+same number reached two ways. **The sensor sets a different internal measurement
+period in each mode.**
+
+`8×8` still consumes 4 internal measurements per output frame — that part holds,
+and is independently confirmed by the `anomaly` counter (§4, 62 consecutive
+frames, zero anomalies) and by the jitter scaling (√4 = 2×, §3.1e). What is wrong
+is only the claim that the tick *period* is identical across modes.
+
+## 3.1c Bus utilisation — measured directly, 10 Sep 2026
+
+Previously inferred from the dose-response experiment (§3.5). Now measured.
+
+| Mode | Bus busy | **Bus idle** | SD | Bytes/transaction |
+|---|---|---|---|---|
+| 4×4 | 27.197% | **72.803%** | 0.124 | 199 (196 payload + 4 overhead) |
+| 8×8 | 20.107% | **79.893%** | 0.319 | 583 (580 payload + 4 overhead) |
+
+The 4 overhead bytes are visible in the decoded capture: address-write,
+register address (2 bytes), address-read.
+
+**SCL runs at 399.947 kHz** (calibration applied), 132 ppm from the 400.000 kHz
+setting — so the nominal figure may be quoted as-is. It is exact because
+PCLK1 = 42 MHz, fast mode duty 2, period = 3 × CCR × Tpclk1, giving CCR = 35
+exactly. [จำมา — RM0383 formula not re-opened this session]
+
+**INT to I2C START: 6.61 µs, SD 0.039**, identical in both modes. The MCU
+responds ~2500× faster than the frame period, so INT is nowhere near being the
+bottleneck (see TRAP #15).
+
+> Measure to the **START condition** (SDA falling while SCL is high), not to the
+> first SCL rising edge. The latter is one clock period later and overstates the
+> latency by 39%.
+
+**INT pulse width: 100.4 µs**, identical in both modes despite a 4× difference in
+frame period and a 3× difference in read time. The sensor releases INT long
+before the MCU finishes its 4512 µs read.
+
+## 3.1d ⚠️ TRAP #20 — the sensor frame rate is NOT stable over time
+
+Measured 10 Sep 2026, same sample rate, same wiring, only time differing:
+
+| Elapsed | 4×4 (ppm over 60 Hz) |
+|---|---|
+| 0 min | 6038 |
+| 47 min | 6946 |
+| 57 min | 6911 |
+| 75 min | 6890 |
+| 92 min | 6844 |
+
+**+908 ppm in the first hour, then a slow decline of ~100 ppm.** 8×8 shows the
+same shape (−122 ppm over the same later window).
+
+Within a settled 17-minute window the drift is 46.1 ppm, t = 4.69 — significant.
+
+**Cause not established.** Temperature is the leading suspect: the sensor uses an
+RC oscillator, which has a large temperature coefficient, and rise-then-settle is
+the shape of thermal equilibration. **No temperature was measured**, so this is
+not proven.
+
+Consequences:
+- A frame rate quoted without a timestamp is incomplete.
+- Comparing two conditions measured minutes apart requires an interleaved design.
+  The naive comparison of the two modes gave 1678 ppm; A-B-A gave 700 ppm. Drift
+  accounted for 975 ppm of the apparent difference.
+- Phase 5–6 dataset collection will not have a constant frame rate across a
+  session. Plan for it.
+
+## 3.1e Instability by timescale — new characterisation
+
+| Timescale | Magnitude |
+|---|---|
+| per frame (16 ms) | 200 µs edge jitter = 12 000 ppm |
+| per minute | ~30 ppm |
+| ten minutes | ~46 ppm |
+| one hour | ~900 ppm |
+
+Edge jitter is 200 µs at 4×4 and 100 µs at 8×8 — a factor of 2 while the period
+differs by 4. Two independent checks agree with this:
+- period SD should be √2 × edge jitter if edges are independent: predicted
+  283/141 µs, measured 311/152 µs (9% and 7% off)
+- √4 = 2 is the signature of random jitter accumulating over 4 internal
+  measurements per 8×8 frame — the same conclusion as the streamcount evidence,
+  reached from different data
 
 ## 3.2 Data equivalence check (advisor task: "make interrupt actually work")
 
@@ -857,31 +1006,41 @@ proven end-to-end.
 Phase 0 is complete. Both modes now run at the hardware ceiling with no missed
 ticks (`delta` constant, `dup = 0` across all eight conditions).
 
-**Priority when the logic analyser arrives: Phase 1 first, ahead of Phase 2.**
-It is advisor task 5 (advisor work outranks self-directed work), it takes one day
-against Phase 2's week, and the hardware may have to be returned or shared —
-whereas the dataset and loader sit on disk and wait indefinitely.
+**Phase 1 is ~92% complete as of 10 Sep 2026.** H1–H5 all answered; TRAP #12
+resolved; five unplanned findings (§3.1c–e); one firmware bug found and fixed.
+Full write-up: `data/phase1_int/RESULTS_phase1.md`.
 
-Ordered:
+Remaining in Phase 1:
 
-1. **Phase 1 — logic analyser** (when hardware arrives). Probe SCL/PB8, SDA/PB9,
-   INT/PA4. Sample rate ≥ 4–8 MHz (≥10× the 400 kHz bus, or I2C will not decode).
-   Capture ≈200 ms to span several frames in both modes (8×8 period 66.17 ms,
-   4×4 period 16.55 ms). Besides satisfying task 5, this is the third independent
-   clock needed to settle TRAP #12 — is the sensor's oscillator 0.7% fast, or the
-   board's reference?
-2. **Phase 2 — training.** Loader and verification are done (§5.1b). Next: write the
-   splitter (`GroupKFold` / leave-one-subject-out on the `groups` array), then train
-   the ST architecture under both split regimes and compare.
-3. Set `MY_TOF_TIMING_MODE = 0`, capture F/S/G lines, confirm distances still
+1. **Drift experiment from a cold board.** Power the board off for hours, then
+   measure every 5 minutes for an hour to get the settling curve and the time
+   constant. **The four probe wires must stay attached** — unplug USB only, or
+   the pin positions have to be re-verified from scratch and the results will
+   not be comparable to 10 Sep. This is the only remaining hardware task.
+2. Re-generate `fig5_drift.png` from that designed experiment and drop the
+   "Preliminary" label.
+3. Exit check, then the probes may come off.
+
+Then Phase 2:
+
+4. **Phase 2 — training.** Loader and splitter are done (§5.1b). Next: train the
+   ST architecture under both split regimes and compare.
+5. Set `MY_TOF_TIMING_MODE = 0`, capture F/S/G lines, confirm distances still
    match the earlier captures and that `G,` carries sensible signal values.
 
-**Note on the repo:** commit `0f62812` (3 Sep, "Add matrix data, analysis script and
-figure") has `MY_TOF_FAST_READ = 0` — i.e. rows C/G, the BSP path, not the D/H ceiling.
-Not a bug, but set it to 1 before any run that is meant to reproduce D or H.
+Firmware state after Phase 1: `USE_4X4` per experiment, `USE_INT=1`,
+`FAST_READ=1`, `TIMING_MODE=1`, `DELAY_US=0`, `MY_CAL_ENABLE=0`,
+`MY_TOF_STREAM_STEP` auto-selected by mode, 5 DISABLE macros active, HSE clock.
 
-Firmware state after Phase 0: `USE_4X4` per experiment, `USE_INT=1`,
-`FAST_READ=1`, `TIMING_MODE=1`, `DELAY_US=0`, 5 DISABLE macros active, HSE clock.
+**Tools built in Phase 1** (`pc_tools/`): `analyze_calib.py` (period from edges,
+least-squares fit, `--edge` and `--channel` options), `analyze_bus.py` (I2C bus
+utilisation, SCL frequency over many pulses, INT→START latency),
+`plot_phase1.py` (four figures including the setup block diagram).
+
+**Data:** 25 `.bin` captures + 9 figures + 4 UART logs in `data/phase1_int/`,
+3 calibration captures in `data/phase1_calib/`. `.bin` excluded from git by
+`data/.gitignore`; backed up to Google Drive as a 5.3 MB zip (verified by
+extracting and re-running the analysis).
 
 ---
 
@@ -905,6 +1064,16 @@ Kept so the same errors are not repeated. Each was caught by the student.
 | 12 | Payload estimates: predicted 148 B (got 196), 536 B (got 580) | Consistently ~45 B low | Scaled by zone count, ignored per-block headers |
 | 13 | Wrote "we exceeded the datasheet spec" | "up to 60 Hz" is a ceiling; +0.7% is an unattributed offset | Treated a favourable number as a result instead of questioning it |
 | 14 | Claimed INT is what takes 4×4 to 60 Hz | INT changes nothing there (E→F: 40.57→40.49); the payload reduction does (F→G: +49%) | Generalised the 8×8 result to 4×4 without measuring |
+| 15 | Assumed `huart2` was a variable and used `HAL_UART_Transmit(&huart2, …)` | It is a macro from `stm32f4xx_nucleo.h`; the project uses `printf` via `_write` | Guessed the project's structure instead of opening the file |
+| 16 | Wrote `/* USER CODE BEGIN */` inside a `/* … */` comment block | C does not nest comments; the file broke with 188 errors | Basic language rule, not checked |
+| 17 | Used HAL TIM without checking the module was enabled | The project has the TIM module disabled; had to write registers directly | Same root cause as #15 |
+| 18 | Printed with `%f` | The project builds with `nano.specs`, which drops float printf; fields came out empty | Did not check the build flags |
+| 19 | Estimated drift by linear extrapolation and got 424 ppm | The A-B-A experiment showed 975 ppm | Extrapolated a process already known to be non-linear |
+| 20 | Reported H5 as "INT to first SCL rising edge", 9.17 µs | The meaningful instant is the I2C START, 6.61 µs — one clock period earlier, 39% overstated | Chose an easy-to-code definition instead of the physically correct one |
+| 21 | Concluded "no drift, t = 1.50, not significant" | With a 10× better estimator the same data gives t = 4.69 — the drift was always there | Treated "not detected" as "not present" when the instrument was too coarse |
+| 22 | Used first-and-last edge only, discarding 601 of 603 edges | Least-squares over all edges is ~10× more precise; the run-to-run SD of 46 ppm was the *method*, not the sensor | Did not ask whether the estimator was wasting data |
+| 23 | Titled the drift figure "after power-on" and joined the points with lines | The board had been running for an unrecorded time, and there is no data between points | Figure claimed more than the data supported |
+| 24 | Stated the sensor has one internal tick shared by both modes | The internal period differs by 698 ppm between modes (§3.1b) | A 0.07% discrepancy was invisible to the coarse instrument, and the model was accepted rather than tested |
 | 14 | Predicted INT would lift 4×4 to 60 Hz | INT changed the rate by 0.08 Hz; the payload cut did it | Assumed the 8×8 finding transferred; it is a deadline, not a proportion |
 | 15 | Predicted rows E–G would drop 1.36% with the new clock | Period is quantised to the sensor tick, so it barely moved | Applied a scale factor to a quantised quantity |
 | 16 | Saw 4,177 ≠ 11,443 and explained it as *"the note confused frames with zones"* | The two numbers are from **two different datasets**; ST trained on an unpublished internal one. Nothing to do with units | **Invented a plausible-sounding explanation instead of tracing the number to its source.** The zone figures happened to fit, which made the wrong answer feel right |
@@ -921,61 +1090,10 @@ gone into the thesis if the student had not said *"go and find out"*.
 
 ---
 
-*Last updated: 2026-09-04 · Phase 0 complete · Phase 2 loader written and verified
-against ST 162/162 · three §5.1 figures corrected (TRAP #16–#18) · logic analyser
-installed and its capabilities verified on the actual unit (§1.4, TRAP #19).*
-
----
-
-# APPENDIX — duplicate copy of the 4×4 matrix
-
-The rows below repeat §3.1 in a slightly different layout. Kept because the
-per-step attribution text underneath is not duplicated anywhere else.
-
-| **A** | 8×8@15Hz | all | polling | bsp | 115.8 | 1444 | **55.49 ms** | 66.17 | 15.11 Hz | **83.9%** | 10.68 |
-| **B** | 8×8@15Hz | all | **int** | bsp | 4.0 | 1444 | **33.92** | 66.17 | 15.11 | 51.3% | 32.25 |
-| **C** | 8×8@15Hz | **slim** | int | bsp | 4.0 | **580** | **14.37** | 66.17 | 15.11 | 21.7% | 51.79 |
-| **D** | 8×8@15Hz | slim | int | **direct** | **1.0** | 580 | **13.44** | 66.17 | 15.11 | **20.3%** | 52.73 |
-| **E** | 4×4@60Hz | all | polling | bsp | 13.5 | 532 | 13.33 | 24.65 | 40.57 | 54.1% | 11.32 |
-| **F** | 4×4@60Hz | all | **int** | bsp | 4.0 | 532 | 13.32 | 24.70 | 40.49 | 53.9% | 11.38 |
-| **G** | 4×4@60Hz | **slim** | int | bsp | 4.0 | **196** | **5.63** | **16.55** | **60.42** | 34.0% | 10.92 |
-| **H** | 4×4@60Hz | slim | int | **direct** | **1.0** | 196 | **4.69** | 16.55 | **60.42** | **28.3%** | 11.86 |
-
-**All eight rows use the HSE crystal clock.** `delta` was 4.0 in every 8×8 row,
-1.5 in E and F, and 1.0 in G and H.
-
-### Per-step attribution — 4×4 (the informative one)
-
-| Step | Change | Rate | Note |
-|---|---|---|---|
-| E → F | polling → INT | 40.57 → 40.49 Hz | **no change** |
-| F → G | disable unused fields | 40.49 → **60.42 Hz** | **+49.2%** |
-| G → H | bypass redundant I2C | 60.42 → 60.42 Hz | already at the ceiling |
-
-### ⚠️ TRAP #15 — at 4×4 it is the payload, not the interrupt, that buys the rate
-
-The sensor's internal tick is 16.55 ms. To hit 60 Hz the MCU must finish inside
-one tick **with margin**, not merely finish.
-
-| | MCU work | Slack vs tick | delta |
-|---|---|---|---|
-| F | 13.32 ms | 3.23 ms | **1.5** — misses ticks |
-| G | 5.63 ms | 10.92 ms | **1.0** — catches every tick |
-
-3.23 ms of slack is not enough because per-frame time fluctuates slightly.
-**"It fits" is not the same as "it fits reliably."**
-
-### The same change has different effects in the two modes
-
-| | 8×8 @ 15 Hz | 4×4 @ 60 Hz |
-|---|---|---|
-| Time available per frame | 66.17 ms | **16.55 ms** |
-| What INT buys | **−39% MCU load**, rate unchanged | fewer I2C calls, rate unchanged |
-| What payload reduction buys | −58% MCU load, rate unchanged | **rate +49%** |
-| Binding constraint | the sensor | **our system** |
-
-At 8×8 there is time to spare, so optimisation returns *headroom*.
-At 4×4 time is tight, so the same optimisation returns *throughput*.
-**This is why both modes had to be measured — reporting only one would have
-given the wrong conclusion about what matters.**
-
+*Last updated: 2026-09-10 · Phase 0 complete · Phase 1 ~92% complete: H1–H5 all
+answered, TRAP #12 resolved (the sensor's RC oscillator is the fast one, not the
+board), five unplanned findings recorded in §3.1c–e including sensor frame-rate
+drift (TRAP #20), one firmware bug found and fixed (skip counter at 8×8),
+correction log grown from 14 to 24 entries. Full write-up and raw data in
+`data/phase1_int/RESULTS_phase1.md`. Remaining: the cold-start drift experiment —
+the probe wires must stay attached for it.*
