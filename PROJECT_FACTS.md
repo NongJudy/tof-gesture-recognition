@@ -241,6 +241,32 @@ for filtering; nb_target_detected is required alongside per ST guidance.
 All measured with DWT cycle counter (11.9 ns resolution) on the actual board.
 Method note: Boner et al. 2022 (ETH Zürich) use the same DWT technique — citable.
 
+## 3.0 Hypothesis register — every question asked in Phase 1, and its verdict
+
+Written here so the record is complete and auditable. Predictions were recorded
+**before** each run; results were not allowed to edit the prediction. Two of the
+seven predictions were wrong, and both are kept visible rather than quietly fixed.
+
+| ID | Question / hypothesis | Prediction on record | Result | Verdict |
+|---|---|---|---|---|
+| **H1** | Which clock runs fast — the sensor or the board? | The board clock was the suspect (TRAP #12 as originally framed) | **The sensor is the fast one**, not the board clock. A crystal is ±50 ppm and cannot produce the observed +7000 ppm; the sensor's RC oscillator can | ✅ **Answered — original suspicion overturned** |
+| **H2** | Is the DWT cycle counter on the board trustworthy? | — (verification question, no numeric prediction recorded) | **DWT measures correctly**, confirmed three independent ways | ✅ Answered |
+| **H3** | What fraction of the I²C bus is idle? | — (measurement question, no numeric prediction recorded) | **72.8 % idle (4×4), 79.9 % idle (8×8)** | ✅ Answered |
+| **H4** | What frequency does SCL actually run at? | Nominal 400.000 kHz | **399.947 kHz**, 132 ppm from nominal | ✅ Answered |
+| **H5** | How long from the INT edge to the start of the conversation? | — (measurement question; the *definition* was initially wrong, see §9 #20) | **6.61 µs, SD 0.039**, measured to the I²C START condition, identical in both modes | ✅ Answered after the definition was corrected |
+| **H6** | Is the true 4×4 vs 8×8 difference ≠ 0 once drift is removed? (A-B-A design; H0 = the whole difference is drift) | **1,000–1,400 ppm** after removing drift | **700.2 ± 11.3 ppm, t = 61.7.** H0 rejected. Independently corroborated at **698 ppm** from the period ratio | ⚠️ **Direction confirmed, magnitude wrong** — the real value fell 300 ppm below the predicted floor. See §9 #32 |
+| **H7** | Cold-start drift: monotonic exponential rise to a plateau? | Start 6000–6200 → end 6850–6950 ppm; total **+700 to +950 ppm**; τ = 20–40 min | Start **7139.8**, end **6985.2**, total **−154.6 ppm** (opposite sign), three-phase curve, τ = 56.7 ± 4.3 min | ❌ **Rejected on all five counts.** See §9 #30 and `data/phase1_drift_v2/RESULTS_phase1_drift.md` |
+
+**Why H6 and H7 both missed the same way.** Both predictions were produced by
+extrapolating a curve whose shape had not been measured over the range being
+predicted. H6 extrapolated drift linearly through a 28-minute gap; H7 extrapolated
+the drift shape from a 92-minute window that happened to contain only the decay
+phase. The countermeasure is in §9 under the third pattern: measure the shape over
+the range you intend to predict, or do not predict a number.
+
+Full method and raw data: `data/phase1_int/RESULTS_phase1.md` (H1–H6),
+`data/phase1_drift_v2/RESULTS_phase1_drift.md` (H7).
+
 ## 3.1 The measurement matrix — 8 conditions, one variable at a time
 
 **All eight rows use the HSE crystal clock. dup = 0 in every row**, verified
@@ -347,7 +373,10 @@ method and raw data in `data/phase1_int/RESULTS_phase1.md`.
 | 8×8 | 15 Hz | **15.1150 Hz** | **66.1595 ms** | **+0.767%** |
 | 4×4 | 60 Hz | **60.4178 Hz** | **16.5514 ms** | **+0.696%** |
 
-Difference between modes: **700.2 ± 11.3 ppm, t = 61.7** — highly significant.
+Difference between modes (**this is H6**, see §3.0): **700.2 ± 11.3 ppm, t = 61.7**
+— highly significant, H0 ("the whole difference is drift") rejected. The prediction
+on record was 1,000–1,400 ppm, so H6's *direction* held but its *magnitude* did not
+(§9 #32).
 
 > **These are snapshot values.** The sensor drifts (§3.1d). Quoting a frame rate
 > without saying when it was measured is now an error.
@@ -455,7 +484,8 @@ same shape (−122 ppm over the same later window).
 
 Within a settled 17-minute window the drift is 46.1 ppm, t = 4.69 — significant.
 
-**Cause not established.** Temperature is the leading suspect: the sensor uses an
+**Cause not established — deferred, see §8.5 D1** for the designed follow-up.
+Temperature is the leading suspect: the sensor uses an
 RC oscillator, which has a large temperature coefficient, and rise-then-settle is
 the shape of thermal equilibration. **No temperature was measured**, so this is
 not proven.
@@ -956,8 +986,27 @@ DMA frees the **CPU**, not the **bus**. Measured CPU idle is already 46% of the 
 period. The constraint is bus occupancy (12.18 ms of a 24.45 ms period), so DMA cannot
 shorten the period. Fewer bytes, or SPI, can. State this when the topic comes up.
 
-**Still unresolved with the advisor:** static vs dynamic gesture set (asked ~5 times,
-no answer). The project can proceed: do static first using ST's dataset, dynamic second.
+**Resolved with the advisor (deep talk, direct conversation, 15 Sep 2026):**
+static vs dynamic gesture set was asked ~5 times with no answer until this direct
+conversation. **Answer: train static first, dynamic second. The advisor will decide
+what the trained postures are used for once static is done — not decided yet, and
+not the student's or the assistant's job to guess.** This conversation was with the
+**main advisor (อ.Sakreya)**, the project owner — see `[[sakreya]]`.
+
+**Superseded by the above, same day:** a separate instruction had come from the
+**second advisor (Advisor 2)** for a different, larger scope — up to 36 static
+postures matched one-to-one to spoken phrases via a paired microphone board on a
+classmate's project, with audio playback hardware (DFPlayer-class module) on this
+project's board. That instruction is **no longer in effect** now that the main
+advisor has spoken directly. Kept here rather than deleted in case it is revived:
+no dataset collection, hardware purchase (DFPlayer/microSD/speaker), or coordination
+with the classmate's board should proceed under it unless the main advisor
+re-confirms it.
+
+**Practical consequence for scope right now:** proceed with the 7-class
+`ST_VL53L8CX_handposture_dataset` (§5.1) for the static phase. This already
+satisfies "no more than 10 classes" from the second advisor's earlier instruction,
+should that constraint still apply once the advisor names a downstream use.
 
 **Advisor's shopping cart (31 Aug)** — 6 items, 3 are microphone boards for a different
 project. Relevant to us: `SATEL-VL53L8` (breakout, 2 boards, VL53L8CA — lets the sensor
@@ -1006,27 +1055,46 @@ proven end-to-end.
 Phase 0 is complete. Both modes now run at the hardware ceiling with no missed
 ticks (`delta` constant, `dup = 0` across all eight conditions).
 
-**Phase 1 is ~92% complete as of 10 Sep 2026.** H1–H5 all answered; TRAP #12
-resolved; five unplanned findings (§3.1c–e); one firmware bug found and fixed.
-Full write-up: `data/phase1_int/RESULTS_phase1.md`.
+**Phase 1 is COMPLETE as of 11 Sep 2026.** H1–H7 all answered; TRAP #12 resolved;
+TRAP #20 characterised over a full 6-hour cold start (n = 121, 4×4 mode); five
+unplanned findings (§3.1c–e); one firmware bug found and fixed. H7 was
+pre-registered and **rejected on all five counts**, including the sign of the
+change. `fig5_drift.png` has been regenerated from the designed experiment and the
+"Preliminary" label is gone. The probe wires have been removed — any future timing
+work requires re-verifying pin positions from scratch and will **not** be directly
+comparable to the 10–11 Sep results.
 
-Remaining in Phase 1:
+Write-ups: `data/phase1_int/RESULTS_phase1.md` (H1–H6, calibration, bus) and
+`data/phase1_drift_v2/RESULTS_phase1_drift.md` (cold-start drift, H7 rejection).
+Figure regenerated by `pc_tools/make_fig5.py`.
 
-1. **Drift experiment from a cold board.** Power the board off for hours, then
-   measure every 5 minutes for an hour to get the settling curve and the time
-   constant. **The four probe wires must stay attached** — unplug USB only, or
-   the pin positions have to be re-verified from scratch and the results will
-   not be comparable to 10 Sep. This is the only remaining hardware task.
-2. Re-generate `fig5_drift.png` from that designed experiment and drop the
-   "Preliminary" label.
-3. Exit check, then the probes may come off.
+**Scope confirmed 15 Sep 2026 (direct conversation with the main advisor):** static
+gesture recognition first, dynamic second, downstream use to be named later by the
+advisor. See §7 for the full record and what this supersedes. Practical scope for
+Phase 2: the 7-class `ST_VL53L8CX_handposture_dataset` (§5.1), ≤10 classes as
+required.
 
-Then Phase 2:
+Next work, in order:
 
-4. **Phase 2 — training.** Loader and splitter are done (§5.1b). Next: train the
-   ST architecture under both split regimes and compare.
-5. Set `MY_TOF_TIMING_MODE = 0`, capture F/S/G lines, confirm distances still
-   match the earlier captures and that `G,` carries sensible signal values.
+1. **Phase 2 — training.** Loader and splitter are done (§5.1b). Train the ST
+   architecture under both split regimes (random vs subject-independent) and
+   compare — TRAP #8 already flags why subject-independent is the correct one to
+   report.
+2. Set `MY_TOF_TIMING_MODE = 0`, capture F/S/G lines, confirm distances still
+   match the earlier captures and that `G,` carries sensible signal values. Small,
+   no probes needed, can be done any time before or after Phase 2.
+3. Compare the measured `max_bytes` (from the `T,` line) against the estimates in
+   §3.5's "TO BE TESTED" table — not yet done.
+
+Open question, **deferred by decision on 11 Sep — see §8.5 D1** for the full
+reasoning, the designed experiment, and what to write in the limitations if it is
+never done:
+
+4. **Temperature is uninstrumented and now demonstrably matters.** Two runs in the
+   same 4×4 mode, both described as cold starts, began ~1100 ppm apart (6038 ppm on
+   10 Sep, 7139.8 ppm on 11 Sep). Neither logged ambient temperature or power-off
+   duration. Deferred because the effect is 0.059 % of the frame period and blocks
+   nothing; resume after Phases 2–3. See correction log #31.
 
 Firmware state after Phase 1: `USE_4X4` per experiment, `USE_INT=1`,
 `FAST_READ=1`, `TIMING_MODE=1`, `DELAY_US=0`, `MY_CAL_ENABLE=0`,
@@ -1041,6 +1109,74 @@ utilisation, SCL frequency over many pulses, INT→START latency),
 3 calibration captures in `data/phase1_calib/`. `.bin` excluded from git by
 `data/.gitignore`; backed up to Google Drive as a 5.3 MB zip (verified by
 extracting and re-running the analysis).
+
+---
+
+# 8.5 DEFERRED WORK — questions consciously left open, with the plan to resume
+
+Not abandoned. Each entry records what is unanswered, why it was deferred, the
+experiment already designed to answer it, where the raw data sits, and what goes
+into the thesis limitations if it is never done. Written on 11 Sep 2026 so that a
+future session can resume without reconstructing the reasoning.
+
+## D1 — Is temperature the cause of the sensor's frame-rate drift?
+
+**Status:** open. Deferred 11 Sep 2026 by the student's decision, with the reason
+recorded below. Does **not** block any later phase.
+
+**The unanswered question.** §3.1d identifies the sensor's RC oscillator as the
+drift source and names temperature as the leading suspect, but **no temperature has
+ever been measured in this project**. The strongest evidence that it matters is the
+unexplained gap in §9 #31: two 4×4 cold starts, both described the same way, began
+~1100 ppm apart (6038 ppm on 10 Sep, 7139.8 ppm on 11 Sep). Neither run logged
+ambient temperature or power-off duration, so the cause cannot be recovered from
+the data already collected.
+
+**Why deferring is defensible.** The effect is real but operationally irrelevant:
+the entire 6-hour drift is 592.7 ppm = **0.059 % of the frame period**, and even
+the much larger per-frame jitter (200 µs at 4×4, §3.1e) accumulates to only ~1.55 ms
+over a 1-second gesture window — 0.15 %. Nothing in Phases 2–6 depends on resolving
+it. It is a completeness question for the write-up, not a functional defect.
+
+**Why simply logging temperature would NOT answer it.** In a single cold-start run,
+ambient temperature rises together with elapsed time, so the two are confounded and
+any correlation found is uninterpretable. **Temperature must be deliberately varied**
+for the causal claim to hold.
+
+**Designed experiment (option B), to run after Phases 2–3:**
+
+1. **Instrument the board to time itself.** H2 established that DWT is trustworthy
+   (verified three independent ways). The ±1013 ppm figure quoted in §3.1b is a
+   limitation of the `R` line — it counts whole milliseconds over a ~1 s window —
+   **not of DWT itself**. Timestamping the first and last frame of a 10-second
+   window with DWT gives a resolution of order 1 ppb, thousands of times finer than
+   the ~600 ppm effect being measured. `[ยังไม่ได้ตรวจ]` — `my_tof.c` has not been
+   opened to confirm how hard this change is; verify before committing to the plan.
+2. **Run the same cold-start protocol at two or three deliberately different ambient
+   temperatures** (for example air-conditioned vs not), logging ambient temperature
+   at every round, and chip surface temperature too if an IR thermometer is available.
+3. **Test whether ppm tracks temperature across conditions**, not merely across time
+   within one run. Report the coefficient in ppm/°C with its confidence interval.
+
+**Why this design is preferred.** It needs **no logic-analyser probes**, so the
+"probes removed, pin positions would need re-verification" constraint does not
+apply and the run can be repeated as often as wanted. It also converts a weakness
+("we found drift but do not know why") into a contribution ("we measured the
+sensor's temperature coefficient").
+
+**Raw data already on disk, still usable:**
+- `data/phase1_drift/` — 121 captures, 8×8 mode, 6 h, 3 Sep protocol (the run that
+  was mislabelled; see §9 #29). Valid as an 8×8 cold-start record.
+- `data/phase1_drift_v2/` — 121 captures, 4×4 mode, 6 h, the H7 run.
+- Both have `manifest.csv` with real wall-clock timestamps per round.
+
+**If D1 is never done, the thesis must state:** that the sensor's frame rate drifts
+by several hundred ppm over hours; that the cause was not established; that
+temperature is the leading suspect on the basis of the RC-oscillator mechanism and
+the unexplained 1100 ppm gap between two nominally identical cold starts; that no
+temperature was instrumented; and that the magnitude is operationally negligible
+for gesture recognition at 0.059 % of the frame period. Offer the option-B design
+above as future work.
 
 ---
 
@@ -1074,10 +1210,14 @@ Kept so the same errors are not repeated. Each was caught by the student.
 | 22 | Used first-and-last edge only, discarding 601 of 603 edges | Least-squares over all edges is ~10× more precise; the run-to-run SD of 46 ppm was the *method*, not the sensor | Did not ask whether the estimator was wasting data |
 | 23 | Titled the drift figure "after power-on" and joined the points with lines | The board had been running for an unrecorded time, and there is no data between points | Figure claimed more than the data supported |
 | 24 | Stated the sensor has one internal tick shared by both modes | The internal period differs by 698 ppm between modes (§3.1b) | A 0.07% discrepancy was invisible to the coarse instrument, and the model was accepted rather than tested |
-| 14 | Predicted INT would lift 4×4 to 60 Hz | INT changed the rate by 0.08 Hz; the payload cut did it | Assumed the 8×8 finding transferred; it is a deadline, not a proportion |
-| 15 | Predicted rows E–G would drop 1.36% with the new clock | Period is quantised to the sensor tick, so it barely moved | Applied a scale factor to a quantised quantity |
-| 16 | Saw 4,177 ≠ 11,443 and explained it as *"the note confused frames with zones"* | The two numbers are from **two different datasets**; ST trained on an unpublished internal one. Nothing to do with units | **Invented a plausible-sounding explanation instead of tracing the number to its source.** The zone figures happened to fit, which made the wrong answer feel right |
-| 17 | Reported "STSW-IMG035 is a new finding that may threaten contribution #5" | It was already in §5.2, researched in more depth than the fresh search | Read this file with a truncated view and did not notice the gap |
+| 25 | Predicted INT would lift 4×4 to 60 Hz | INT changed the rate by 0.08 Hz; the payload cut did it | Assumed the 8×8 finding transferred; it is a deadline, not a proportion |
+| 26 | Predicted rows E–G would drop 1.36% with the new clock | Period is quantised to the sensor tick, so it barely moved | Applied a scale factor to a quantised quantity |
+| 27 | Saw 4,177 ≠ 11,443 and explained it as *"the note confused frames with zones"* | The two numbers are from **two different datasets**; ST trained on an unpublished internal one. Nothing to do with units | **Invented a plausible-sounding explanation instead of tracing the number to its source.** The zone figures happened to fit, which made the wrong answer feel right |
+| 28 | Reported "STSW-IMG035 is a new finding that may threaten contribution #5" | It was already in §5.2, researched in more depth than the fresh search | Read this file with a truncated view and did not notice the gap |
+| 29 | Ran a 6-hour cold-start capture believing the board was in 4×4 mode | The board ran a stale 8×8 binary: `my_tof.h` was edited at 11:53 but never rebuilt, and the `.elf` was still from the previous day (09/10 16:53). Detected only at the analyse step, when ppm came back as −748,025 (≈15.12 Hz = 8×8, not 60 Hz = 4×4) | Treated editing the source as equivalent to flashing the device; no pre-run check that the binary matched the intended configuration |
+| 30 | Built H7 predicting a monotonic exponential rise of +700 to +950 ppm | The real curve is three-phase and the net change is **−154.6 ppm** — opposite sign. H7 rejected on all five counts | Extrapolated the curve's shape from the 92-minute window of 10 Sep, which happened to capture only the decay phase and missed the peak at t = 18 min |
+| 31 | Treated "cold start" as a reproducible condition without instrumenting it | Two 4×4 cold starts began 1100 ppm apart (6038 ppm on 10 Sep vs 7139.8 ppm on 11 Sep). Neither run logged ambient temperature or power-off duration, so the cause cannot be determined | Assumed an uncontrolled variable was controlled because it had a name |
+| 32 | Predicted the H6 mode difference would land at **1,000–1,400 ppm** after removing drift | **700.2 ± 11.3 ppm** — 300 ppm below the predicted floor, and corroborated at 698 ppm by the independent period-ratio route. H6's direction held; its magnitude did not | Same root cause as #19 and #30: extrapolated drift linearly across the 28-minute gap between the two mode measurements, when the drift was already known to be non-linear. Logged separately because #19 covers the drift estimate itself, not the mode-difference prediction built on top of it |
 
 **Pattern:** answering from memory while presenting it as verified.
 **Countermeasure:** the tagging rule at the top of this file.
@@ -1085,15 +1225,42 @@ Kept so the same errors are not repeated. Each was caught by the student.
 **Second pattern, added 3 Sep — inventing explanations for discrepancies.**
 When two numbers disagree, the only acceptable moves are: open the primary source, or
 say `[ยังไม่ได้ตรวจ]` and ask. A hypothesis that "makes sense" is not an answer, and is
-more dangerous than saying nothing, because it sounds finished. Error #16 would have
+more dangerous than saying nothing, because it sounds finished. Error #27 would have
 gone into the thesis if the student had not said *"go and find out"*.
+
+**Third pattern, added 11 Sep — believing an intended configuration instead of
+verifying the running one.** Errors #29 and #31 are the same shape: a condition was
+*named* ("4×4 mode", "cold start") and then treated as *established*. Six hours of
+capture were spent on the wrong mode, and a 1100 ppm discrepancy cannot now be
+explained because nothing was logged. **Countermeasure:** before any long run,
+confirm the built artefact is newer than the source that defines the condition, take
+a short capture and check the value lands where expected, and log every environmental
+variable that the hypothesis depends on — even the ones assumed to be constant.
 
 ---
 
-*Last updated: 2026-09-10 · Phase 0 complete · Phase 1 ~92% complete: H1–H5 all
+*Last updated: 2026-09-11 · Phase 0 complete · **Phase 1 COMPLETE**: H1–H7 all
 answered, TRAP #12 resolved (the sensor's RC oscillator is the fast one, not the
-board), five unplanned findings recorded in §3.1c–e including sensor frame-rate
-drift (TRAP #20), one firmware bug found and fixed (skip counter at 8×8),
-correction log grown from 14 to 24 entries. Full write-up and raw data in
-`data/phase1_int/RESULTS_phase1.md`. Remaining: the cold-start drift experiment —
-the probe wires must stay attached for it.*
+board), TRAP #20 characterised over a full 6-hour cold start (n = 121, 4×4), five
+unplanned findings recorded in §3.1c–e, one firmware bug found and fixed (skip
+counter at 8×8), correction log grown from 14 to 32 entries (and four duplicate
+numbers in the table corrected on 11 Sep). H7 was pre-registered and rejected on
+all five counts: the drift is not a monotonic exponential but a three-phase curve
+— rise to a peak of 7476.8 ppm at 18 min, decay to a trough of 6884.1 ppm at
+147 min, then a slow rise to a statistically stationary plateau of 6946.8 ± 19.3 ppm
+over 240–360 min. A single-exponential fit gives R² = 0.879 but its residuals fail
+a runs test at z = −9.03, so the model is rejected despite the apparently good fit.
+Write-ups and raw data in `data/phase1_int/RESULTS_phase1.md` and
+`data/phase1_drift_v2/RESULTS_phase1_drift.md`. Probes removed; Phase 1 closed. One question consciously deferred rather than
+dropped — whether temperature causes the drift — with the resume plan in §8.5 D1.*
+
+*Last updated: 2026-09-15 · **Scope confirmed by the main advisor in direct
+conversation: static gesture recognition first, dynamic second, downstream use to
+be named later** (§7, §8). This supersedes the second advisor's earlier separate
+instruction (up to 36 postures paired with spoken phrases via a classmate's board,
+with on-board audio playback hardware) — that instruction is not deleted, only
+inactive, in case it is revived. Practical effect: Phase 2 proceeds on the 7-class
+`ST_VL53L8CX_handposture_dataset` already downloaded and verified (§5.1), which
+satisfies the "≤10 classes" constraint. No dataset collection, hardware purchase,
+or coordination with the classmate's board should happen under the superseded
+instruction unless the main advisor re-confirms it. Next: Phase 2 training.*
