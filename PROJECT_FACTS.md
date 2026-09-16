@@ -1229,17 +1229,28 @@ Next work, in order:
 3. Compare the measured `max_bytes` (from the `T,` line) against the estimates in
    §3.5's "TO BE TESTED" table — **still not done**, needs `TIMING_MODE = 1`
    temporarily (mutually exclusive with item 2's data-mode lines).
-4. **Decide next:** Phase 5 (collect the team's own dataset — more subjects, and
-   possibly redesign the "hard" classes given the Fist/FlatHand/Dislike/Like
-   confusion pattern in §5.1d) vs. Phase 3 (embedded deployment of the current
-   model) vs. further Phase 2 analysis (e.g. investigate why User4's fold has much
-   higher seed-to-seed variance than the other three, §5.1d). Not yet decided.
+4. **Decided 16 Sep 2026: Phase 3 (embedded deployment) chosen next**, per the plan
+   document generated that day. In progress: found and fixed a real MCU
+   configuration bug that predates this conversation — the whole project had been
+   built against STM32F401RE (96 KB RAM) instead of the physical STM32F411RE
+   (128 KB RAM) actually on the board, confirmed by a photo of the chip marking.
+   Fixed by editing `STM32F401RETX_FLASH.ld` (`RAM LENGTH 96K → 128K`), verified via
+   the post-build `.map` file, committed as `ac44da5`. No prior measurement was
+   affected (RAM used throughout Phase 0–2 was ~3 KB, far under even the wrong
+   ceiling). See correction log #36 for the full account. Device macro itself is
+   still F401 (only the RAM ceiling was corrected) — low priority, revisit before
+   Phase 6.5 if an F411-only peripheral is ever needed. Next concrete step:
+   create a separate CubeMX project (not editing the existing `.ioc` — that
+   workflow was tried twice and both times created a new untitled project instead)
+   to run X-CUBE-AI and convert `production_model.keras` to C code.
+5. Phase 5 (collect the team's own dataset) and further Phase 2 analysis (User4's
+   high seed-to-seed variance, §5.1d) remain queued behind Phase 3.
 
 Open question, **deferred by decision on 11 Sep — see §8.5 D1** for the full
 reasoning, the designed experiment, and what to write in the limitations if it is
 never done:
 
-5. **Temperature is uninstrumented and now demonstrably matters.** Two runs in the
+6. **Temperature is uninstrumented and now demonstrably matters.** Two runs in the
    same 4×4 mode, both described as cold starts, began ~1100 ppm apart (6038 ppm on
    10 Sep, 7139.8 ppm on 11 Sep). Neither logged ambient temperature or power-off
    duration. Deferred because the effect is 0.059 % of the frame period and blocks
@@ -1376,6 +1387,13 @@ Kept so the same errors are not repeated. Each was caught by the student.
 | 33 | Wrote a data loader assuming `glob_data` held the class name as text (matching how the field was documented) | The real npz files store a numeric code in `glob_data` (e.g. `27.0`) with no documented meaning; the class name is only recoverable from the folder path (`dataset_dir/<ClassName>/log__.../npz/`). First real run loaded 162/162 files but **0 usable frames** | Wrote the loader from documentation alone without ever opening a real `.npz` file first; `inspect_npz.py` (written after the failure, not before) would have caught this immediately |
 | 34 | Told the student the FlatHand class was collected at a median distance of 155 mm, based on one sample frame inspected 3 Sep | Full-dataset measurement (15 Sep, all 1,738 FlatHand frames) gives **278.5 mm** — 123 mm off, and enough to reverse the ordering versus Fist (262.5 mm) that the 155 mm figure implied | Generalised a single-frame observation to a per-class fact without checking it against the full dataset, which was already downloaded and available |
 | 35 | Started a live hand-tracking test against a `production_model.keras` trained on 8×8 data while the board was still flashed with the 4×4 firmware left over from the Phase 1 drift experiment | Caught before any prediction was trusted, by counting comma-separated values in a live `F,` line (16, not 64) | Did not re-verify the board's firmware configuration matched the new task's requirements before starting; same root cause as #29 (assumed a prior setting still held) |
+| 36 | Told the student to fix the MCU mismatch by clicking the board-name breadcrumb inside the existing `.ioc` in CubeMX | That workflow creates a brand-new untitled project rather than editing the existing one — confirmed twice by the same "Untitled" project appearing both times it was tried | Assumed a CubeMX workflow without having verified it works the way described in this CubeMX version |
+
+**Real finding behind #36 (not an assistant mistake — a genuine project fact):**
+The `53L8A1_SimpleRanging` project's `.ioc` has always been configured for **STM32F401RETx / NUCLEO-F401RE**, while the physical board (confirmed by a photo of the chip marking) is **STM32F411RET6**. Confirmed via the linker script header: *"Linker script for NUCLEO-F401RE Board embedding STM32F401RETx Device... 96KBytes RAM"*. This has been true since the project was first created and was never the assistant's error to log — it predates this conversation.
+
+**Practical impact, checked before fixing:** RAM actually used throughout Phase 0–2 was ~3 KB, far below even the wrong 96 KB ceiling, so **no measurement in this file was affected**. Fixed 16 Sep 2026 by editing `STM32F401RETX_FLASH.ld` directly (`RAM LENGTH 96K → 128K`), verified against the post-build `.map` file (`Length 0x00020000` = 131,072 B = 128 KB exactly) rather than trusting the source edit alone. Committed as `ac44da5`.
+**Not yet fixed:** the underlying MCU device macro is still F401 throughout the project (only the RAM ceiling was corrected). No functional difference expected since only I2C1/USART2/DMA/GPIO are used (present identically on both parts), but should be corrected properly before Phase 6.5 if a peripheral unique to F411 (e.g. SPI4/5) is ever needed. A sibling file `STM32F401RETX_RAM.ld` (used only for a RAM-execution debug config, never invoked in any build log seen) still says 96 K — deferred, not urgent, since it has never been used.
 
 **Pattern:** answering from memory while presenting it as verified.
 **Countermeasure:** the tagging rule at the top of this file.
@@ -1448,6 +1466,11 @@ single-frame distance estimate (FlatHand 155 mm → true full-dataset median
 p10–p90 band. Once positioned at ~270 mm, every gesture attempted was recognised
 correctly (§5.1c). Tools added: `live_predict.py`, `measure_typical_distance.py`,
 and `train_st_cnn2d.py` extended with `--split production` and `--equalize-train`.
-Next: decide on Phase 5 own-data collection (informed by the hard/easy class split
-and the distance findings) versus further Phase 2 analysis, then Phase 3 embedded
-deployment.*
+Decided to proceed to Phase 3 (embedded deployment) next, per a generated plan
+document. 16 Sep 2026: found and fixed a pre-existing MCU configuration bug — the
+project had been built for STM32F401RE (96 KB RAM) instead of the physical
+STM32F411RE (128 KB RAM), confirmed by a photo of the chip. Fixed the linker
+script, verified via the `.map` file, committed as `ac44da5` (correction log #36).
+No prior measurement was affected. Next: create a separate CubeMX project for
+X-CUBE-AI to convert `production_model.keras`, then integrate the generated C code
+into the existing firmware.*
