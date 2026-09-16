@@ -1,0 +1,325 @@
+{
+  "seed": 42,
+  "classes": [
+    "Fist",
+    "FlatHand",
+    "Dislike",
+    "Like",
+    "Love",
+    "CrossHands",
+    "BreakTime"
+  ],
+  "tensorflow_version": "2.21.0",
+  "n_total_frames": 11061,
+  "dropped_none": 387,
+  "dropped_out_of_range": 0,
+  "subject_independent": {
+    "label": "subject_independent_summary",
+    "equalized": true,
+    "n_folds": 4,
+    "fold_results": [
+      {
+        "label": "subject_independent_fold0_heldout_user1",
+        "n_train": 6477,
+        "n_test": 4584,
+        "epochs_ran": 58,
+        "test_accuracy": 0.6559773087501526,
+        "test_loss": 1.9396947622299194,
+        "confusion_matrix": [
+          [
+            614,
+            54,
+            530,
+            123,
+            13,
+            28,
+            0
+          ],
+          [
+            36,
+            426,
+            104,
+            179,
+            4,
+            68,
+            0
+          ],
+          [
+            149,
+            18,
+            478,
+            18,
+            10,
+            13,
+            67
+          ],
+          [
+            3,
+            97,
+            21,
+            517,
+            0,
+            22,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            343,
+            6,
+            0
+          ],
+          [
+            0,
+            5,
+            0,
+            0,
+            0,
+            316,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            9,
+            0,
+            313
+          ]
+        ],
+        "held_out_user": 1,
+        "n_train_before_equalize": 6477
+      },
+      {
+        "label": "subject_independent_fold1_heldout_user3",
+        "n_train": 6477,
+        "n_test": 2172,
+        "epochs_ran": 59,
+        "test_accuracy": 0.7421731352806091,
+        "test_loss": 0.9599576592445374,
+        "confusion_matrix": [
+          [
+            251,
+            0,
+            52,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            43,
+            231,
+            18,
+            14,
+            0,
+            0,
+            0
+          ],
+          [
+            117,
+            0,
+            190,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            30,
+            4,
+            147,
+            131,
+            0,
+            0,
+            0
+          ],
+          [
+            20,
+            0,
+            0,
+            0,
+            275,
+            9,
+            4
+          ],
+          [
+            0,
+            23,
+            1,
+            1,
+            2,
+            296,
+            0
+          ],
+          [
+            0,
+            0,
+            66,
+            0,
+            3,
+            6,
+            238
+          ]
+        ],
+        "held_out_user": 3,
+        "n_train_before_equalize": 8889
+      },
+      {
+        "label": "subject_independent_fold2_heldout_user4",
+        "n_train": 6477,
+        "n_test": 2171,
+        "epochs_ran": 150,
+        "test_accuracy": 0.9502533674240112,
+        "test_loss": 0.5984092354774475,
+        "confusion_matrix": [
+          [
+            307,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            298,
+            0,
+            6,
+            2,
+            0,
+            0
+          ],
+          [
+            47,
+            1,
+            251,
+            0,
+            2,
+            2,
+            19
+          ],
+          [
+            11,
+            6,
+            0,
+            286,
+            0,
+            2,
+            0
+          ],
+          [
+            0,
+            0,
+            4,
+            0,
+            307,
+            0,
+            1
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            3,
+            302,
+            1
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            312
+          ]
+        ],
+        "held_out_user": 4,
+        "n_train_before_equalize": 8890
+      },
+      {
+        "label": "subject_independent_fold3_heldout_user2",
+        "n_train": 6478,
+        "n_test": 2134,
+        "epochs_ran": 105,
+        "test_accuracy": 0.9254920482635498,
+        "test_loss": 0.5732849836349487,
+        "confusion_matrix": [
+          [
+            250,
+            6,
+            17,
+            20,
+            1,
+            8,
+            0
+          ],
+          [
+            3,
+            299,
+            0,
+            1,
+            1,
+            4,
+            0
+          ],
+          [
+            7,
+            8,
+            287,
+            0,
+            0,
+            0,
+            2
+          ],
+          [
+            12,
+            7,
+            0,
+            284,
+            0,
+            0,
+            0
+          ],
+          [
+            4,
+            11,
+            1,
+            0,
+            285,
+            4,
+            0
+          ],
+          [
+            1,
+            4,
+            0,
+            2,
+            1,
+            308,
+            0
+          ],
+          [
+            0,
+            0,
+            8,
+            0,
+            5,
+            21,
+            262
+          ]
+        ],
+        "held_out_user": 2,
+        "n_train_before_equalize": 8927
+      }
+    ],
+    "mean_accuracy": 0.8184739649295807,
+    "sd_accuracy": 0.14264835664070596
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "base_seed": 42,
+  "n_seeds": 3,
+  "seeds_used": [
+    42,
+    43,
+    44
+  ],
+  "classes": [
+    "Fist",
+    "FlatHand",
+    "Dislike",
+    "Like",
+    "Love",
+    "CrossHands",
+    "BreakTime"
+  ],
+  "tensorflow_version": "2.21.0",
+  "n_total_frames": 11061,
+  "dropped_none": 387,
+  "dropped_out_of_range": 0,
+  "production": {
+    "label": "production_model",
+    "seed": 42,
+    "n_train_total": 11061,
+    "epochs_ran": 35,
+    "final_train_accuracy": 0.9314848184585571,
+    "saved_to": "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\results_phase2_final\\production_model.keras",
+    "note": "ไม่มี held-out test — ดูตัวเลข accuracy จริงจาก subject-independent run แทน (ประมาณการณ์ performance กับคนที่ไม่เคยเห็นมาก่อน)"
+  }
+}

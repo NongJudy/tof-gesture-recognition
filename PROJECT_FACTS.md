@@ -742,14 +742,12 @@ Whichever user is held out, the split is defective:
 | User1 | **fatal** — every `None` frame lands in test; the model never sees the class in training |
 | User2/3/4 | test set contains **zero** `None` frames; the class is never evaluated |
 
-**`None` is not an empty scene.** Inspected 3 Sep — it contains *more* occupied zones
-than `Fist`:
-
-| Class | Median nearest distance | Occupied zones (sample frame) |
-|---|---|---|
-| FlatHand | 155 mm | 53 / 64 |
-| Fist | 262 mm | 16 / 64 |
-| **None** | **307 mm** | **45 / 64** |
+**`None` is not an empty scene.** Inspected 3 Sep with a single sample frame — it
+contains *more* occupied zones than `Fist`. That single-frame comparison used a
+FlatHand figure (155 mm) that turned out to be unrepresentative — see the
+corrected, full-dataset numbers in §5.1c below (measured 15 Sep across all 11,061
+frames): FlatHand's true median is 278.5 mm, not 155 mm. The occupied-zone point
+about `None` (45/64 vs Fist's 16/64) still stands; only the distance figure was wrong.
 
 `None` means *"something is there, but it is not one of the 7 postures"* — an open-set
 reject class. That is why it needs **more** subject diversity than any other class,
@@ -870,6 +868,150 @@ This is re-runnable — do not take it on trust, run it again after any edit.
 Why we did not simply edit ST's `data_loader.py`: it never records which user a frame
 came from, and the advisor's standing instruction is to write our own layer rather than
 adapt vendor demo code (§7 item 2).
+
+## 5.1c Real-hardware deployment test — first live test with an unseen hand (15 Sep 2026)
+
+First end-to-end test: gesture → sensor → trained model → prediction, with a real
+hand the model never saw during training (the student's own — a stand-in for "user 5").
+Full chain: `train_st_cnn2d.py --split production` (trains on all 11,061 frames, no
+held-out set, saves `production_model.keras`) feeding `live_predict.py` (new tool,
+`pc_tools/live_predict.py`), which reads live `F,`/`S,`/`G,` serial lines, applies the
+same preprocessing as training, and reports a majority vote over a 15-frame window.
+
+**Bug caught before it corrupted the test:** the board was still running the 4×4
+firmware config left over from Phase 1 (16 zones per line), while the model requires
+8×8 (64 zones, matching the training data's spatial resolution) — confirmed directly
+by counting comma-separated values in a live `F,` line. Fixed by setting
+`MY_TOF_USE_4X4 = 0` in `my_tof.h`, rebuilding, and reflashing. **Lesson: after any
+Phase 1 experiment that changed firmware config, verify it's back to the config a new
+test actually needs — do not assume.**
+
+**Environment check before testing:** the board was initially propped against a
+corner, so half the sensor's field of view hit a nearby wall (~150–320 mm) while the
+other half hit open ceiling (~1950 mm) — confirmed from a photo. Moved to open space;
+confirmed clear via the minimum distance across a full frame being >1500 mm (>1000 mm
+past the 400 mm threshold that matters), safe for testing.
+
+**Corrected fact — true per-class collection distance (measured 15 Sep, new tool
+`pc_tools/measure_typical_distance.py`, full 11,061-frame dataset, nearest valid zone
+per frame):**
+
+| Class | Median | Mean | p10 | p90 | n |
+|---|---|---|---|---|---|
+| Like | 241.0 mm | 246.0 mm | 168.0 mm | 337.4 mm | 1,580 |
+| Dislike | 257.5 mm | 257.7 mm | 190.0 mm | 323.0 mm | 1,686 |
+| Fist | 262.5 mm | 262.7 mm | 191.0 mm | 334.0 mm | 2,274 |
+| CrossHands | 271.0 mm | 265.6 mm | 190.0 mm | 332.0 mm | 1,266 |
+| Love | 278.0 mm | 272.6 mm | 194.0 mm | 343.0 mm | 1,274 |
+| FlatHand | 278.5 mm | 277.4 mm | 185.0 mm | 356.3 mm | 1,738 |
+| BreakTime | 301.0 mm | 293.7 mm | 235.0 mm | 347.0 mm | 1,243 |
+
+This **supersedes** the misleading single-frame FlatHand figure in TRAP #18 (155 mm).
+All 7 classes cluster in a **240–300 mm** band — ST's volunteers did not use
+meaningfully different distances per posture. **270 mm falls inside the p10–p90 band
+of all 7 classes simultaneously** (checked directly) and is the recommended single
+test distance — no need to vary distance by gesture.
+
+**Live test results, own hand, no prior calibration:**
+
+| Attempt | Distance | Result |
+|---|---|---|
+| FlatHand | ~20 cm | **100% vote agreement, 98–100% confidence, sustained >100 consecutive frames** once the hand settled |
+| Love (single-hand ASL "I love you": thumb+index+pinky extended) | ~20 cm | Consistently misclassified as **FlatHand** (100% agreement, high confidence) — a confusion pair never seen in the ST-4-user subject-independent results, where Love scored 89–98% |
+| Love (two hands pressed together instead) | ~20 cm | Reported accurate by the student |
+| All 7 gestures | **~27 cm (270 mm)**, positioned carefully | **All recognised correctly** — student's own report after switching to the corrected distance |
+
+**Working hypothesis for the Love/FlatHand confusion (not yet confirmed):** at 8×8
+resolution the sensor sees an occupied-zone footprint, not individual fingers. The
+single-hand "I love you" shape (three digits splayed in different directions) may
+produce a spread-out footprint similar to a fully open palm at this resolution — a
+geometric confusion of the same kind already documented for Fist/Dislike/Like/FlatHand
+(§8, ASL M/N/T discussion), not a distance artefact: Love's and FlatHand's own
+training-data median distances are only 0.5 mm apart, so ST's own data already has
+them at essentially the same distance, yet the model still separated them well among
+the original 4 users. The confusion appearing only with an unseen hand suggests it is
+a generalisation-gap effect, consistent with the ~18-point random-vs-subject-independent
+gap already measured (§5.1d below), not a new failure mode.
+
+**Practical conclusion:** hand positioning (distance from sensor) is the dominant
+source of the "sometimes accurate, sometimes not" experience reported during testing.
+Once corrected to ~270 mm, every gesture attempted was recognised correctly with the
+student's own hand. This matters directly for the oral exam: a physical distance guide
+(a 27 cm ruler or card) handed to whoever tests the system live is a low-cost,
+no-advance-calibration-needed way to keep committee-member testing inside the
+distribution the model was actually trained on.
+
+**Tools added, all smoke-tested with synthetic data before being handed off:**
+- `pc_tools/live_predict.py` — live serial → prediction, majority vote, wrong-resolution warning
+- `pc_tools/measure_typical_distance.py` — per-class true distance statistics from real data
+- `train_st_cnn2d.py` extended with `--split production` (trains on all data, saves a deployable `.keras` model) and `--equalize-train` (isolates whether a fold's low accuracy is a data-quantity artefact — see §5.1d)
+
+## 5.1d Phase 2 training results — random split vs subject-independent (15 Sep 2026)
+
+Architecture exactly as ST's (§5.1), only the final Dense layer changed from 8 to 7
+units (the `None` class dropped, TRAP #18). Trained with `pc_tools/train_st_cnn2d.py`
+on the full 11,061-frame public dataset. Every configuration trained **3 times with
+different seeds** (42/43/44) to separate training-run randomness from genuine
+data/subject effects — a single run per fold gave wildly inconsistent numbers on the
+first attempt and was not trustworthy (see correction log, this section informed by
+that failure).
+
+**Random split (reproducing ST's own method, TRAP #8 — shuffle, no subject grouping):**
+
+| Seed | Test accuracy |
+|---|---|
+| 42 | 97.56% |
+| 43 | 96.88% |
+| 44 | 97.29% |
+| **mean** | **97.24% ± 0.34 pp** |
+
+**Subject-independent (leave-one-user-out, 3 seeds per fold):**
+
+| Held-out user | Mean ± SD | Range | n_train |
+|---|---|---|---|
+| User1 | 68.91% ± 3.34 pp | 65.60–72.27% | 6,477 |
+| User3 | 78.31% ± 3.67 pp | 74.08–80.48% | 8,889 |
+| User4 | 81.97% ± **9.47 pp** | 72.50–91.43% | 8,890 |
+| User2 | 89.71% ± 0.61 pp | 89.08–90.30% | 8,927 |
+| **overall** | **79.73% ± 8.63 pp** | — | — |
+
+**Gap vs. random split: 17.51 percentage points** — compare Wang et al. 2023's
+98.47% → 91.04% (a 7.43-point gap). Our gap is **2.36× larger**. Plausible reason:
+only 4 subjects here vs. presumably more diversity in Wang's setup, and static
+posture vs. their dynamic-gesture task may respond differently to subject variation
+— this comparison should be stated carefully in the thesis (see §8, "do not compare
+accuracy numbers across static and dynamic tasks directly").
+
+**Diagnostic: does User1's low score come from less training data, or genuinely
+harder generalisation?** Re-ran subject-independent with `--equalize-train`, which
+subsamples every fold's training set down to the smallest fold's size (6,477 — which
+is User1's own fold, so it was untouched) before training. User1's fold's accuracy
+was unchanged at 65.60% even when User2/3/4's folds lost ~2,400 training frames each.
+**Conclusion: the gap is not primarily a data-quantity artefact** — User1 (and to a
+lesser extent User3) are genuinely harder for the model to generalise to.
+
+**Confusion pattern — reproducible across all 4 folds, not noise:**
+
+| Group | Classes | Behaviour |
+|---|---|---|
+| "Hard" | Fist, FlatHand, Dislike, Like | Confused with each other in every fold's top-5 confusion pairs |
+| "Easy" | Love, CrossHands, BreakTime | 88–100% per-class accuracy in nearly every fold |
+
+Per-user gap between the two groups' average accuracy: User1 38.2 pp, User3 20.1 pp,
+User4 6.8 pp, User2 1.1 pp. **This is the same physical principle already identified
+for ASL M/N/T** (§8): Fist/Dislike/Like differ mainly by thumb position, close to the
+8×8 sensor's spatial resolution limit; FlatHand's presence in the same confused group
+is new information not predicted by that earlier ASL analysis and is not yet fully
+explained — plausibly related to the Love/FlatHand confusion found in the live-hand
+test (§5.1c), both involving spread-out finger silhouettes.
+
+**Tools:** `pc_tools/train_st_cnn2d.py` (`--split random|subject|both|production`,
+`--equalize-train`, `--n-seeds`), `pc_tools/analyze_confusion.py` (prints confusion
+matrices with class names and top confusion pairs from a saved `phase2_results.json`).
+Both smoke-tested with synthetic data matching the real file format before being
+handed off — real npz structure differed from documentation in one place (see
+correction log): `glob_data` is a numeric code, not the class name as text; the
+class name is read from the folder name instead (`dataset_dir/<ClassName>/log__.../npz/`).
 
 ## 5.2 Dynamic-gesture datasets — what exists
 
@@ -1076,27 +1218,40 @@ required.
 
 Next work, in order:
 
-1. **Phase 2 — training.** Loader and splitter are done (§5.1b). Train the ST
-   architecture under both split regimes (random vs subject-independent) and
-   compare — TRAP #8 already flags why subject-independent is the correct one to
-   report.
-2. Set `MY_TOF_TIMING_MODE = 0`, capture F/S/G lines, confirm distances still
-   match the earlier captures and that `G,` carries sensible signal values. Small,
-   no probes needed, can be done any time before or after Phase 2.
+1. ~~**Phase 2 — training.**~~ **DONE 15 Sep 2026.** Random split 97.24% ± 0.34 pp;
+   subject-independent 79.73% ± 8.63 pp (§5.1d). First live hardware test with an
+   unseen hand also done (§5.1c) — all 7 gestures recognised correctly once
+   positioned at the corrected ~270 mm test distance.
+2. ~~Set `MY_TOF_TIMING_MODE = 0`, capture F/S/G lines~~ **DONE 15 Sep 2026** as
+   part of the live-hand test setup (§5.1c) — confirmed `G,` carries sensible,
+   physically consistent signal values (near objects give high signal, far objects
+   low signal) and distances match expectations.
 3. Compare the measured `max_bytes` (from the `T,` line) against the estimates in
-   §3.5's "TO BE TESTED" table — not yet done.
+   §3.5's "TO BE TESTED" table — **still not done**, needs `TIMING_MODE = 1`
+   temporarily (mutually exclusive with item 2's data-mode lines).
+4. **Decide next:** Phase 5 (collect the team's own dataset — more subjects, and
+   possibly redesign the "hard" classes given the Fist/FlatHand/Dislike/Like
+   confusion pattern in §5.1d) vs. Phase 3 (embedded deployment of the current
+   model) vs. further Phase 2 analysis (e.g. investigate why User4's fold has much
+   higher seed-to-seed variance than the other three, §5.1d). Not yet decided.
 
 Open question, **deferred by decision on 11 Sep — see §8.5 D1** for the full
 reasoning, the designed experiment, and what to write in the limitations if it is
 never done:
 
-4. **Temperature is uninstrumented and now demonstrably matters.** Two runs in the
+5. **Temperature is uninstrumented and now demonstrably matters.** Two runs in the
    same 4×4 mode, both described as cold starts, began ~1100 ppm apart (6038 ppm on
    10 Sep, 7139.8 ppm on 11 Sep). Neither logged ambient temperature or power-off
    duration. Deferred because the effect is 0.059 % of the frame period and blocks
    nothing; resume after Phases 2–3. See correction log #31.
 
-Firmware state after Phase 1: `USE_4X4` per experiment, `USE_INT=1`,
+Firmware state after 15 Sep: `USE_4X4 = 0` (8×8, required to match the model's
+input shape), `USE_INT = 1`, `FAST_READ = 1`, `TIMING_MODE = 0` (data mode, `F,`/`S,`/`G,`
+lines active), `MY_TOF_STREAM_STEP` auto-selected by mode, HSE clock. This differs
+from the Phase-1-era state below, which predates today's mode switch.
+
+**Firmware state at the end of Phase 1** (for comparison, no longer current):
+`USE_4X4` per experiment, `USE_INT=1`,
 `FAST_READ=1`, `TIMING_MODE=1`, `DELAY_US=0`, `MY_CAL_ENABLE=0`,
 `MY_TOF_STREAM_STEP` auto-selected by mode, 5 DISABLE macros active, HSE clock.
 
@@ -1218,9 +1373,21 @@ Kept so the same errors are not repeated. Each was caught by the student.
 | 30 | Built H7 predicting a monotonic exponential rise of +700 to +950 ppm | The real curve is three-phase and the net change is **−154.6 ppm** — opposite sign. H7 rejected on all five counts | Extrapolated the curve's shape from the 92-minute window of 10 Sep, which happened to capture only the decay phase and missed the peak at t = 18 min |
 | 31 | Treated "cold start" as a reproducible condition without instrumenting it | Two 4×4 cold starts began 1100 ppm apart (6038 ppm on 10 Sep vs 7139.8 ppm on 11 Sep). Neither run logged ambient temperature or power-off duration, so the cause cannot be determined | Assumed an uncontrolled variable was controlled because it had a name |
 | 32 | Predicted the H6 mode difference would land at **1,000–1,400 ppm** after removing drift | **700.2 ± 11.3 ppm** — 300 ppm below the predicted floor, and corroborated at 698 ppm by the independent period-ratio route. H6's direction held; its magnitude did not | Same root cause as #19 and #30: extrapolated drift linearly across the 28-minute gap between the two mode measurements, when the drift was already known to be non-linear. Logged separately because #19 covers the drift estimate itself, not the mode-difference prediction built on top of it |
+| 33 | Wrote a data loader assuming `glob_data` held the class name as text (matching how the field was documented) | The real npz files store a numeric code in `glob_data` (e.g. `27.0`) with no documented meaning; the class name is only recoverable from the folder path (`dataset_dir/<ClassName>/log__.../npz/`). First real run loaded 162/162 files but **0 usable frames** | Wrote the loader from documentation alone without ever opening a real `.npz` file first; `inspect_npz.py` (written after the failure, not before) would have caught this immediately |
+| 34 | Told the student the FlatHand class was collected at a median distance of 155 mm, based on one sample frame inspected 3 Sep | Full-dataset measurement (15 Sep, all 1,738 FlatHand frames) gives **278.5 mm** — 123 mm off, and enough to reverse the ordering versus Fist (262.5 mm) that the 155 mm figure implied | Generalised a single-frame observation to a per-class fact without checking it against the full dataset, which was already downloaded and available |
+| 35 | Started a live hand-tracking test against a `production_model.keras` trained on 8×8 data while the board was still flashed with the 4×4 firmware left over from the Phase 1 drift experiment | Caught before any prediction was trusted, by counting comma-separated values in a live `F,` line (16, not 64) | Did not re-verify the board's firmware configuration matched the new task's requirements before starting; same root cause as #29 (assumed a prior setting still held) |
 
 **Pattern:** answering from memory while presenting it as verified.
 **Countermeasure:** the tagging rule at the top of this file.
+
+**Fourth pattern, added 15 Sep — trusting a documented data format over the actual
+file.** Errors #33 and #34 both came from treating what PROJECT_FACTS *said* about a
+data format as equivalent to what the file *actually contains*. Both were only caught
+because a smoke test or a fresh full measurement was run against the real data instead
+of trusting the write-up. **Countermeasure:** for anything about a data file's exact
+structure or a per-class statistic, prefer re-deriving it from the file directly over
+citing an earlier note, especially when that note was based on a small sample.
+
 
 **Second pattern, added 3 Sep — inventing explanations for discrepancies.**
 When two numbers disagree, the only acceptable moves are: open the primary source, or
@@ -1263,4 +1430,24 @@ inactive, in case it is revived. Practical effect: Phase 2 proceeds on the 7-cla
 `ST_VL53L8CX_handposture_dataset` already downloaded and verified (§5.1), which
 satisfies the "≤10 classes" constraint. No dataset collection, hardware purchase,
 or coordination with the classmate's board should happen under the superseded
-instruction unless the main advisor re-confirms it. Next: Phase 2 training.*
+instruction unless the main advisor re-confirms it.*
+
+*Phase 2 (same day): trained the ST architecture (7 classes) with 3 seeds per
+configuration. Random split (reproducing ST's own method) 97.24% ± 0.34 pp;
+subject-independent (leave-one-user-out) 79.73% ± 8.63 pp — a 17.51-point gap, 2.36×
+larger than Wang et al. 2023's. A reproducible confusion pattern separates
+Fist/FlatHand/Dislike/Like ("hard", thumb-position-limited) from
+Love/CrossHands/BreakTime ("easy") across all 4 folds (§5.1d). First live
+hardware test followed, with the student's own hand (an unseen "user 5"): caught
+a firmware mode mismatch (board still in 4×4 from Phase 1) before it corrupted the
+test; found and corrected a data-loader bug (`glob_data` is a numeric code, not
+class text — class name comes from the folder path instead); corrected an earlier
+single-frame distance estimate (FlatHand 155 mm → true full-dataset median
+278.5 mm); and established that all 7 classes were collected at similar distances
+(240–300 mm), with 270 mm as a single practical test distance inside every class's
+p10–p90 band. Once positioned at ~270 mm, every gesture attempted was recognised
+correctly (§5.1c). Tools added: `live_predict.py`, `measure_typical_distance.py`,
+and `train_st_cnn2d.py` extended with `--split production` and `--equalize-train`.
+Next: decide on Phase 5 own-data collection (informed by the hard/easy class split
+and the distance findings) versus further Phase 2 analysis, then Phase 3 embedded
+deployment.*
