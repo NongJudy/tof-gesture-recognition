@@ -33,4 +33,15 @@ uint8_t my_tof_read_frame(void);
 /* ส่งเฟรมล่าสุดออก UART เป็น CSV */
 void my_tof_send_frame(void);
 
+/* ===== ส่วนต่อ AI inference ===== */
+
+/* สร้าง+init เครือข่าย AI ครั้งเดียวตอนเริ่มโปรแกรม คืนค่า 0 = สำเร็จ */
+uint8_t my_ai_init(void);
+
+/* ประมวลผลเฟรมล่าสุดผ่านโมเดล เก็บผลไว้ในตัวแปร static ภายใน */
+void my_tof_infer(void);
+
+/* ส่งผลทำนายล่าสุดออก UART */
+void my_tof_send_prediction(void);
+
 #endif /* MY_TOF_H */

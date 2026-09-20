@@ -5,13 +5,14 @@
 
 #include "my_tof.h"
 #include <stdio.h>
-#include "53l8a1_ranging_sensor.h"    // API ของบอร์ด X-NUCLEO-53L8A1
-#include "stm32f4xx_nucleo.h"         // BSP_COM_Init
-#include "app_tof_pin_conf.h"         // ขา PWR_EN / LPn
-#include "vl53l8cx.h"                 // VL53L8CX_Object_t
-#include "vl53l8cx_api.h"             // vl53l8cx_get_ranging_data, streamcount
+#include "53l8a1_ranging_sensor.h"
+#include "stm32f4xx_nucleo.h"
+#include "app_tof_pin_conf.h"
+#include "vl53l8cx.h"
+#include "vl53l8cx_api.h"
+#include "network.h"
+#include "network_data.h"
 
-/* ===== ฟังก์ชันจาก my_platform.c ===== */
 extern uint8_t  my_platform_i2c_probe(uint16_t address);
 extern void     my_platform_dwt_init(void);
 extern uint32_t my_platform_cycles(void);
@@ -19,116 +20,66 @@ extern uint32_t my_platform_cycles_to_us(uint32_t cycles);
 extern void     my_platform_stats_reset(void);
 extern volatile uint32_t g_rd_calls, g_rd_bytes, g_rd_cycles;
 extern volatile uint32_t g_rd_max_bytes, g_rd_max_cycles;
-
-/* ===== ฟังก์ชันจาก my_uart.c ===== */
 extern void my_uart_init(void);
-
-/* ===== ธงจากขา INT (ตั้งใน HAL_GPIO_EXTI_Callback) ===== */
 extern volatile uint8_t ToF_EventDetected;
-
-/* ===== object ของเซ็นเซอร์ที่ BSP สร้างไว้ (53l8a1_ranging_sensor.c:42) ===== */
 extern void *VL53L8A1_RANGING_SENSOR_CompObj[];
 
-/* ===== สวิตช์เปรียบเทียบ ===== */
-#define MY_TOF_USE_INT       1   // 1 = รอขา INT | 0 = วน poll
-#define MY_TOF_TIMING_MODE    0  // 1 = บรรทัด T | 0 = บรรทัด F + S + G
-
-/* ===== สวิตช์อ่านตรง =====
-   1 = เรียก vl53l8cx_get_ranging_data() ตรง ยิง I2C ครั้งเดียว
-   0 = ผ่าน BSP ยิง I2C 4 ครั้ง (2 ครั้งซ้ำซ้อน: check_data_ready + get_resolution)
-   ★ โหมด 1 ได้ target_status แบบดิบ (5 = ถูกต้อง) ตรงกับชุดข้อมูลของ ST */
+#define MY_TOF_USE_INT       1
+#define MY_TOF_TIMING_MODE    0
 #define MY_TOF_FAST_READ     1
-
-/* ===== การทดลองหน่วงเวลา (จบแล้ว) =====
-   ผล: คาบ = 23.24 + 0.981 x หน่วง   (R^2 = 0.9997, 6 จุด) */
 #define MY_TOF_DELAY_US      0
 
-/* ===== จำนวนที่ streamcount ควรเพิ่มต่อหนึ่งเฟรม =====
-   streamcount ของเซ็นเซอร์นับ "การวัดภายใน" ไม่ใช่ "เฟรมที่ส่งออก"
-   (vl53l8cx_api.h:276 ระบุว่า auto-incremented at each range)
-
-   วัดจริง 10 ก.ย. 2026 พบว่า
-     โหมด 4x4 : delta = 1 คงที่ทุกเฟรม
-     โหมด 8x8 : delta = 4 คงที่ทุกเฟรม ไม่แกว่งเลย
-   ถ้าเป็นเฟรมหายจริง ค่าต้องแกว่งไม่แน่นอน
-   การที่คงที่เป๊ะแสดงว่าเป็นพฤติกรรมปกติของเซ็นเซอร์
-
-   ก่อนแก้จุดนี้ โค้ดนับ skip เพิ่มทีละ 3 ทุกเฟรมในโหมด 8x8
-   ทั้งที่ไม่มีเฟรมหายจริงแม้แต่เฟรมเดียว */
 #if MY_TOF_USE_4X4
   #define MY_TOF_STREAM_STEP   1U
 #else
   #define MY_TOF_STREAM_STEP   4U
 #endif
 
-/* ===== เวลาเก็บแสงต่อการวัด (ms) ต้องน้อยกว่าคาบ ===== */
 #if MY_TOF_USE_4X4
   #define MY_TIMING_BUDGET   (10U)
 #else
   #define MY_TIMING_BUDGET   (30U)
 #endif
 
-#define MY_RATE_WINDOW       (60U)   // เฉลี่ยอัตราเฟรมทุกกี่เฟรม
+#define MY_RATE_WINDOW       (60U)
 
-/* ===== หน่วยความจำของเรา ===== */
-static uint16_t g_distance_mm[MY_TOF_ZONES];  // ระยะทาง (mm)
-static uint8_t  g_status[MY_TOF_ZONES];       // สถานะแต่ละช่อง
-static uint32_t g_signal[MY_TOF_ZONES];       // ความแรงแสงสะท้อนต่อ SPAD
+static uint16_t g_distance_mm[MY_TOF_ZONES];
+static uint8_t  g_status[MY_TOF_ZONES];
+static uint32_t g_signal[MY_TOF_ZONES];
 static uint32_t g_frame_count = 0;
 
-/* ===== ค่าที่วัดได้ของเฟรมล่าสุด ===== */
 static uint32_t m_rd_calls = 0, m_rd_bytes = 0, m_rd_us = 0;
 static uint32_t m_max_bytes = 0, m_max_us = 0, m_uart_us = 0;
-
-/* ===== ตัววัดอัตราเฟรมจริง ===== */
 static uint32_t m_rate_t0 = 0, m_rate_n = 0;
 
-/* ===== ★ ตัวตรวจสอบว่าทุกเฟรมเป็นข้อมูลใหม่จริง ★
-   เซ็นเซอร์มีตัวนับของตัวเองชื่อ streamcount (vl53l8cx_api.h บรรทัด 277)
-   ที่บวกขึ้นเองทุกครั้งที่วัดเสร็จ 1 รอบ  เราแค่อ่านมาเทียบ
-
-   จำเป็นเพราะเราตัด vl53l8cx_check_data_ready ออกไปตอนทำโหมดอ่านตรง
-   ซึ่งเป็นฟังก์ชันที่เดิมคอยเช็คว่า "ข้อมูลนี้ใหม่จริงไหม"
-   ถ้าไม่ตรวจ อาจอ่านข้อมูลชุดเดิมซ้ำแล้วนับเป็นเฟรมใหม่ ทำให้ตัวเลขหลอกตา
-
-   ผลต่างที่ควรได้คือ 1 เสมอ
-     delta = 0  -> อ่านข้อมูลเดิมซ้ำ (นับ dup)
-     delta > 1  -> เซ็นเซอร์ผลิตเร็วกว่าที่เราอ่าน มีเฟรมหาย (นับ skip)
-   streamcount เป็น uint8_t วนกลับที่ 255 จึงต้องคำนวณผลต่างแบบ 8 บิต */
 static VL53L8CX_Configuration *m_dev = NULL;
 static uint8_t  m_stream = 0, m_stream_prev = 0, m_stream_delta = 0;
 static uint32_t m_dup = 0, m_skip = 0;
-static uint32_t m_anomaly = 0;      /* delta ที่ไม่ใช่พหุคูณของ MY_TOF_STREAM_STEP */
+static uint32_t m_anomaly = 0;
 
-/* ===== ตัวรับข้อมูลดิบ ===== */
 #if MY_TOF_FAST_READ
-static VL53L8CX_ResultsData    RawData;   // โครงสร้างของ ULD โดยตรง
+static VL53L8CX_ResultsData    RawData;
 #else
-static RANGING_SENSOR_Result_t Result;    // โครงสร้างของ BSP
+static RANGING_SENSOR_Result_t Result;
 #endif
 
 
-/* =====================================================================
- *  my_tof_init : เตรียมระบบให้พร้อมวัด
- * ===================================================================== */
 uint8_t my_tof_init(void)
 {
     int32_t status;
     RANGING_SENSOR_ProfileConfig_t Profile;
 
-    /* --- 0. เปิด UART และรีเซ็ตเซ็นเซอร์ --- */
     BSP_COM_Init(COM1);
-    HAL_Delay(100);              // รอ UART ตั้งตัว ไม่งั้นตัวอักษรแรกหาย
+    HAL_Delay(100);
 
-    my_uart_init();              // UART แบบ interrupt
-    my_platform_dwt_init();      // ตัวนับ cycle ของ Cortex-M4
+    my_uart_init();
+    my_platform_dwt_init();
 
     HAL_GPIO_WritePin(VL53L8A1_PWR_EN_C_PORT, VL53L8A1_PWR_EN_C_PIN, GPIO_PIN_RESET);
     HAL_Delay(2);
     HAL_GPIO_WritePin(VL53L8A1_PWR_EN_C_PORT, VL53L8A1_PWR_EN_C_PIN, GPIO_PIN_SET);
     HAL_Delay(2);
 
-    /* --- 1. เริ่มต้นเซ็นเซอร์ --- */
     status = VL53L8A1_RANGING_SENSOR_Init(VL53L8A1_DEV_CENTER);
     if (status != BSP_ERROR_NONE)
     {
@@ -136,14 +87,12 @@ uint8_t my_tof_init(void)
         return 1;
     }
 
-    /* --- T1: เช็ค ACK ที่ 0x52 (ต้องอยู่หลัง Init) --- */
     if (my_platform_i2c_probe(0x52) == 0) {
         printf("T1 PASS: sensor ACK at 0x52\r\n");
     } else {
         printf("T1 FAIL: no ACK at 0x52\r\n");
     }
 
-    /* --- เก็บที่อยู่ของ Dev ไว้ครั้งเดียว ใช้ทั้งการอ่านตรงและอ่าน streamcount --- */
     {
         VL53L8CX_Object_t *pObj =
             (VL53L8CX_Object_t *)VL53L8A1_RANGING_SENSOR_CompObj[VL53L8A1_DEV_CENTER];
@@ -155,7 +104,6 @@ uint8_t my_tof_init(void)
         m_dev = &pObj->Dev;
     }
 
-    /* --- 2. ตั้งค่าโปรไฟล์ --- */
 #if MY_TOF_USE_4X4
     Profile.RangingProfile = RS_PROFILE_4x4_CONTINUOUS;
 #else
@@ -163,12 +111,11 @@ uint8_t my_tof_init(void)
 #endif
     Profile.TimingBudget   = MY_TIMING_BUDGET;
     Profile.Frequency      = MY_TOF_FREQ_HZ;
-    Profile.EnableAmbient  = 0;    // ไม่ใช้แสงรอบข้าง
-    Profile.EnableSignal   = 1;    // ใช้ความแรงสัญญาณ (โมเดล ST ใช้ 8x8x2)
+    Profile.EnableAmbient  = 0;
+    Profile.EnableSignal   = 1;
 
     VL53L8A1_RANGING_SENSOR_ConfigProfile(VL53L8A1_DEV_CENTER, &Profile);
 
-    /* --- 3. เริ่มวัด --- */
 #if MY_TOF_USE_INT
     ToF_EventDetected = 0;
     status = VL53L8A1_RANGING_SENSOR_Start(VL53L8A1_DEV_CENTER,
@@ -183,7 +130,6 @@ uint8_t my_tof_init(void)
         return 1;
     }
 
-    /* บอกเงื่อนไขที่ใช้ ให้ไฟล์ log อธิบายตัวเองได้ */
     printf("MY_TOF: init OK (%s @ %d Hz, budget %d ms, %s, delay %d us, "
            "signal ON, read=%s, status=%s, clk=HSE)\r\n",
 #if MY_TOF_USE_4X4
@@ -208,7 +154,6 @@ uint8_t my_tof_init(void)
     printf("CLK,%lu\r\n", (unsigned long)SystemCoreClock);
 
 #if MY_TOF_TIMING_MODE
-    /* หัวตาราง: 4 ช่องท้ายคือตัวตรวจสอบความถูกต้องของการนับเฟรม */
     printf("H,frame,rd_calls,rd_bytes,rd_us,max_bytes,max_us,uart_us,"
            "stream,delta,dup,skip,anomaly\r\n");
 #endif
@@ -218,15 +163,11 @@ uint8_t my_tof_init(void)
 }
 
 
-/* =====================================================================
- *  my_tof_read_frame : อ่าน 1 เฟรมเข้าหน่วยความจำของเรา
- * ===================================================================== */
 uint8_t my_tof_read_frame(void)
 {
     uint32_t i;
 
 #if MY_TOF_USE_INT
-    /* ยังไม่มีสัญญาณจากขา INT -> ออกทันที ไม่ยิง I2C เลย */
     if (ToF_EventDetected == 0U)
     {
         return 0;
@@ -238,7 +179,6 @@ uint8_t my_tof_read_frame(void)
 
 #if MY_TOF_FAST_READ
 
-    /* --- เรียก ULD ตรง ยิง I2C ครั้งเดียว --- */
     if (vl53l8cx_get_ranging_data(m_dev, &RawData) != VL53L8CX_STATUS_OK)
     {
         return 0;
@@ -250,20 +190,17 @@ uint8_t my_tof_read_frame(void)
     m_max_bytes = g_rd_max_bytes;
     m_max_us    = my_platform_cycles_to_us(g_rd_max_cycles);
 
-    /* คัดลอกเฉพาะเป้าแรกของแต่ละช่อง (j = 0)
-       ULD เก็บแบบ [NB_TARGET_PER_ZONE * ช่อง + เป้าที่] */
     for (i = 0; i < MY_TOF_ZONES; i++)
     {
         uint32_t k = (uint32_t)VL53L8CX_NB_TARGET_PER_ZONE * i;
 
         g_distance_mm[i] = (uint16_t)RawData.distance_mm[k];
-        g_status[i]      = RawData.target_status[k];   // ค่าดิบ 5 = ถูกต้อง
+        g_status[i]      = RawData.target_status[k];
         g_signal[i]      = RawData.signal_per_spad[k];
     }
 
 #else
 
-    /* --- ผ่าน BSP ยิง I2C 4 ครั้ง --- */
     if (VL53L8A1_RANGING_SENSOR_GetDistance(VL53L8A1_DEV_CENTER, &Result)
             != BSP_ERROR_NONE)
     {
@@ -279,35 +216,28 @@ uint8_t my_tof_read_frame(void)
     for (i = 0; i < Result.NumberOfZones && i < MY_TOF_ZONES; i++)
     {
         g_distance_mm[i] = (uint16_t)Result.ZoneResult[i].Distance[0];
-        g_status[i]      = (uint8_t)Result.ZoneResult[i].Status[0];  // แปลงแล้ว 0 = ถูกต้อง
+        g_status[i]      = (uint8_t)Result.ZoneResult[i].Status[0];
         g_signal[i]      = (uint32_t)Result.ZoneResult[i].Signal[0];
     }
 
 #endif
 
-    /* ===== ★ ตรวจว่าเฟรมนี้เป็นข้อมูลใหม่จริงหรือไม่ =====
-       อ่านตัวนับของเซ็นเซอร์ที่ ULD เพิ่งอัปเดตให้ (vl53l8cx_api.c บรรทัด 754)
-       การลบแบบ uint8_t จัดการการวนกลับที่ 255 -> 0 ให้เองโดยอัตโนมัติ */
     m_stream_prev  = m_stream;
     m_stream       = m_dev->streamcount;
     m_stream_delta = (uint8_t)(m_stream - m_stream_prev);
 
-    if (g_frame_count > 1U)          /* ข้าม 2 เฟรมแรก เพราะ ULD ตั้งค่าเริ่มต้นเป็น 255 */
+    if (g_frame_count > 1U)
     {
         if (m_stream_delta == 0U)
         {
-            m_dup++;                 /* อ่านข้อมูลเดิมซ้ำ */
+            m_dup++;
         }
         else if ((m_stream_delta % MY_TOF_STREAM_STEP) != 0U)
         {
-            /* ค่าที่ได้ไม่ใช่พหุคูณของค่าที่ควรเป็น
-               แปลว่าสมมติฐานเรื่อง STREAM_STEP ผิด หรือมีอะไรผิดปกติ
-               นับแยกไว้ ไม่ปนกับ skip เพื่อไม่ให้ตีความผิด */
             m_anomaly++;
         }
         else if (m_stream_delta > MY_TOF_STREAM_STEP)
         {
-            /* เฟรมที่อ่านไม่ทันจริง */
             m_skip += (uint32_t)(m_stream_delta / MY_TOF_STREAM_STEP) - 1U;
         }
     }
@@ -317,9 +247,6 @@ uint8_t my_tof_read_frame(void)
 }
 
 
-/* =====================================================================
- *  my_test_delay_us : หน่วงเวลาละเอียด ใช้เฉพาะการทดลอง
- * ===================================================================== */
 #if MY_TOF_DELAY_US > 0
 static void my_test_delay_us(uint32_t us)
 {
@@ -330,9 +257,6 @@ static void my_test_delay_us(uint32_t us)
 #endif
 
 
-/* =====================================================================
- *  my_tof_send_frame : ส่งข้อมูลออก UART
- * ===================================================================== */
 void my_tof_send_frame(void)
 {
     uint32_t t0, t1, now, ms;
@@ -356,21 +280,18 @@ void my_tof_send_frame(void)
     uint32_t i;
     t0 = my_platform_cycles();
 
-    /* บรรทัดที่ 1 - ระยะทาง (mm) */
     printf("F,%lu", (unsigned long)g_frame_count);
     for (i = 0; i < MY_TOF_ZONES; i++) {
         printf(",%u", (unsigned int)g_distance_mm[i]);
     }
     printf("\r\n");
 
-    /* บรรทัดที่ 2 - ค่าสถานะ (ความหมายดูจากบรรทัด init OK) */
     printf("S,%lu", (unsigned long)g_frame_count);
     for (i = 0; i < MY_TOF_ZONES; i++) {
         printf(",%u", (unsigned int)g_status[i]);
     }
     printf("\r\n");
 
-    /* บรรทัดที่ 3 - ความแรงแสงสะท้อนต่อ SPAD (ช่องที่ 2 ของ input 8x8x2) */
     printf("G,%lu", (unsigned long)g_frame_count);
     for (i = 0; i < MY_TOF_ZONES; i++) {
         printf(",%lu", (unsigned long)g_signal[i]);
@@ -382,7 +303,6 @@ void my_tof_send_frame(void)
 
 #endif
 
-    /* ===== วัดอัตราเฟรมจริง  R,<เฟรม>,<จำนวน>,<ms>,<dup>,<skip> ===== */
     m_rate_n++;
     if (m_rate_n >= MY_RATE_WINDOW)
     {
@@ -399,4 +319,251 @@ void my_tof_send_frame(void)
 #if MY_TOF_DELAY_US > 0
     my_test_delay_us(MY_TOF_DELAY_US);
 #endif
+}
+
+
+/* ============================================================
+ *  ส่วนต่อ AI inference — Phase 3
+ * ============================================================ */
+
+static ai_handle g_network = AI_HANDLE_NULL;
+
+AI_ALIGNED(4)
+static ai_u8 g_activations[AI_NETWORK_DATA_ACTIVATIONS_SIZE];
+
+AI_ALIGNED(4)
+static ai_float g_ai_in[AI_NETWORK_IN_1_SIZE];
+AI_ALIGNED(4)
+static ai_float g_ai_out[AI_NETWORK_OUT_1_SIZE];
+
+static int8_t g_pred_class = -1;
+static float  g_pred_conf  = 0.0f;
+
+/* ★ ลำดับนี้ตรงกับ CLASSES ใน train_st_cnn2d.py (สคริปต์ที่เทรน production_model.keras
+   จริง) — ยืนยันแล้ว 21 ก.ย. 2026 ห้ามสลับกลับไปใช้ลำดับ sort ตามเลข label ของ ST */
+static const char *g_class_names[7] = {
+    "Fist", "FlatHand", "Dislike", "Like", "Love", "CrossHands", "BreakTime"
+};
+
+#define MY_AI_DIST_MEAN         (295.0f)
+#define MY_AI_DIST_STD          (196.0f)
+#define MY_AI_SIG_MEAN          (281.0f)
+#define MY_AI_SIG_STD           (452.0f)
+#define MY_AI_DEFAULT_DISTANCE  (4000.0f)
+#define MY_AI_DEFAULT_SIGNAL    (0.0f)
+#define MY_AI_MAX_DISTANCE_MM   (400.0f)
+#define MY_AI_MIN_DISTANCE_MM   (100.0f)
+#define MY_AI_BACKGROUND_MM     (120.0f)
+#define MY_AI_VALID_STATUS_1    (5U)
+#define MY_AI_VALID_STATUS_2    (9U)
+
+#define MY_AI_VOTE_WINDOW  (15)
+static int8_t  g_vote_buf[MY_AI_VOTE_WINDOW];
+static uint8_t g_vote_idx = 0;
+static uint8_t g_vote_filled_count = 0;
+static int8_t  g_last_stable = -2;
+
+/* ===== ★ Phase 3, ส่วนสุดท้าย: วัด 4-stage latency (DWT, เหมือน Phase 1) =====
+   วัดเฉพาะตอน inference รันจริง (มีมือในระยะ) สะสมแล้วพิมพ์ค่าเฉลี่ยทุก
+   MY_LAT_WINDOW ครั้ง กัน UART ท่วมตอนรันสดๆ */
+#define MY_LAT_WINDOW (30U)
+static uint32_t g_lat_count = 0;
+static uint32_t g_lat_sum_sensor_us = 0;
+static uint32_t g_lat_sum_pre_us    = 0;
+static uint32_t g_lat_sum_inf_us    = 0;
+static uint32_t g_lat_sum_dec_us    = 0;
+
+uint8_t my_ai_init(void)
+{
+    ai_handle act_addr[] = { g_activations };
+
+    ai_error err = ai_network_create_and_init(&g_network, act_addr, NULL);
+    if (err.type != AI_ERROR_NONE)
+    {
+        printf("ERROR: ai_network_create_and_init failed (type=%d code=%d)\r\n",
+               (int)err.type, (int)err.code);
+        return 1;
+    }
+
+    printf("MY_AI: network ready (in=%d floats, out=%d classes, "
+           "activations=%d bytes, vote_window=%d, lat_window=%d)\r\n",
+           AI_NETWORK_IN_1_SIZE, AI_NETWORK_OUT_1_SIZE,
+           AI_NETWORK_DATA_ACTIVATIONS_SIZE, MY_AI_VOTE_WINDOW, MY_LAT_WINDOW);
+    return 0;
+}
+
+void my_tof_infer(void)
+{
+    uint32_t i;
+    float hand_dist;
+    uint8_t valid[MY_TOF_ZONES];
+
+    for (i = 0; i < MY_TOF_ZONES; i++)
+    {
+        valid[i] = (g_status[i] == MY_AI_VALID_STATUS_1 ||
+                    g_status[i] == MY_AI_VALID_STATUS_2) ? 1U : 0U;
+    }
+
+    hand_dist = MY_AI_DEFAULT_DISTANCE;
+    for (i = 0; i < MY_TOF_ZONES; i++)
+    {
+        if (valid[i] && (float)g_distance_mm[i] < hand_dist)
+        {
+            hand_dist = (float)g_distance_mm[i];
+        }
+    }
+
+    if (hand_dist < MY_AI_MIN_DISTANCE_MM || hand_dist > MY_AI_MAX_DISTANCE_MM)
+    {
+        g_pred_class = -1;
+        g_pred_conf  = 0.0f;
+    }
+    else
+    {
+        uint32_t t0, t1, t2, t3;
+
+        t0 = my_platform_cycles();
+
+        for (i = 0; i < MY_TOF_ZONES; i++)
+        {
+            float dist_mm  = (float)g_distance_mm[i];
+            float sig      = (float)g_signal[i];
+            uint8_t zone_ok = valid[i] && (dist_mm <= hand_dist + MY_AI_BACKGROUND_MM);
+
+            float dist_out = zone_ok ? dist_mm : MY_AI_DEFAULT_DISTANCE;
+            float sig_out  = zone_ok ? sig     : MY_AI_DEFAULT_SIGNAL;
+
+            g_ai_in[i * 2 + 0] = (dist_out - MY_AI_DIST_MEAN) / MY_AI_DIST_STD;
+            g_ai_in[i * 2 + 1] = (sig_out  - MY_AI_SIG_MEAN)  / MY_AI_SIG_STD;
+        }
+
+        t1 = my_platform_cycles();   /* จบ preprocess */
+
+        {
+            ai_buffer *ai_input  = ai_network_inputs_get(g_network, NULL);
+            ai_buffer *ai_output = ai_network_outputs_get(g_network, NULL);
+
+            ai_input[0].data  = AI_HANDLE_PTR(g_ai_in);
+            ai_output[0].data = AI_HANDLE_PTR(g_ai_out);
+
+            ai_i32 batches = ai_network_run(g_network, ai_input, ai_output);
+
+            t2 = my_platform_cycles();   /* จบ inference */
+
+            if (batches != 1)
+            {
+                ai_error err = ai_network_get_error(g_network);
+                printf("ERROR: ai_network_run failed (type=%d code=%d)\r\n",
+                       (int)err.type, (int)err.code);
+                g_pred_class = -1;
+                g_pred_conf  = 0.0f;
+            }
+            else
+            {
+                int8_t best_idx = 0;
+                float  best_val = g_ai_out[0];
+                for (i = 1; i < AI_NETWORK_OUT_1_SIZE; i++)
+                {
+                    if (g_ai_out[i] > best_val)
+                    {
+                        best_val = g_ai_out[i];
+                        best_idx = (int8_t)i;
+                    }
+                }
+                g_pred_class = best_idx;
+                g_pred_conf  = best_val;
+
+                t3 = my_platform_cycles();   /* จบ decision (argmax) */
+
+                /* เก็บสถิติ latency เฉพาะตอน inference สำเร็จจริง */
+                g_lat_sum_sensor_us += m_rd_us;
+                g_lat_sum_pre_us    += my_platform_cycles_to_us(t1 - t0);
+                g_lat_sum_inf_us    += my_platform_cycles_to_us(t2 - t1);
+                g_lat_sum_dec_us    += my_platform_cycles_to_us(t3 - t2);
+                g_lat_count++;
+
+                if (g_lat_count >= MY_LAT_WINDOW)
+                {
+                    uint32_t sensor_avg = g_lat_sum_sensor_us / g_lat_count;
+                    uint32_t pre_avg    = g_lat_sum_pre_us    / g_lat_count;
+                    uint32_t inf_avg    = g_lat_sum_inf_us    / g_lat_count;
+                    uint32_t dec_avg    = g_lat_sum_dec_us    / g_lat_count;
+                    uint32_t total_avg  = sensor_avg + pre_avg + inf_avg + dec_avg;
+
+                    printf("LAT,%lu,n=%lu,sensor_us=%lu,preprocess_us=%lu,"
+                           "inference_us=%lu,decision_us=%lu,total_us=%lu\r\n",
+                           (unsigned long)g_frame_count, (unsigned long)g_lat_count,
+                           (unsigned long)sensor_avg, (unsigned long)pre_avg,
+                           (unsigned long)inf_avg, (unsigned long)dec_avg,
+                           (unsigned long)total_avg);
+
+                    g_lat_count = 0;
+                    g_lat_sum_sensor_us = 0;
+                    g_lat_sum_pre_us    = 0;
+                    g_lat_sum_inf_us    = 0;
+                    g_lat_sum_dec_us    = 0;
+                }
+            }
+        }
+    }
+
+    g_vote_buf[g_vote_idx] = g_pred_class;
+    g_vote_idx = (uint8_t)((g_vote_idx + 1) % MY_AI_VOTE_WINDOW);
+    if (g_vote_filled_count < MY_AI_VOTE_WINDOW)
+    {
+        g_vote_filled_count++;
+    }
+}
+
+void my_tof_send_prediction(void)
+{
+    int16_t votes[7] = { 0 };
+    uint8_t none_votes = 0;
+    uint8_t i;
+    int8_t  best;
+    int16_t best_count;
+
+    if (g_vote_filled_count < MY_AI_VOTE_WINDOW)
+    {
+        return;
+    }
+
+    for (i = 0; i < MY_AI_VOTE_WINDOW; i++)
+    {
+        int8_t c = g_vote_buf[i];
+        if (c < 0) { none_votes++; }
+        else       { votes[c]++; }
+    }
+
+    best       = -1;
+    best_count = (int16_t)none_votes;
+    for (i = 0; i < 7; i++)
+    {
+        if (votes[i] > best_count)
+        {
+            best_count = votes[i];
+            best = (int8_t)i;
+        }
+    }
+
+    if (best != g_last_stable)
+    {
+        g_last_stable = best;
+
+        printf("VOTE,%lu,none=%u,Fist=%d,FlatHand=%d,Dislike=%d,Like=%d,"
+               "Love=%d,CrossHands=%d,BreakTime=%d\r\n",
+               (unsigned long)g_frame_count, none_votes,
+               votes[0], votes[1], votes[2], votes[3],
+               votes[4], votes[5], votes[6]);
+
+        if (best < 0)
+        {
+            printf("P,%lu,None\r\n", (unsigned long)g_frame_count);
+        }
+        else
+        {
+            printf("P,%lu,%s\r\n", (unsigned long)g_frame_count,
+                   g_class_names[best]);
+        }
+    }
 }

@@ -93,6 +93,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   my_tof_init();             // เรียก init ของเราเอง  (เรียก my_uart_init() ให้ด้วย)
+  my_ai_init();               // สร้าง+init เครือข่าย AI ครั้งเดียว
 
   /* =====================================================================
      โหมดสอบเทียบ logic analyzer  (my_calib.h : MY_CAL_ENABLE)
@@ -141,11 +142,13 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-    /* อ่านค่าเข้าหน่วยความจำ MCU แล้วส่งออก UART */
-    if (my_tof_read_frame())   // ถ้าอ่านได้ข้อมูลใหม่
-    {
-      my_tof_send_frame();     // ส่งออกเป็น CSV
-    }
+	    /* อ่านค่าเข้าหน่วยความจำ MCU แล้วส่งออก UART */
+	    if (my_tof_read_frame())   // ถ้าอ่านได้ข้อมูลใหม่
+	    {
+	      my_tof_send_frame();     // ส่งออกเป็น CSV
+	      my_tof_infer();          // ประมวลผลผ่านโมเดล AI
+	      my_tof_send_prediction();// ส่งผลทำนายออก UART
+	    }
 
   }
   /* USER CODE END 3 */
