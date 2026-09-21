@@ -1169,7 +1169,7 @@ comparison, but a different ecosystem and a port would be substantial work).
 | 2 | Sensor/MCU serialisation model, slope 0.981, R² 0.9997 | not reported anywhere | ✅ done |
 | 3 | 8-condition timing matrix, one variable per step, both modes | not reported anywhere | ✅ done |
 | 3a | Mode-dependent effect of the same optimisation (headroom vs throughput) | not reported anywhere | ✅ done |
-| 3b | Working on-board inference + 4-stage latency breakdown | — | ⬜ |
+| 3b | Working on-board inference + 4-stage latency breakdown | none of the 5 papers report a 4-stage on-device breakdown | ✅ done |
 | 4 | Subject-independent + cross-dataset evaluation | ST did not do this — **verified in their source**, `data_loader.py:184-191` shuffles and splits with no user grouping | 🟡 loader + verification done 3 Sep; splitter and training still to write |
 | 5 | First dynamic-gesture dataset for VL53L8CX | nothing comparable exists | ⬜ |
 
@@ -1179,7 +1179,7 @@ comparison, but a different ecosystem and a port would be substantial work).
 Phase 0    lock the data format + clock + measurement matrix               DONE 2 Sep
 Phase 1    logic analyser verification                                     1 day   (waiting on hw)
 Phase 2    train on ST's dataset; subject-independent split                1 wk
-Phase 3    deploy AI to board, instrument 4 stages                         1 wk    🏁 system complete
+Phase 3    deploy AI to board, instrument 4 stages                         DONE 21 Sep
 Phase 4    closed-loop check: our board's data → ST's model                2-3 d
 Phase 5    collect our own static dataset (4-6 people)                     2-3 wk
 Phase 5.5  train on our data, cross-dataset comparison, deploy             1-2 wk
@@ -1389,6 +1389,9 @@ Kept so the same errors are not repeated. Each was caught by the student.
 | 35 | Started a live hand-tracking test against a `production_model.keras` trained on 8×8 data while the board was still flashed with the 4×4 firmware left over from the Phase 1 drift experiment | Caught before any prediction was trusted, by counting comma-separated values in a live `F,` line (16, not 64) | Did not re-verify the board's firmware configuration matched the new task's requirements before starting; same root cause as #29 (assumed a prior setting still held) |
 | 36 | Told the student to fix the MCU mismatch by clicking the board-name breadcrumb inside the existing `.ioc` in CubeMX | That workflow creates a brand-new untitled project rather than editing the existing one — confirmed twice by the same "Untitled" project appearing both times it was tried | Assumed a CubeMX workflow without having verified it works the way described in this CubeMX version |
 
+| 37 | Called `ai_network_create_and_init()` passing the weights buffer's own pointer as the weights argument | X-CUBE-AI's generated runtime already knows the weights' location from the embedded `s_network_weights_array_u64[]` table; passing an address manually corrupted the pointer table. Every inference output was NaN | Assumed the same manual-buffer-management pattern used for activations (which genuinely does need a caller-supplied buffer) also applied to weights, without checking the generated `network_data.h` API, which expects `NULL` when weights are compiled in |
+| 38 | Wrote `g_class_names[]` in `my_tof.c` ordered by ST's numeric posture label (matching `st_dataset.py`'s sort order) | `train_st_cnn2d.py` — the script that actually produced `production_model.keras` — defines `CLASSES` in a different, non-numeric order. The two scripts serve different purposes and were never meant to share an ordering. On-device predictions were computing the correct class index throughout, but printing the wrong label for it | Copied a class-ordering convention from a data-analysis script instead of the training script that owns the model's output layer, and did not cross-check until a live test (`live_predict.py`, which does use `train_st_cnn2d.py`'s order) gave a different answer than the board for the same gesture |
+
 **Real finding behind #36 (not an assistant mistake — a genuine project fact):**
 The `53L8A1_SimpleRanging` project's `.ioc` has always been configured for **STM32F401RETx / NUCLEO-F401RE**, while the physical board (confirmed by a photo of the chip marking) is **STM32F411RET6**. Confirmed via the linker script header: *"Linker script for NUCLEO-F401RE Board embedding STM32F401RETx Device... 96KBytes RAM"*. This has been true since the project was first created and was never the assistant's error to log — it predates this conversation.
 
@@ -1474,3 +1477,25 @@ script, verified via the `.map` file, committed as `ac44da5` (correction log #36
 No prior measurement was affected. Next: create a separate CubeMX project for
 X-CUBE-AI to convert `production_model.keras`, then integrate the generated C code
 into the existing firmware.*
+
+*Phase 3 (21 Sep 2026): embedded deployment complete — the trained model now runs
+inference on the MCU itself, no PC in the loop. Converted `production_model.keras`
+to `.tflite` (Keras 3.x's format is incompatible with X-CUBE-AI 10.2.1's parser),
+generated C code via X-CUBE-AI, and validated 100% agreement with the desktop model
+on 50 held-out samples before touching hardware. Integrated into the firmware with
+majority-vote decoding over a 15-frame window. Found and fixed two bugs before the
+system worked correctly (correction log #37–38): a weights-pointer bug that made
+every inference output NaN, and a class-label ordering bug that displayed the wrong
+gesture name despite the underlying prediction being correct — caught by
+cross-checking against `live_predict.py` running the same model on the same live
+sensor data on the PC. Confirmed correct with real-hand testing on the board
+(CrossHands: 14/15 vote agreement once the hand was held still). Measured 4-stage
+on-device latency via DWT cycle counting (same method as Phase 1): sensor read
+13,254 µs (80.0%), preprocessing 126 µs (0.8%), inference 3,197 µs (19.3%),
+decision/argmax 2 µs (0.01%); total 16,580 µs per frame, about 25% of the 66.17 ms
+frame budget at 15 Hz — not the system's bottleneck. Firmware footprint: Flash
+166.2 KiB / 512 KiB (32.5%), RAM 18.9 KiB / 128 KiB (14.8%) via
+`arm-none-eabi-size`, leaving headroom for a temporal model in Phase 6.5 (Boner et
+al. 2022's comparable TCN design targets <100 KB for this MCU class). Committed and
+pushed to GitHub (`c88c0d2`). Next: Phase 4 (closed-loop check — our board's own
+sensor data through ST's model).*
