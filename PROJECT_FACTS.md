@@ -37,6 +37,7 @@ setup or a conversation the assistant cannot observe directly
 |---|---|
 | Phases 0–3 | ✅ complete (Phase 3 deployed on-board inference, 21 Sep 2026) |
 | Phase 4 pre-flight check 6 (21-trial live test) | ✅ done 24–25 Sep 2026, 21/21 correct **with per-posture hand positioning** (§5.1e-R) |
+| **Phase 4 first result (User 5 only)** | per-frame **66.3 %**, vote 67.6 %; five postures 70–100 %, **Like 0.3 % (→ Dislike), Love 0.0 % (→ BreakTime)**; P2 and H9 do not hold; n = 1, descriptive. Diagnosis: our hand sits ~1–2 rows off ST's position; shifting recovers Like/Love but breaks Dislike → position-sensitive model, not orientation (§5.1e-E) |
 | Phase 4 data collection (`collect_own_data.py` v4) | 🟡 **Chin (User 5) done 9 Oct 2026:** main set 14/14 in `data\phase4` + extra day 1 14/14 in `data\phase4_extra` (§5.1e-P step 4). **Remaining:** Chin extra day 2 (another day), friend (User 6) main + extras, then the evaluation script |
 | Collection protocol | guided arming: hand must hold inside **220–320 mm for 3 s** before recording starts; take discarded if the hand leaves the window for **8 consecutive frames**; no frame-level filtering (§5.1e-A8) |
 | Collection volume | 2 takes/posture/subject in `data\phase4` (H8 test set, as registered) **+ 4 extra takes/posture** in `data\phase4_extra` for Phase 5.5 training only, **split 2 + 2 over two different days** (§5.1e-A7) |
@@ -1302,6 +1303,98 @@ unknown. Consistent with the §5.1c working hypothesis.
 text files). Nothing was saved to the repo. If these are wanted as thesis figures, re-run a few trials
 and screenshot (§5.1e-P, figures list).
 
+### 5.1e-E First H8 evaluation — User 5 (Chin) only, 9 Oct 2026 23:40
+
+**Run:** `pc_tools\evaluate_phase4.py` on `data\phase4` (14 takes, User 5), model
+`results_phase2_final\production_model.keras` sha256 `f4be0cda420393d0…`, preprocessing
+`pc_tools\st_dataset.py` (ST rules, 100–400 mm); cross-check against the training code's
+preprocessing: same within float32 rounding (max 3.1e-07, normalised units). Manifest: 14 rows,
+missing frames 0, brief out-of-window 0, files match. Output folder
+`results_phase4\eval_20261009_234054\`. `[MEASURED]` (report text pasted by Chin, this session).
+
+| Metric | User 5 |
+|---|---|
+| Frames evaluated | 4,220 of 4,220 (none removed by the 100–400 mm rule) |
+| **Per-frame accuracy** | **66.3 %** (chance 14.3 %; ST LOSO per-user 68.9–89.7 %) |
+| 15-frame vote accuracy | 67.6 % |
+| Per-take accuracy | mean 66.3 %, SD 44.6, range 0.0–100.0 (n = 14 takes) — bimodal, not noise |
+| Recall | Fist 97.8 · FlatHand 99.3 · Dislike 96.2 · **Like 0.3** · **Love 0.0** · CrossHands 70.1 · BreakTime 100.0 |
+| Top confusions | **Love → BreakTime 601** · **Like → Dislike 572** · CrossHands → FlatHand 180 · Like → Fist 30 · Dislike → Fist 23 |
+
+**Against the pre-registration (n = 1 subject — descriptive only, no conclusion):**
+- P1 (60–85 %): inside the band (66.3 %), below the central guess of 72 %.
+- P2 (Love/CrossHands/BreakTime recall > the other four): **does not hold** (56.7 vs 73.4 %).
+- P3 (vote ≥ frame): holds, but barely (+1.3 pp) — the errors are systematic, so voting cannot fix them.
+- H9 (Fist/FlatHand/Dislike/Like are the four lowest): **does not hold** — the lowest are Love, Like,
+  CrossHands, Dislike.
+- Decision rule: 60–68.9 % → "check preprocessing and orientation first". Preprocessing is checked
+  (two independent implementations agree; labels verified against `glob_data`; every frame inside
+  220–320 mm). Orientation/position is the open item.
+
+**What the pattern suggests (hypotheses, not findings):** the error is concentrated in two postures
+and is almost total for each — not a general degradation. That matches the position sensitivity
+documented in §5.1e-R/§5.1f: the deployed model (Flatten, no global pooling) recognises a posture
+only at the positions it saw in ST's data, and Chin collected at his **natural** position (A2).
+- **Love:** Chin's natural Love puts the heart's centre over the sensor (A5). On 24–25 Sep that
+  position was "unstable / wrong" but the wrong label was not logged; it is now measured: **BreakTime,
+  601 of 601 frames**. Chin's earlier guess (FlatHand) is **not** supported.
+- **Like:** correct 3/3 on 24–25 Sep with per-posture positioning, now 0.3 % at the natural position,
+  almost all → Dislike. Like/Dislike are vertical mirror images, but Dislike itself is 96 % correct,
+  so a simple vertical flip of the sensor cannot explain it (a flip would also turn Dislike into Like).
+- To separate "position" from "orientation" without new data: compare the per-class hand footprint
+  (mean distance/valid-zone map) of our takes with ST's, and test the model on spatially shifted /
+  flipped copies of our frames. Not done yet.
+- **n = 1.** The friend (User 6, naive) is needed before saying anything about transfer. Phase 5.5
+  (training on pooled data that includes our natural positions) is the expected remedy — to be
+  tested, not assumed.
+
+**Diagnosis run 9 Oct 2026 23:56 (`pc_tools\diagnose_position.py`, output
+`results_phase4\diag_20261009_235613\`; ST data at `C:\ds\ST_VL53L8CX_handposture_dataset`) `[MEASURED]`:**
+
+Hand centroid (row | col on the stored 8×8 grid, row 0 = first row as stored — physical "up" not verified):
+
+| Posture | ST, range over 4 users | User 5 | Outside ST range |
+|---|---|---|---|
+| Fist | 4.54–5.59 \| 2.54–3.96 | 4.06 \| 2.61 | row |
+| FlatHand | 3.89–4.52 \| 3.29–3.62 | 3.45 \| 2.43 | row, col |
+| Dislike | 3.82–4.54 \| 3.03–4.13 | 3.94 \| 3.48 | no |
+| Like | 4.64–5.29 \| 2.82–3.93 | 3.55 \| 2.42 | row, col |
+| Love | 4.29–4.96 \| 3.36–3.49 | 2.55 \| 3.49 | row |
+| CrossHands | 4.50–4.70 \| 3.14–3.54 | 3.28 \| 3.47 | row |
+| BreakTime | 3.47–4.27 \| 3.55–3.87 | 3.14 \| 3.57 | row |
+
+Accuracy of User 5 frames after transforming them (exploratory; best transform chosen after seeing data):
+
+| Transform | Fist | FlatHand | Dislike | Like | Love | CrossHands | BreakTime | Overall |
+|---|---|---|---|---|---|---|---|---|
+| none | 97.8 | 99.3 | 96.2 | 0.3 | 0.0 | 70.1 | 100.0 | 66.3 |
+| shift 2 rows "down" (dy=+2) | 90.4 | 44.8 | 0.5 | 82.1 | 69.9 | 100.0 | 100.0 | 69.7 |
+| flip up-down | 0.0 | 100.0 | 55.0 | 99.2 | 56.8 | 100.0 | 0.0 | 58.7 |
+| rotate 180 | 0.3 | 100.0 | 44.5 | 100.0 | 41.7 | 100.0 | 0.0 | 55.2 |
+| flip left-right | 100.0 | 77.6 | 100.0 | 3.6 | 0.0 | 99.2 | 100.0 | 68.6 |
+
+**Reading (n = 1, diagnostic, not a result):**
+- Our hand sits **systematically ~1–2 rows nearer row 0 than ST's** in 6 of 7 postures (Dislike is the
+  only one inside ST's range). Columns mostly overlap.
+- Moving our frames 2 rows toward ST's position recovers **Like (0.3 → 82 %) and Love (0 → 70 %)** but
+  breaks **Dislike (96 → 0.5 %)** and FlatHand (99 → 45 %). The model's Like/Dislike decision therefore
+  depends strongly on **where** the hand mass sits vertically, not only on its shape: in ST's data Like
+  sits lower (4.64–5.29) than Dislike (3.82–4.54); our Like (3.55) sits where ST's Dislike does. Our
+  Love (2.55) sits nearer ST's BreakTime rows than ST's Love rows.
+- **Orientation is not the explanation:** flipping up-down or rotating 180° fixes Like but destroys
+  Fist and BreakTime (→ 0 %). Left-right flip changes little, as expected from the training-time
+  horizontal-flip augmentation (sanity check).
+- **Preprocessing is not the explanation** (two implementations agree, §5.1e-E above).
+- **Working hypothesis for the report:** the transfer failure for Like/Love is a **hand-position
+  distribution shift** combined with a **position-sensitive model** (Flatten, no pooling, §5.1f), not a
+  VL53L8CA-vs-CX sensor difference. Must be checked on the friend (User 6, naive) before it is stated.
+- **Not yet checked:** what physically produces the offset (hand height vs sensor aim vs ST's forearm
+  entering the bottom rows) — look at `footprint.png`; whether row 0 is physically "up" on our mount.
+- **Implication for Phase 5.5 (to pre-register before training):** add random spatial-shift
+  augmentation (±1–2 zones) and include our data; predict that Like/Love recall rises without Dislike
+  collapsing. Keeping ST's architecture keeps the comparison fair; global pooling is an alternative
+  that changes the architecture and would need to be reported as such.
+
 ### 5.1e-A Amendments after registration — dated, not merged silently into the text above
 
 **A1 — Subject pool fixed at n = 2 (Chin stated 24 Sep 2026 `[STUDENT]`): "only 2 people, no way
@@ -2094,6 +2187,7 @@ Kept so the same errors are not repeated. Each was caught by the student.
 | 47 | Wrote `collect_own_data.py` assuming `reset_input_buffer()` empties everything, and tested it only on simulated serial data | On the board (8 Oct dry run) 1–2 frames from before Enter survived the reset and became the first frames of the next take ("missing" 291 / 3683 frames, FlatHand starting at Fist's 217/215 mm). Fixed by a 0.5 s drain plus dropping leading frames before a frame-number gap; v4 records from the same stream as arming, so the issue cannot recur. The assistant also predicted the stale frames would look like "no hand" — wrong, they came from the previous posture | A fake serial port only reproduces the behaviour you already imagined — dry-run on hardware before trusting a data-collection script |
 | 48 | First script version treated any answer other than `y` as "skip this take" | Chin typed `ัyy` with the Thai keyboard active and a Fist take was silently lost. Now: y/r/s with Thai-key equivalents (ั/พ/ห), unknown answers re-asked | Designed a destructive default for a typo-prone prompt |
 | 49 | Gave `findstr /n "HOLD_S = 3.0" <file>` to check the file version | Without `/c:`, findstr treats each space-separated word as an OR search, so it printed ~200 lines; correct form `findstr /n /c:"HOLD_S = 3.0" <file>`. The output still confirmed the version (line 104), 9 Oct 2026 | Gave a Windows command from memory without checking its quoting semantics |
+| 50 | First `evaluate_phase4.py` loaded `st_dataset.py` with `importlib` without registering it in `sys.modules`; `@dataclass` + `from __future__ import annotations` then crashed (`'NoneType' object has no attribute '__dict__'`) on Chin's PC, 9 Oct 2026 | Fixed by `sys.modules[name] = mod` before `exec_module`. The local test had used a trimmed copy of `st_dataset.py` without the dataclass, so it could not reproduce the crash; the test now includes it | Tested against a trimmed copy instead of the real file — same family as #47 (simulation only reproduces what you put in) |
 
 **Real finding behind #36 (not an assistant mistake — a genuine project fact):**
 The `53L8A1_SimpleRanging` project's `.ioc` has always been configured for **STM32F401RETx / NUCLEO-F401RE**, while the physical board (confirmed by a photo of the chip marking) is **STM32F411RET6**. Confirmed via the linker script header: *"Linker script for NUCLEO-F401RE Board embedding STM32F401RETx Device... 96KBytes RAM"*. This has been true since the project was first created and was never the assistant's error to log — it predates this conversation.
@@ -2319,3 +2413,14 @@ registered H8 test set (2 takes) is unchanged. NUCLEO external-power options fro
 in `data\phase4_extra` (finished 23:11, 0 discarded). A7 revised: extras split 2 + 2 over two days.
 Report screenshots user5_1/2/5 captured. Remaining Phase 4: friend (User 6), Chin extra day 2,
 evaluation script.*
+
+*Last updated: 2026-10-09 23:50 · **First H8 number (User 5 only, n = 1): 66.3 % per-frame** with the
+deployed model; errors concentrated in Like (→ Dislike) and Love (→ BreakTime), consistent with the
+position-sensitivity finding; preprocessing verified by two independent implementations (§5.1e-E).
+`evaluate_phase4.py` written and fixed once (§9 #50). Next: hand-footprint comparison ours vs ST,
+friend's collection.*
+
+*Last updated: 2026-10-10 00:05 · Position diagnosis (§5.1e-E): systematic ~1–2-row vertical offset
+between Chin's natural hand position and ST's; shift test recovers Like/Love but breaks Dislike;
+flips rule out orientation. Working hypothesis: position distribution shift + position-sensitive model.
+Phase 5.5 idea to pre-register: spatial-shift augmentation.*

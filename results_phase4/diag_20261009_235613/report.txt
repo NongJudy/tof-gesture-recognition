@@ -1,0 +1,26 @@
+══════════════════════════════════════════════════════════════════
+  Position / orientation diagnosis  ·  User5 vs ST users User1, User2, User3, User4
+══════════════════════════════════════════════════════════════════
+  1) Hand centroid (row, col) on the 8×8 grid — row 0 = top, col 0 = left as stored
+     posture    ST range of 4 users (row | col)     User5           outside ST range?
+     Fist       4.54–5.59 | 2.54–3.96            4.06 | 2.61    row 
+     FlatHand   3.89–4.52 | 3.29–3.62            3.45 | 2.43    row col
+     Dislike    3.82–4.54 | 3.03–4.13            3.94 | 3.48    no
+     Like       4.64–5.29 | 2.82–3.93            3.55 | 2.42    row col
+     Love       4.29–4.96 | 3.36–3.49            2.55 | 3.49    row 
+     CrossHands 4.50–4.70 | 3.14–3.54            3.28 | 3.47    row 
+     BreakTime  3.47–4.27 | 3.55–3.87            3.14 | 3.57    row 
+
+  2) Accuracy of User5 frames after transforming them (exploratory)
+     transform                   Fist  FlatHand   Dislike      Like      Love CrossHand BreakTime   overall
+     shift dy=+0 dx=+0           97.8      99.3      96.2       0.3       0.0      70.1     100.0      66.3
+     flip up-down                 0.0     100.0      55.0      99.2      56.8     100.0       0.0      58.7
+     shift dy=+2 dx=+0           90.4      44.8       0.5      82.1      69.9     100.0     100.0      69.7
+     rotate 180                   0.3     100.0      44.5     100.0      41.7     100.0       0.0      55.2
+     shift dy=+2 dx=-1           97.0      71.5       0.7      98.7       9.0      37.5      91.4      58.0
+     shift dy=+2 dx=-2           97.8       0.2       0.7      98.7       8.3       0.0      92.4      42.6
+     shift dy=+2 dx=+2           66.8      70.1       0.5      96.0       0.0      99.8      86.2      60.0
+     flip left-right            100.0      77.6     100.0       3.6       0.0      99.2     100.0      68.6
+     (first row = no change; then the 6 transforms that help Love+Like most; then flips)
+  n = 1 subject — diagnosis only. Best shift is chosen after seeing the data: do not report it as accuracy.
+══════════════════════════════════════════════════════════════════

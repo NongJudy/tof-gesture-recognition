@@ -1,0 +1,15 @@
+user,class,take,file,n_raw,n_eval,frame_acc,vote_acc,median_nearest_mm,most_common_pred
+User5,BreakTime,1,log__20261009_213454__User5__take1.npz,301,301,100.00,100.00,272.0,BreakTime
+User5,BreakTime,2,log__20261009_213543__User5__take2.npz,302,302,100.00,100.00,270.0,BreakTime
+User5,CrossHands,1,log__20261009_213042__User5__take1.npz,301,301,67.11,68.64,281.0,CrossHands
+User5,CrossHands,2,log__20261009_213121__User5__take2.npz,302,302,73.18,80.90,268.0,CrossHands
+User5,Dislike,1,log__20261009_212248__User5__take1.npz,301,301,100.00,100.00,273.0,Dislike
+User5,Dislike,2,log__20261009_212318__User5__take2.npz,301,301,92.36,100.00,276.0,Dislike
+User5,Fist,1,log__20261009_211138__User5__take1.npz,301,301,95.68,97.56,275.0,Fist
+User5,Fist,2,log__20261009_211422__User5__take2.npz,302,302,100.00,100.00,271.0,Fist
+User5,FlatHand,1,log__20261009_211709__User5__take1.npz,302,302,98.68,100.00,273.0,FlatHand
+User5,FlatHand,2,log__20261009_211754__User5__take2.npz,301,301,100.00,100.00,274.0,FlatHand
+User5,Like,1,log__20261009_212428__User5__take1.npz,302,302,0.66,0.00,276.0,Dislike
+User5,Like,2,log__20261009_212518__User5__take2.npz,302,302,0.00,0.00,270.5,Dislike
+User5,Love,1,log__20261009_212735__User5__take1.npz,301,301,0.00,0.00,279.0,BreakTime
+User5,Love,2,log__20261009_212843__User5__take2.npz,301,301,0.00,0.00,270.0,BreakTime
