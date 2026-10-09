@@ -1,0 +1,3 @@
+saved_at,user,class,take,n_frames,missing_frames,stale_dropped,incomplete,frac_in_range,median_nearest_mm,first_frame,last_frame,minutes_since_poweron,fw_note,seconds,warnings,file
+2026-10-08T19:41:02,5,Fist,1,75,0,0,1,1.0,199.0,61386,61460,nan,,5.0,ระยะมัธยฐาน 199 มม. ห่างเป้า 270 มม. เกิน ±50,data\phase4_dryrun2\Fist\log__20261008_194102__User5__take1\npz\log__20261008_194102__User5__take1.npz
+2026-10-08T19:42:39,5,FlatHand,1,75,0,0,1,1.0,257.0,64218,64292,nan,,5.0,,data\phase4_dryrun2\FlatHand\log__20261008_194239__User5__take1\npz\log__20261008_194239__User5__take1.npz

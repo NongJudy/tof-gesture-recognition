@@ -1,0 +1,2 @@
+saved_at,user,class,take,n_frames,missing_frames,incomplete,frac_in_range,median_nearest_mm,first_frame,last_frame,minutes_since_poweron,fw_note,seconds,warnings,file
+2026-10-08T18:43:49,5,FlatHand,1,76,3683,1,1.0,244.0,7178,10936,nan,,5.0,,data\phase4_dryrunk\FlatHand\log__20261008_184349__User5__take1\npz\log__20261008_184349__User5__take1.npz
