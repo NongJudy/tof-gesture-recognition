@@ -37,7 +37,8 @@ setup or a conversation the assistant cannot observe directly
 |---|---|
 | Phases 0–3 | ✅ complete (Phase 3 deployed on-board inference, 21 Sep 2026) |
 | Phase 4 pre-flight check 6 (21-trial live test) | ✅ done 24–25 Sep 2026, 21/21 correct **with per-posture hand positioning** (§5.1e-R) |
-| **Phase 4 first result (User 5 only)** | per-frame **66.3 %**, vote 67.6 %; five postures 70–100 %, **Like 0.3 % (→ Dislike), Love 0.0 % (→ BreakTime)**; P2 and H9 do not hold; n = 1, descriptive. Diagnosis: our hand sits ~1–2 rows off ST's position; shifting recovers Like/Love but breaks Dislike → position-sensitive model, not orientation (§5.1e-E) |
+| **Phase 4 first result (User 5 only)** | per-frame **66.3 %**, vote 67.6 %; five postures 70–100 %, **Like 0.3 % (→ Dislike), Love 0.0 % (→ BreakTime)**; P2 and H9 do not hold; n = 1, descriptive. Diagnosis: our hand sits ~1–2 rows off ST's position (§5.1e-E). **Revised 10 Oct: Love's 0 % is now attributed mainly to a validation-split bug in Phase 2 that starved Love (§5.1g-R, §9 #51); the deployed model and the Phase 2 LOSO numbers must be re-made** |
+| Phase 5.5a (shift augmentation) | **negative**: −12.1 pp vs retrained baseline, paired over 3 seeds (§5.1g-R); not adopted |
 | Phase 4 data collection (`collect_own_data.py` v4) | 🟡 **Chin (User 5) done 9 Oct 2026:** main set 14/14 in `data\phase4` + extra day 1 14/14 in `data\phase4_extra` (§5.1e-P step 4). **Remaining:** Chin extra day 2 (another day), friend (User 6) main + extras, then the evaluation script |
 | Collection protocol | guided arming: hand must hold inside **220–320 mm for 3 s** before recording starts; take discarded if the hand leaves the window for **8 consecutive frames**; no frame-level filtering (§5.1e-A8) |
 | Collection volume | 2 takes/posture/subject in `data\phase4` (H8 test set, as registered) **+ 4 extra takes/posture** in `data\phase4_extra` for Phase 5.5 training only, **split 2 + 2 over two different days** (§5.1e-A7) |
@@ -1385,6 +1386,9 @@ Accuracy of User 5 frames after transforming them (exploratory; best transform c
   Fist and BreakTime (→ 0 %). Left-right flip changes little, as expected from the training-time
   horizontal-flip augmentation (sanity check).
 - **Preprocessing is not the explanation** (two implementations agree, §5.1e-E above).
+- *Revised 10 Oct 2026 (§5.1g-R): for **Love** this is superseded — correctly-trained baselines get Love
+  92–100 % on the same frames; the deployed model's Love failure is attributed mainly to the Phase 2
+  validation-split bug (§9 #51). The position offset itself is still measured and real.*
 - **Working hypothesis for the report:** the transfer failure for Like/Love is a **hand-position
   distribution shift** combined with a **position-sensitive model** (Flatten, no pooling, §5.1f), not a
   VL53L8CA-vs-CX sensor difference. Must be checked on the friend (User 6, naive) before it is stated.
@@ -1573,6 +1577,114 @@ defence, the presenter performs the demo.
 **Open check (not run):** do ST's own users show per-class position offsets? Proposed: for each
 class and user in ST's data, the mean (row, col) of the nearest valid zone. If ST's Love already sits
 off-centre, the "edge" position is ST's convention; if not, it is specific to our setup.
+
+## 5.1g Phase 5.5a — shift-augmentation ablation: PRE-REGISTRATION (written 10 Oct 2026 00:15, before any run)
+
+**Question:** does random spatial-shift augmentation **alone** (no data from our board in training)
+fix the Like/Love failure on User 5 found in §5.1e-E? This separates "make the model position-robust"
+from "show the model our hand positions" (the latter is Phase 5.5 proper, after the friend's data).
+
+| Item | Setting |
+|---|---|
+| Independent variable | training augmentation: **baseline** (random horizontal flip only, as in `train_st_cnn2d.py`) vs **shift** (same flip + random shift dy, dx ∈ {−2…+2} zones, vacated zones filled with background = distance 4000 / signal 0 before normalisation) |
+| Training data | ST public dataset, 4 users, 7 classes (None dropped), loaded with `train_st_cnn2d.load_dataset()` — identical preprocessing to the deployed model |
+| Architecture / optimiser | `train_st_cnn2d.build_model()` unchanged (Conv2D 8 → MaxPool → Dropout 0.2 → Flatten → Dense 32 → Dense 7; Adam 0.01; batch 32; early stopping on val loss, patience 30, max 1000 epochs) |
+| Augmentation form | static: each training frame copied **K = 5** times, each copy with its own random flip (both arms) and own random shift (shift arm only) — both arms see the same number of samples per epoch |
+| Validation | the same random 10 % of ST frames in both arms (seeded), un-augmented; used only for early stopping. *Differs from production, which used Keras' last-10 % split — so the baseline arm is re-trained here rather than borrowed from the deployed model.* |
+| Test set | `data\phase4`, User 5 only, preprocessed with `st_dataset` exactly as in §5.1e-E. **Never used for training, early stopping or model choice.** `phase4_extra` is not used. |
+| Seeds | 42, 43, 44 per arm (3 runs each, 6 models) — report mean ± SD over seeds |
+| Metrics | User 5 per-frame accuracy, 15-frame vote accuracy, per-class recall (Like, Love, Dislike in focus), confusion pairs |
+
+**Predictions (Claude, written before running; Chin had none of his own):**
+- **P4:** shift-arm mean Like recall > 30 % (baseline arm expected near 0 %, like the deployed model).
+- **P5:** shift-arm mean Love recall > 30 %.
+- **P6:** shift-arm mean Dislike recall stays ≥ 70 % (the shift test in §5.1e-E showed moving frames can
+  break Dislike; augmentation should teach the model not to rely on position).
+- **P7:** shift-arm mean per-frame accuracy exceeds the baseline arm by ≥ 5 pp.
+- **Sanity check S1:** baseline-arm accuracy on User 5 should land near the deployed model's 66.3 %
+  (±10 pp). If not, the re-training pipeline itself changes results and that must be explained first.
+- Subjective confidence: P7 ~65 %; P4 ~50 %; P6 ~60 %. Main risk on record: at 8×8 the thumb
+  direction may carry too little shape information — removing the position cue could then leave Like
+  and Dislike **both** near 50 % instead of fixing Like.
+- **Interpretation limits:** n = 1 test subject; seeds give training variance only, not subject variance.
+  Frames are correlated, so no frame-level significance test is reported. A positive result says
+  "shift augmentation helps for this subject", not "for new users".
+- **Deliverable rule (Rule 6):** if P7 holds, shift augmentation becomes part of the Phase 5.5 training
+  recipe (with our data added) and is then evaluated by 6-subject LOSO; if it fails, Phase 5.5 proceeds
+  without it and this run is reported as a negative ablation.
+
+### 5.1g-R Result — run 10 Oct 2026 00:15–00:33 (`results_phase55a\run_20261010_001458\`) `[MEASURED]`
+
+ST training frames 11,061 (9,955 train × 5 copies, 1,106 val); test User 5, 4,220 frames; settings
+exactly as pre-registered.
+
+| Seed | baseline acc | shift acc | baseline Like / Love / Dislike | shift Like / Love / Dislike |
+|---|---|---|---|---|
+| 42 | 83.3 | 73.4 | 6.6 / 100.0 / 100.0 | 21.9 / 86.2 / 100.0 |
+| 43 | 92.7 | 83.6 | 69.9 / 92.5 / 100.0 | 46.2 / 100.0 / 79.4 |
+| 44 | 76.6 | 59.4 | 22.8 / 100.0 / 100.0 | 9.6 / 57.0 / 79.6 |
+| **mean ± SD** | **84.2 ± 8.1** | **72.1 ± 12.1** | 33.1 ± 32.8 / 97.5 ± 4.3 / 100 ± 0 | 25.9 ± 18.6 / 81.1 ± 22.0 / 86.3 ± 11.8 |
+
+Shift recall for Fist fell to 42.1 ± 22.9 (baseline 90.4 ± 7.1).
+**Paired by seed** (same seed, same flips, same validation split in both arms): shift − baseline =
+−9.9, −9.1, −17.2 pp; mean **−12.1 pp**, paired t(2) = −4.68, p = 0.043 (two-sided). n = 3 seeds on
+one test subject — this is training-run variability only, not evidence about other people.
+
+Checks: **S1 NO** (baseline 84.2 % vs deployed 66.3 %, outside ±10) · P4 no (25.9 %) · P5 yes (81.1 %) ·
+P6 yes (86.3 %) · **P7 no (−12.1 pp)**. Per the deliverable rule: shift augmentation (static, ±2 zones,
+K = 5) is **not** adopted for Phase 5.5; report as a negative ablation. Do not re-tune the shift size
+after seeing this (a new pre-registration would be needed). A plausible reason, untested: ±2 zones
+is a quarter of the 8×8 field and destroys position cues that are genuinely informative (Fist dropped).
+
+**S1 failure → a bug in Phase 2 found (§9 #51):** the retrained baselines differ from the deployed model
+mainly in Love (92.5–100 % vs 0 %). The two recipes differ in the validation split.
+`train_st_cnn2d.py` passes `validation_split=0.1` to `model.fit()`; Keras takes the validation set
+from the **last** 10 % of the arrays **before** shuffling — **confirmed 10 Oct 2026 on Chin's PC** (Keras 3.15.1, `keras\src\trainers\data_adapters\array_slicing.py`, `train_validation_split`: *"Split arrays into train and validation subsets in deterministic order. The last part of data will become validation data."*; `split_at = floor(batch_dim × (1 − validation_split))`).
+`train_st_cnn2d.load_dataset()` reads `sorted(rglob("*.npz"))`, i.e. class folders in alphabetical
+order — BreakTime, CrossHands, Dislike, Fist, FlatHand, Like, **Love** — so the last 10 %
+(≈1,106 of 11,061 frames) is almost all **Love** (Love has 1,274 frames, §5.1). Consequences, to be
+verified:
+- the deployed `production_model.keras` trained on only ≈170 Love frames, and its early stopping
+  watched a validation set that was ≈100 % Love → plausibly why Love = 0 % on User 5;
+- the Phase 2 subject-independent runs (79.73 %, §5.1d) used the same `validation_split` on
+  index-ordered training folds → Love was starved there too; **the H8 baseline numbers are affected**;
+- the random-split runs were not affected (`train_test_split` shuffles first).
+**§5.1e-E's "position" explanation for Love is therefore withdrawn as the main explanation**; Like's
+failure is seed-dependent (6.6–69.9 % across correctly-trained baselines) and remains open.
+**Next:** (1) ~~confirm Keras' behaviour~~ done, confirmed; (2) fix `train_st_cnn2d.py` (shuffled or stratified validation split), pre-register, re-run Phase 2
+(LOSO + production); (3) re-evaluate H8 with the corrected production model.
+
+## 5.1h Phase 2 re-run with the validation-split fix — PRE-REGISTRATION (written 10 Oct 2026 00:50, before any run)
+
+**Question:** does the class-ordered validation split (§9 #51) explain the deployed model's Love = 0 %
+on User 5, and how much did it distort the Phase 2 numbers?
+
+**Single change:** shuffle the training arrays (seeded with the run's seed) **before**
+`model.fit(validation_split=0.1)`. Everything else is the original `train_st_cnn2d.py` code, imported
+unchanged: `load_dataset`, `build_model`, `augment_flip`, seeds 42/43/44, GroupKFold LOSO, batch 32,
+early stopping patience 30. Script: `pc_tools\train_phase2_fixed.py`; output `results_phase2_fixed\`.
+The original `train_st_cnn2d.py` and `results_phase2_final\` are kept untouched as the record of the bug.
+
+**Why this and not Phase 5.5a's baseline:** 5.5a's baseline differed from Phase 2 in two ways (random
+validation split **and** K = 5 copies), so S1's failure cannot be attributed to the split alone.
+
+**Important prior evidence (§5.1d):** in the original LOSO runs Love was already an "easy" class
+(88–100 %) despite the bug — so the bug did not stop the model learning ST-style Love. The hypothesis
+is narrower: with only ≈ 170 Love training frames (production) the model's notion of Love was too narrow
+to cover Chin's Love.
+
+**Predictions (Claude, before running):**
+- **R1 (mechanism check):** the script prints the class mix of the validation set. Original order:
+  ≈ 100 % Love. Fixed: each class within ±3 pp of its share of the training data. *Must hold, otherwise
+  the fix is not doing what it claims.*
+- **R2:** corrected LOSO overall mean is within ±5 pp of 79.73 % (Love was already easy there).
+- **R3:** corrected production model on User 5 (evaluated with `evaluate_phase4.py`): Love recall ≥ 80 %.
+- **R4:** corrected production model on User 5: per-frame accuracy ≥ 75 %.
+- **R5:** Like recall on User 5 stays < 50 % (the Like problem is not explained by this bug).
+- Confidence: R3 ~75 %, R4 ~65 %, R2 ~70 %, R5 ~65 %.
+- **If R3 fails** (Love still low with the split fixed): the 5.5a baselines' Love success came from the
+  K = 5 copies / different epochs, not from the split, and §5.1g-R's attribution must be withdrawn.
+- **Limits:** production model = 1 seed (as originally); User 5 = 1 subject. LOSO = 4 folds × 3 seeds.
 
 ## 5.2 Dynamic-gesture datasets — what exists
 
@@ -1780,8 +1892,11 @@ Phase 4    closed-loop check: our board's data → ST's model                NEX
              collection: Chin (informed) + 1 friend (naive), n = 2         TODO (§5.1e-P)
 Phase 5    collect our own static dataset (4-6 people)                     MERGED INTO PHASE 4 —
                                                                            only 2 people exist (§5.1e-A1)
+Phase 5.5a shift-augmentation ablation on ST only, tested on User 5            PRE-REGISTERED 10 Oct (§5.1g)
 Phase 5.5  train on ST + our 2 (6-subject LOSO), cross-dataset comparison,
            Love edge/centre before/after test, deploy                      1-2 wk
+Phase 5.6  different-day test of Chin + friend (not used for training) —
+           estimates demo-day accuracy for known users                    planned 10 Oct
 Phase 6    collect dynamic dataset                                         3-4 wk
 Phase 6.5  train temporal model (TCN/RNN), deploy                          2-3 wk
 Phase 7    write up                                                        1 mo
@@ -2188,6 +2303,8 @@ Kept so the same errors are not repeated. Each was caught by the student.
 | 48 | First script version treated any answer other than `y` as "skip this take" | Chin typed `ัyy` with the Thai keyboard active and a Fist take was silently lost. Now: y/r/s with Thai-key equivalents (ั/พ/ห), unknown answers re-asked | Designed a destructive default for a typo-prone prompt |
 | 49 | Gave `findstr /n "HOLD_S = 3.0" <file>` to check the file version | Without `/c:`, findstr treats each space-separated word as an OR search, so it printed ~200 lines; correct form `findstr /n /c:"HOLD_S = 3.0" <file>`. The output still confirmed the version (line 104), 9 Oct 2026 | Gave a Windows command from memory without checking its quoting semantics |
 | 50 | First `evaluate_phase4.py` loaded `st_dataset.py` with `importlib` without registering it in `sys.modules`; `@dataclass` + `from __future__ import annotations` then crashed (`'NoneType' object has no attribute '__dict__'`) on Chin's PC, 9 Oct 2026 | Fixed by `sys.modules[name] = mod` before `exec_module`. The local test had used a trimmed copy of `st_dataset.py` without the dataclass, so it could not reproduce the crash; the test now includes it | Tested against a trimmed copy instead of the real file — same family as #47 (simulation only reproduces what you put in) |
+| 51 | `train_st_cnn2d.py` (Phase 2, written by the assistant) used `model.fit(validation_split=0.1)` on arrays ordered by class folder | Keras takes the last 10 % before shuffling (confirmed from Keras 3.15.1 source on Chin's PC, 10 Oct); with alphabetical class order that is ≈ all of Love, so Love was starved in the deployed model and in the Phase 2 LOSO runs. Exposed 10 Oct 2026 by the pre-registered sanity check S1 of Phase 5.5a (§5.1g-R) | Used a library default without checking what it does to ordered data — always shuffle (or split explicitly, stratified) before any "last n %" split |
+| 52 | Gave two Keras-internals commands from memory on 10 Oct (`keras.Model.fit.__doc__` → None in Keras 3; `data_adapter_utils.train_validation_split` → moved to `array_slicing.py`) | Found by searching the installed package for `def train_validation_split` instead of guessing its location | Same family as #49 — a command written from memory for a version not checked; for library internals, search the installed files first |
 
 **Real finding behind #36 (not an assistant mistake — a genuine project fact):**
 The `53L8A1_SimpleRanging` project's `.ioc` has always been configured for **STM32F401RETx / NUCLEO-F401RE**, while the physical board (confirmed by a photo of the chip marking) is **STM32F411RET6**. Confirmed via the linker script header: *"Linker script for NUCLEO-F401RE Board embedding STM32F401RETx Device... 96KBytes RAM"*. This has been true since the project was first created and was never the assistant's error to log — it predates this conversation.
@@ -2424,3 +2541,10 @@ friend's collection.*
 between Chin's natural hand position and ST's; shift test recovers Like/Love but breaks Dislike;
 flips rule out orientation. Working hypothesis: position distribution shift + position-sensitive model.
 Phase 5.5 idea to pre-register: spatial-shift augmentation.*
+
+*Last updated: 2026-10-10 00:45 · Phase 5.5a done: shift augmentation negative (−12.1 pp paired over
+3 seeds, §5.1g-R). Its sanity check S1 exposed a Phase 2 bug: `validation_split=0.1` on class-ordered
+arrays held out ≈ all Love frames (§9 #51) — deployed model and Phase 2 LOSO numbers need re-making
+before H8 can be reported. Love's 0 % no longer attributed to position.*
+
+*2026-10-10 00:45 addendum: Keras' last-10 % validation split confirmed from the installed source (§5.1g-R, §9 #51); §9 #52 added.*

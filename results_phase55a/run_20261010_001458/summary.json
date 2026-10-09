@@ -1,0 +1,299 @@
+{
+  "meta": {
+    "run_at": "2026-10-10T00:33:25",
+    "registered_settings": true,
+    "args": {
+      "st_data": "C:\\ds\\ST_VL53L8CX_handposture_dataset",
+      "data_dir": "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\data\\phase4",
+      "user": "User5",
+      "train_script": "None",
+      "st_dataset": "None",
+      "out_dir": "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\results_phase55a",
+      "seeds": "[42, 43, 44]",
+      "copies": "5",
+      "max_shift": "2",
+      "val_frac": "0.1"
+    },
+    "train_script": "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\pc_tools\\train_st_cnn2d.py",
+    "train_script_sha256": "5ad0593da2e24b2ed335adef235ad508559d3e738c3472fbfff1d9cba897987e",
+    "n_train_frames": 9955,
+    "n_val_frames": 1106,
+    "test_data_sha256": "5f040ddc2c0cae00fd9797be3b35ed09045def19b78a71802d4245a7244aff20",
+    "git_commit": "a23d40c",
+    "python": "3.11.9",
+    "numpy": "2.4.6",
+    "tensorflow": "2.21.0"
+  },
+  "per_model": [
+    {
+      "arm": "baseline",
+      "seed": 42,
+      "epochs": 84,
+      "train_s": 211.1,
+      "frame_acc": 83.3175355450237,
+      "vote_acc": 83.97117296222663,
+      "recall_Fist": 85.07462686567165,
+      "recall_FlatHand": 91.70812603648424,
+      "recall_Dislike": 100.0,
+      "recall_Like": 6.622516556291391,
+      "recall_Love": 100.0,
+      "recall_CrossHands": 100.0,
+      "recall_BreakTime": 100.0,
+      "top_confusion": "Like->Dislike"
+    },
+    {
+      "arm": "shift",
+      "seed": 42,
+      "epochs": 79,
+      "train_s": 219.8,
+      "frame_acc": 73.41232227488152,
+      "vote_acc": 72.83797216699801,
+      "recall_Fist": 50.24875621890548,
+      "recall_FlatHand": 55.72139303482587,
+      "recall_Dislike": 100.0,
+      "recall_Like": 21.85430463576159,
+      "recall_Love": 86.21262458471762,
+      "recall_CrossHands": 100.0,
+      "recall_BreakTime": 100.0,
+      "top_confusion": "Like->Dislike"
+    },
+    {
+      "arm": "baseline",
+      "seed": 43,
+      "epochs": 41,
+      "train_s": 120.3,
+      "frame_acc": 92.74881516587678,
+      "vote_acc": 92.81809145129225,
+      "recall_Fist": 87.72802653399668,
+      "recall_FlatHand": 99.17081260364843,
+      "recall_Dislike": 100.0,
+      "recall_Like": 69.86754966887418,
+      "recall_Love": 92.52491694352159,
+      "recall_CrossHands": 100.0,
+      "recall_BreakTime": 100.0,
+      "top_confusion": "Like->Dislike"
+    },
+    {
+      "arm": "shift",
+      "seed": 43,
+      "epochs": 56,
+      "train_s": 160.6,
+      "frame_acc": 83.5781990521327,
+      "vote_acc": 83.77236580516899,
+      "recall_Fist": 59.70149253731343,
+      "recall_FlatHand": 99.83416252072969,
+      "recall_Dislike": 79.40199335548172,
+      "recall_Like": 46.19205298013245,
+      "recall_Love": 100.0,
+      "recall_CrossHands": 100.0,
+      "recall_BreakTime": 100.0,
+      "top_confusion": "Like->Dislike"
+    },
+    {
+      "arm": "baseline",
+      "seed": 44,
+      "epochs": 75,
+      "train_s": 214.4,
+      "frame_acc": 76.58767772511848,
+      "vote_acc": 76.59045725646124,
+      "recall_Fist": 98.50746268656717,
+      "recall_FlatHand": 21.22719734660033,
+      "recall_Dislike": 100.0,
+      "recall_Like": 22.8476821192053,
+      "recall_Love": 100.0,
+      "recall_CrossHands": 100.0,
+      "recall_BreakTime": 93.69817578772802,
+      "top_confusion": "Like->Dislike"
+    },
+    {
+      "arm": "shift",
+      "seed": 44,
+      "epochs": 67,
+      "train_s": 180.5,
+      "frame_acc": 59.40758293838863,
+      "vote_acc": 60.114314115308154,
+      "recall_Fist": 16.25207296849088,
+      "recall_FlatHand": 53.565505804311776,
+      "recall_Dislike": 79.56810631229236,
+      "recall_Like": 9.602649006622517,
+      "recall_Love": 56.97674418604651,
+      "recall_CrossHands": 100.0,
+      "recall_BreakTime": 100.0,
+      "top_confusion": "Like->Dislike"
+    }
+  ],
+  "baseline": {
+    "frame_acc": {
+      "mean": 84.21800947867298,
+      "sd": 8.118111284261646,
+      "values": [
+        83.3175355450237,
+        92.74881516587678,
+        76.58767772511848
+      ]
+    },
+    "vote_acc": {
+      "mean": 84.45990722332671,
+      "sd": 8.124849153909995,
+      "values": [
+        83.97117296222663,
+        92.81809145129225,
+        76.59045725646124
+      ]
+    },
+    "recall_Fist": {
+      "mean": 90.4367053620785,
+      "sd": 7.114279674925457,
+      "values": [
+        85.07462686567165,
+        87.72802653399668,
+        98.50746268656717
+      ]
+    },
+    "recall_FlatHand": {
+      "mean": 70.702045328911,
+      "sd": 43.008642850646844,
+      "values": [
+        91.70812603648424,
+        99.17081260364843,
+        21.22719734660033
+      ]
+    },
+    "recall_Dislike": {
+      "mean": 100.0,
+      "sd": 0.0,
+      "values": [
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    "recall_Like": {
+      "mean": 33.11258278145696,
+      "sd": 32.848282946865645,
+      "values": [
+        6.622516556291391,
+        69.86754966887418,
+        22.8476821192053
+      ]
+    },
+    "recall_Love": {
+      "mean": 97.50830564784053,
+      "sd": 4.315741214872621,
+      "values": [
+        100.0,
+        92.52491694352159,
+        100.0
+      ]
+    },
+    "recall_CrossHands": {
+      "mean": 100.0,
+      "sd": 0.0,
+      "values": [
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    "recall_BreakTime": {
+      "mean": 97.89939192924267,
+      "sd": 3.6383599053409297,
+      "values": [
+        100.0,
+        100.0,
+        93.69817578772802
+      ]
+    }
+  },
+  "shift": {
+    "frame_acc": {
+      "mean": 72.13270142180095,
+      "sd": 12.136010175309888,
+      "values": [
+        73.41232227488152,
+        83.5781990521327,
+        59.40758293838863
+      ]
+    },
+    "vote_acc": {
+      "mean": 72.24155069582505,
+      "sd": 11.840297351354351,
+      "values": [
+        72.83797216699801,
+        83.77236580516899,
+        60.114314115308154
+      ]
+    },
+    "recall_Fist": {
+      "mean": 42.067440574903266,
+      "sd": 22.850896250847395,
+      "values": [
+        50.24875621890548,
+        59.70149253731343,
+        16.25207296849088
+      ]
+    },
+    "recall_FlatHand": {
+      "mean": 69.70702045328912,
+      "sd": 26.113128485523987,
+      "values": [
+        55.72139303482587,
+        99.83416252072969,
+        53.565505804311776
+      ]
+    },
+    "recall_Dislike": {
+      "mean": 86.3233665559247,
+      "sd": 11.844603207845525,
+      "values": [
+        100.0,
+        79.40199335548172,
+        79.56810631229236
+      ]
+    },
+    "recall_Like": {
+      "mean": 25.883002207505516,
+      "sd": 18.624417410421398,
+      "values": [
+        21.85430463576159,
+        46.19205298013245,
+        9.602649006622517
+      ]
+    },
+    "recall_Love": {
+      "mean": 81.06312292358804,
+      "sd": 21.969027304974222,
+      "values": [
+        86.21262458471762,
+        100.0,
+        56.97674418604651
+      ]
+    },
+    "recall_CrossHands": {
+      "mean": 100.0,
+      "sd": 0.0,
+      "values": [
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    "recall_BreakTime": {
+      "mean": 100.0,
+      "sd": 0.0,
+      "values": [
+        100.0,
+        100.0,
+        100.0
+      ]
+    }
+  },
+  "gain_pp": -12.085308056872037,
+  "checks": {
+    "S1_baseline_near_deployed": false,
+    "P4_like": false,
+    "P5_love": true,
+    "P6_dislike": true,
+    "P7_gain": false
+  }
+}

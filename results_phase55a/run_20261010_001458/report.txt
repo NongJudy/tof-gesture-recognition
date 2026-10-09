@@ -1,0 +1,27 @@
+══════════════════════════════════════════════════════════════════
+  Phase 5.5a  ·  shift augmentation, trained on ST only, tested on User5
+══════════════════════════════════════════════════════════════════
+  Training   ST 9,955 frames × 5 copies  ·  val 1,106 frames  ·  seeds [42, 43, 44]  ·  max shift ±2
+  Test       C:\Users\gaming\Documents\GitHub\tof-gesture-recognition\data\phase4  ·  4,220 frames  ·  never used for training
+  Settings   as pre-registered (§5.1g)
+
+  metric (mean ± SD over seeds)         baseline           shift
+  per-frame accuracy                 84.2 ±  8.1     72.1 ± 12.1
+  15-frame vote accuracy             84.5 ±  8.1     72.2 ± 11.8
+  recall Fist                        90.4 ±  7.1     42.1 ± 22.9
+  recall FlatHand                    70.7 ± 43.0     69.7 ± 26.1
+  recall Dislike                    100.0 ±  0.0     86.3 ± 11.8
+  recall Like                        33.1 ± 32.8     25.9 ± 18.6
+  recall Love                        97.5 ±  4.3     81.1 ± 22.0
+  recall CrossHands                 100.0 ±  0.0    100.0 ±  0.0
+  recall BreakTime                   97.9 ±  3.6    100.0 ±  0.0
+
+  Pre-registered checks (§5.1g)
+    S1  baseline 84.2 % within ±10 of deployed 66.3 %  →  NO — explain before using the rest
+    P4  shift Like recall 25.9 % > 30 %  →  DOES NOT HOLD
+    P5  shift Love recall 81.1 % > 30 %  →  HOLDS
+    P6  shift Dislike recall 86.3 % ≥ 70 %  →  HOLDS
+    P7  gain -12.1 pp ≥ +5 pp  →  DOES NOT HOLD
+
+  n = 1 test subject; SD = training randomness only (3 seeds), not person-to-person spread.
+══════════════════════════════════════════════════════════════════
