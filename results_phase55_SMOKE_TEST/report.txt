@@ -1,0 +1,32 @@
+══════════════════════════════════════════════════════════════════
+  Phase 5.5  ·  ST + our subjects, leave-one-subject-out (6 subjects)  ·  §5.1i
+══════════════════════════════════════════════════════════════════
+  *** SMOKE TEST — numbers are meaningless, do not use ***
+  held-out            arm A          arm B          arm C
+  User1           65.2           59.6           54.9     
+  User2           84.1           89.4           66.1     
+  User3           66.5           66.0           56.4     
+  User4           79.2           83.8           74.9     
+  User5           48.6           79.0           74.7     
+  User6              —              —              —     
+  ST mean             73.77          74.70          63.04
+  Selected arm (highest ST-fold mean, ties ≤ 1 pp → A): A
+  B-A: mean +6.84 pp over 5 subjects  Wilcoxon W=5.0, p=0.625
+  C-A: mean -3.35 pp over 5 subjects  Wilcoxon W=5.0, p=0.625
+
+  Recall per class, arm A (mean over seeds)
+                  Fist  FlatHand   Dislike      Like      Love CrossHand BreakTime
+  User1           49.0      53.9      59.6      75.9      99.7      92.2      90.1
+  User2           66.2      80.5      68.4      91.1      95.7      93.0      93.6
+  User3           74.9      45.8      69.4      21.5      80.2      90.1      82.7
+  User4           96.1      91.9      23.9      44.9     100.0      99.7     100.0
+  User5           13.4     100.0      43.7       2.5       8.0      72.3     100.0
+
+  Pre-registered checks (§5.1i)
+    Q1  arm A ST-fold mean 73.77 ≥ 82.28  →  DOES NOT HOLD
+    Q2  arm A User5 48.6 > 68.8  →  DOES NOT HOLD
+    Q3  arm A User5 Like recall 2.5 > 30  →  DOES NOT HOLD
+    Q4  arm B ST mean 74.70 ≥ A 73.77  →  HOLDS
+    Q5  arm C ST mean ≤ A − 3  →  HOLDS
+  Folds of our subjects test on their MAIN set only; their extras never used in their own fold.
+══════════════════════════════════════════════════════════════════
