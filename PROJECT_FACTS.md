@@ -1736,6 +1736,59 @@ seed 42, 56 epochs) **on User 5**:
 - `evaluate_phase4.py` still prints the old ST baseline (68.9–89.7 %, mean 79.7 %) — update its constants
   to the corrected LOSO values before the next report screenshot.
 
+## 5.1i Phase 5.5 — train on ST + our two subjects: PRE-REGISTRATION (written 14 Oct 2026 22:55, before the friend's data exists)
+
+**Question:** does adding our own subjects' data to training make the model work for a person it has
+not seen — in particular for our subjects' natural Like (→ Dislike so far) and FlatHand — without
+hurting ST's users?
+
+**Data:** ST 4 users (11,061 frames, `train_st_cnn2d.load_dataset`, split-bug fix applied) + User 5 and
+User 6, each `data\phase4` (main, 14 takes) + `data\phase4_extra` (2 + 2 days, 28 takes) ≈ **12,600 frames
+per subject** vs ST's ~2,100–4,600 per user. Pooled naively our two subjects would be ~70 % of training.
+
+**Folds — leave-one-subject-out over 6 subjects:**
+- held-out **ST user**: train on the other 3 ST users + both our subjects (main + extra); test on that user.
+- held-out **our subject**: train on 4 ST users + the other subject (main + extra); test on the held-out
+  subject's **main set only** (`data\phase4`, the registered H8 test set). Their own extras are not used
+  anywhere in that fold.
+
+**Arms (one change each vs A):**
+
+| Arm | Model | Loss weighting |
+|---|---|---|
+| **A** | ST architecture (`train_st_cnn2d.build_model`) | none |
+| **B** | ST architecture | **subject-balanced**: each training subject gets the same total weight (per-frame weight ∝ 1 / that subject's frame count) |
+| **C** | ST architecture with **Flatten → GlobalAveragePooling2D** (position-invariant head) | none |
+
+Everything else as the fixed Phase 2 recipe: horizontal-flip augmentation, shuffle before
+`validation_split=0.1`, Adam 0.01, batch 32, early stopping patience 30, max 1000 epochs.
+**5 seeds** (42–46) per arm × fold → 3 × 6 × 5 = 90 models. Script `pc_tools\train_phase55.py`, resumable.
+
+**Selection rule (fixed now, so the test subjects cannot pick the method):** the arm with the highest
+mean accuracy over the **4 ST-user folds** (20 models each) is selected; if the best is within 1 pp of A,
+A is selected (simplest, closest to ST). Our two subjects' folds are then reported for **all** arms, with the
+selected arm's numbers as the headline. No other arm, augmentation or hyper-parameter may be added after
+seeing any fold result without a new pre-registration.
+
+**Predictions (Claude, before any run):**
+- **Q1:** arm A, mean over ST folds is within −3 pp of the fixed Phase 2 LOSO (85.28 %) — adding our data does
+  not hurt ST's users. Confidence ~70 %.
+- **Q2:** arm A, User 5 fold, mean per-frame accuracy > 68.8 % (the fixed ST-only model on User 5).
+  Confidence ~70 %.
+- **Q3:** arm A, User 5 fold, mean Like recall > 30 % (ST-only models: 6.6–69.9 %, mean 33 in 5.5a's
+  baselines; 7.1 % for the fixed production model). Confidence ~45 % — the main risk is that thumb
+  direction is not resolvable at 8×8.
+- **Q4:** arm B ≥ arm A on the ST folds (B stops our ~70 % share from dominating). Confidence ~55 %.
+- **Q5:** arm C < arm A on the ST folds by ≥ 3 pp (GAP after 2×2 pooling leaves only 8 features).
+  Confidence ~60 %.
+- **Statistics:** arms compared per subject (6 folds), paired over subjects; report mean ± SD over seeds per
+  fold, the per-subject differences, and a paired test across the 6 subjects (Wilcoxon signed-rank,
+  exact) with its statistic — n = 6 subjects, so no claim beyond "for these subjects".
+- **Report table:** subject × class recall for the selected arm (Wang et al. 2023 Table V template, §10.2).
+- **Deliverable rule:** the selected arm is then trained on all 6 subjects × 5 seeds → production
+  candidates; ensemble vs single model is a separate, later pre-registration (Phase 5.5b), then
+  X-CUBE-AI conversion and on-board timing (Rule 6).
+
 ## 5.2 Dynamic-gesture datasets — what exists
 
 | Source | Gestures | Sensor | Data available? |
@@ -1943,7 +1996,8 @@ Phase 4    closed-loop check: our board's data → ST's model                NEX
 Phase 5    collect our own static dataset (4-6 people)                     MERGED INTO PHASE 4 —
                                                                            only 2 people exist (§5.1e-A1)
 Phase 5.5a shift-augmentation ablation on ST only, tested on User 5            PRE-REGISTERED 10 Oct (§5.1g)
-Phase 5.5  train on ST + our 2 (6-subject LOSO), cross-dataset comparison,
+Phase 5.5  PRE-REGISTERED 14 Oct (§5.1i): arms A/B/C, 5 seeds, 6-subject LOSO, selection on ST folds;
+           train on ST + our 2 (6-subject LOSO), cross-dataset comparison,
            Love edge/centre before/after test, deploy                      1-2 wk
 Phase 5.6  different-day test of Chin + friend (not used for training) —
            estimates demo-day accuracy for known users                    planned 10 Oct
