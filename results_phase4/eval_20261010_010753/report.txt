@@ -1,0 +1,39 @@
+══════════════════════════════════════════════════════════════════
+  Phase 4 Evaluation (H8)  ·  ST-trained model on our VL53L8CA board
+══════════════════════════════════════════════════════════════════
+  Model          C:\Users\gaming\Documents\GitHub\tof-gesture-recognition\results_phase2_fixed\production_model.keras
+                 sha256 639d5453d9ff9717…  ·  7 classes
+  Data           C:\Users\gaming\Documents\GitHub\tof-gesture-recognition\data\phase4  ·  14 takes  ·  User5
+  Preprocessing  st_dataset.py (ST rules, 100–400 mm)  ·  vs training code: same within float32 rounding (max 3.1e-07)
+                 from C:\Users\gaming\Documents\GitHub\tof-gesture-recognition\pc_tools\st_dataset.py
+  Manifest       14 rows  ·  missing frames 0  ·  brief out-of-window 0  ·  files match: yes
+  Baselines      chance 14.3 %  ·  ST leave-one-user-out 68.9–89.7 % (mean 79.7 %)
+
+════ User5 ════════════════════════════════════════════════════════
+  Frames evaluated     4,220 of 4,220 (14 takes; others removed by the 100–400 mm rule)
+  Per-frame accuracy    68.8 %  ██████████████░░░░░░
+  15-frame vote acc.    68.9 %  ██████████████░░░░░░
+  Per-take accuracy    mean 68.9 %  ·  SD 43.7  ·  range 0.0–100.0  (n = 14)
+  Per-class recall
+    Fist         70.0 %  ███████████░░░░░   t1 100.0  t2  40.1
+    FlatHand      6.8 %  █░░░░░░░░░░░░░░░   t1   0.3  t2  13.3
+    Dislike     100.0 %  ████████████████   t1 100.0  t2 100.0
+    Like          7.1 %  █░░░░░░░░░░░░░░░   t1  14.2  t2   0.0
+    Love         98.8 %  ████████████████   t1  97.7  t2 100.0
+    CrossHands   99.2 %  ████████████████   t1 100.0  t2  98.3
+    BreakTime   100.0 %  ████████████████   t1 100.0  t2 100.0
+  Top confusions (true → predicted, frames)
+    FlatHand    → Fist          562
+    Like        → Dislike       422
+    Fist        → FlatHand      181
+    Like        → Fist          139
+    Love        → BreakTime       7
+  Pre-registered checks (§5.1e)
+    P1  frame accuracy 68.8 %  →  INSIDE the 60-85 % band
+    P2  recall Love/CrossHands/BreakTime 99.3 %  vs  Fist/FlatHand/Dislike/Like 46.0 %  →  HOLDS
+    P3  vote 68.9 %  ≥  frame 68.8 %  →  HOLDS
+    H9  four lowest recall: FlatHand, Like, Fist, Love  →  DOES NOT HOLD
+    Decision rule: 60-68.9 %: check preprocessing and orientation first
+
+  Pilot: n = 1 subject(s) — descriptive only, no significance test (§5.1e-A1).
+══════════════════════════════════════════════════════════════════

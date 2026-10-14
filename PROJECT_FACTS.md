@@ -38,6 +38,8 @@ setup or a conversation the assistant cannot observe directly
 | Phases 0–3 | ✅ complete (Phase 3 deployed on-board inference, 21 Sep 2026) |
 | Phase 4 pre-flight check 6 (21-trial live test) | ✅ done 24–25 Sep 2026, 21/21 correct **with per-posture hand positioning** (§5.1e-R) |
 | **Phase 4 first result (User 5 only)** | per-frame **66.3 %**, vote 67.6 %; five postures 70–100 %, **Like 0.3 % (→ Dislike), Love 0.0 % (→ BreakTime)**; P2 and H9 do not hold; n = 1, descriptive. Diagnosis: our hand sits ~1–2 rows off ST's position (§5.1e-E). **Revised 10 Oct: Love's 0 % is now attributed mainly to a validation-split bug in Phase 2 that starved Love (§5.1g-R, §9 #51); the deployed model and the Phase 2 LOSO numbers must be re-made** |
+| Phase 2 re-run (split fixed) | ST LOSO **85.28 %** (was 79.73); fixed production model on User 5: **68.8 %** — Love fixed (98.8), Like still 7.1, FlatHand fell to 6.8; strong seed dependence (§5.1h-R) |
+| **Next session (as of 10 Oct 04:35)** | friend (User 6) collection **postponed** — was briefed (consent asked, posture shapes shown away from the sensor, no position coaching) but stopped before/around Fist take 1; check `data\phase4` for any partial `User6` takes before restarting. Then: Phase 5.5 pre-registration (ST + ours, ≥ 5 seeds, LOSO 6 subjects, methods chosen on validation folds only), update `evaluate_phase4.py` baseline constants to 85.28 % |
 | Phase 5.5a (shift augmentation) | **negative**: −12.1 pp vs retrained baseline, paired over 3 seeds (§5.1g-R); not adopted |
 | Phase 4 data collection (`collect_own_data.py` v4) | 🟡 **Chin (User 5) done 9 Oct 2026:** main set 14/14 in `data\phase4` + extra day 1 14/14 in `data\phase4_extra` (§5.1e-P step 4). **Remaining:** Chin extra day 2 (another day), friend (User 6) main + extras, then the evaluation script |
 | Collection protocol | guided arming: hand must hold inside **220–320 mm for 3 s** before recording starts; take discarded if the hand leaves the window for **8 consecutive frames**; no frame-level filtering (§5.1e-A8) |
@@ -1686,6 +1688,54 @@ to cover Chin's Love.
   K = 5 copies / different epochs, not from the split, and §5.1g-R's attribution must be withdrawn.
 - **Limits:** production model = 1 seed (as originally); User 5 = 1 subject. LOSO = 4 folds × 3 seeds.
 
+### 5.1h-R Result — 10 Oct 2026 00:53–01:08 `[MEASURED]` (`results_phase2_fixed\`, `results_phase4\eval_20261010_010753\`)
+
+**R1 holds:** validation mix, original order → **Love 100 %**; shuffled → Fist 18, FlatHand 17, Dislike 16,
+Like 14, Love 11, CrossHands 12, BreakTime 12 %. The bug is confirmed on the real data.
+
+**Corrected ST leave-one-user-out (3 seeds per fold):**
+
+| Held-out | Original (bug) | Fixed mean ± SD | Difference |
+|---|---|---|---|
+| User1 | 68.91 | 66.33 ± 1.33 | −2.58 |
+| User2 | 89.71 | 92.39 ± 1.41 | +2.68 |
+| User3 | 78.31 | 88.09 ± 2.41 | +9.78 |
+| User4 | 81.97 | 94.30 ± 1.40 | +12.33 |
+| **Overall** | **79.73 ± 8.63** | **85.28 ± 12.90** | **+5.55** (paired t(3) = 1.64, p = 0.20) |
+
+Mean recall over folds (fixed): Fist 81 · FlatHand 86 · Dislike 82 · Like 84 · Love 97 · CrossHands 91 ·
+BreakTime 94. **R2 does not hold** (+5.55 pp, just outside ±5). Seed-to-seed SD per fold fell from up to
+9.47 pp to 1.3–2.4 pp — early stopping on a Love-only validation set made the original runs erratic.
+**The ST LOSO baseline for H8 is now 85.28 % (range 66.3–94.3), replacing 79.73 %.** The random-split
+97.24 % is unaffected (train_test_split shuffles).
+
+**Corrected production model** (`results_phase2_fixed\production_model.keras`, sha256 `639d5453d9ff9717…`,
+seed 42, 56 epochs) **on User 5**:
+
+| | Deployed (bug) §5.1e-E | Fixed |
+|---|---|---|
+| Per-frame accuracy | 66.3 | **68.8** |
+| 15-frame vote | 67.6 | 68.9 |
+| Fist / FlatHand / Dislike | 97.8 / 99.3 / 96.2 | 70.0 / **6.8** / 100.0 |
+| Like / Love | 0.3 / **0.0** | **7.1** / **98.8** |
+| CrossHands / BreakTime | 70.1 / 100.0 | 99.2 / 100.0 |
+| Top confusion | Love → BreakTime 601 | **FlatHand → Fist 562**, Like → Dislike 422 |
+
+- **R3 holds (Love 98.8 %)** — the deployed model's Love failure is explained by the validation-split bug.
+- **R4 does not hold** (68.8 % < 75 %). **R5 holds** (Like 7.1 % < 50 %).
+- **New: FlatHand collapsed to 6.8 % (→ Fist)** with the fixed model, after being 99.3 % with the buggy
+  one. Together with 5.5a's baselines (User 5 accuracy 76.6–92.7 % and Like 6.6–69.9 % across 3 seeds of
+  the same recipe), this shows that **for an unseen subject, per-class results depend strongly on the
+  training seed**; a single production model is one draw from a wide distribution.
+- **Robust across every model tried so far: Like → Dislike** for Chin's natural Like.
+- Implications: (1) evaluate User 5 / User 6 with **several seeds** of the production recipe and report
+  mean ± SD, not one model; (2) consider a seed **ensemble** (average the softmax of N models) for
+  deployment — N × the measured 3.197 ms inference is still far inside the ~66 ms frame budget — to be
+  pre-registered before testing; (3) Phase 5.5 (our data in training) remains the main remedy for Like
+  and FlatHand.
+- `evaluate_phase4.py` still prints the old ST baseline (68.9–89.7 %, mean 79.7 %) — update its constants
+  to the corrected LOSO values before the next report screenshot.
+
 ## 5.2 Dynamic-gesture datasets — what exists
 
 | Source | Gestures | Sensor | Data available? |
@@ -2548,3 +2598,10 @@ arrays held out ≈ all Love frames (§9 #51) — deployed model and Phase 2 LOS
 before H8 can be reported. Love's 0 % no longer attributed to position.*
 
 *2026-10-10 00:45 addendum: Keras' last-10 % validation split confirmed from the installed source (§5.1g-R, §9 #51); §9 #52 added.*
+
+*Last updated: 2026-10-10 01:15 · Phase 2 re-run with the split fix (§5.1h-R): bug confirmed (validation
+was 100 % Love); ST LOSO now 85.28 % ± 12.90 (was 79.73); fixed production model on User 5 = 68.8 % —
+Love recovered (98.8 %), Like still fails (7.1 %), FlatHand fell to 6.8 %. Per-class results for unseen
+subjects are strongly seed-dependent → multi-seed evaluation / ensemble needed. Friend (User 6) collection next.*
+
+*2026-10-10 04:35: session ended; friend's collection postponed to another day (see QUICK STATUS).* 

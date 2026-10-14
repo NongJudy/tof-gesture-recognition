@@ -11,6 +11,8 @@
     per-class recall, confusion matrix, top-5 confusion pairs, P1/P2/P3/H9 และ decision rule
   - ใช้กับ data\\phase4 (ชุดวัดผล) เท่านั้น — data\\phase4_extra เป็นชุดเทรน (A7) สคริปต์จะไม่ยอม
   - n = 1-2 คน = pilot ผลเป็นเชิงพรรณนา ห้ามเขียนว่า "significant" (§5.1e, A1)
+  - 14 ต.ค. 2026: baseline ของ ST เปลี่ยนเป็นค่า LOSO หลังแก้บั๊ก (85.28 %, ช่วง 66.3-94.3, §5.1h-R)
+    เกณฑ์ decision rule ยังเป็นความหมายเดิม ("คนที่ต่ำสุดของ ST") แต่ตัวเลขเป็นค่าที่ถูกต้อง
 
 การตรวจความถูกต้องในตัว (ชัวร์ว่าตัวเลขไม่ผิดเพราะเตรียมข้อมูลต่างจากตอนเทรน):
   - preprocess ทุกเฟรมซ้ำด้วยโค้ดชุดที่ใช้ตอนเทรนโมเดลจริง (คัดลอกจาก
@@ -56,12 +58,14 @@ import numpy as np
 MODEL_CLASSES = ["Fist", "FlatHand", "Dislike", "Like", "Love", "CrossHands", "BreakTime"]
 VOTE_WINDOW = 15                     # เท่ากับค่าเริ่มต้นของ live_predict.py
 CHANCE = 1 / len(MODEL_CLASSES)      # 14.3 %
-ST_LOSO = {"User1": 68.91, "User3": 78.31, "User4": 81.97, "User2": 89.71}  # §5.1d, mean 79.73
+# ค่า LOSO ของ ST หลังแก้บั๊ก validation split (§5.1h-R, 10 ต.ค. 2026) — ค่าเดิม 68.91/78.31/81.97/89.71
+# (mean 79.73) มาจากโค้ดที่มีบั๊ก §9 #51 ห้ามใช้อีก
+ST_LOSO = {"User1": 66.33, "User3": 88.09, "User4": 94.30, "User2": 92.39}  # mean 85.28
 P1_BAND = (60.0, 85.0)               # §5.1e P1
 HIGH_GROUP = ["Love", "CrossHands", "BreakTime"]          # P2
 LOW_GROUP = ["Fist", "FlatHand", "Dislike", "Like"]       # P2 / H9
 STOP_BELOW = 60.0                    # decision rule: ต่ำกว่านี้ = หยุดหาสาเหตุ
-ST_LOWEST = 68.91                    # decision rule: ถึงค่านี้ = อยู่ในช่วงของ ST
+ST_LOWEST = min(ST_LOSO.values())     # decision rule: ถึงค่านี้ = อยู่ในช่วงของ ST (เกณฑ์เดิม "คนที่ต่ำสุดของ ST")
 
 # ค่าคงที่ของโค้ดตอนเทรน (train_st_cnn2d.py) — ใช้เฉพาะการตรวจซ้ำ
 TR_MAX_DISTANCE = 400.0
@@ -276,9 +280,9 @@ def preregistered_checks(m: dict) -> dict:
     if acc < STOP_BELOW:
         rule = "< 60 %: stop and diagnose (status, distance, orientation, sensor settings) before Phase 5.5"
     elif acc >= ST_LOWEST:
-        rule = ">= 68.91 % (ST's lowest user): consistent with ST's per-user spread"
+        rule = f">= {ST_LOWEST:.2f} % (ST's lowest user, corrected LOSO): consistent with ST's per-user spread"
     else:
-        rule = "60-68.9 %: check preprocessing and orientation first"
+        rule = f"60-{ST_LOWEST:.1f} %: check preprocessing and orientation first"
     return {
         "P1": {"frame_acc": acc, "verdict": p1},
         "P2": {"high_group_mean_recall": high, "low_group_mean_recall": low,
@@ -372,7 +376,7 @@ def render_report(meta: dict, results: dict[str, dict]) -> str:
                  f"  ·  brief out-of-window {mf['out_of_window_total']}  ·  files match: "
                  f"{'yes' if mf['files_match'] else 'NO'}")
     L.append(f"  Baselines      chance {CHANCE * 100:.1f} %  ·  ST leave-one-user-out "
-             f"{min(ST_LOSO.values()):.1f}–{max(ST_LOSO.values()):.1f} % (mean 79.7 %)")
+             f"{min(ST_LOSO.values()):.1f}–{max(ST_LOSO.values()):.1f} % (mean {np.mean(list(ST_LOSO.values())):.1f} %, corrected)")
     for user, m in results.items():
         c = m["checks"]
         L.append("")

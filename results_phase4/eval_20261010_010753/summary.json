@@ -1,0 +1,356 @@
+{
+  "meta": {
+    "run_at": "2026-10-10T01:07:53",
+    "model_path": "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\results_phase2_fixed\\production_model.keras",
+    "model_sha256": "639d5453d9ff97170e473d0feebc6a1ea1a449070d7ab22215459a2fa5c08d9c",
+    "n_model_classes": 7,
+    "data_dir": "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\data\\phase4",
+    "n_files": 14,
+    "data_sha256": "5f040ddc2c0cae00fd9797be3b35ed09045def19b78a71802d4245a7244aff20",
+    "users": [
+      "User5"
+    ],
+    "crosscheck": {
+      "max_abs_diff": 3.1140385914341095e-07,
+      "kept_only_by_training_code": 0,
+      "kept_only_by_st_dataset": 0
+    },
+    "manifest": {
+      "found": true,
+      "rows": 14,
+      "missing_frames_total": 0,
+      "out_of_window_total": 0,
+      "users": [
+        "5"
+      ],
+      "files_match": true
+    },
+    "git_commit": "ef0c604",
+    "python": "3.11.9",
+    "numpy": "2.4.6",
+    "tensorflow": "2.21.0",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "vote_window": 15,
+    "class_order": [
+      "Fist",
+      "FlatHand",
+      "Dislike",
+      "Like",
+      "Love",
+      "CrossHands",
+      "BreakTime"
+    ],
+    "st_dataset_filter_mm": [
+      100.0,
+      400.0
+    ],
+    "st_dataset_path": "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\pc_tools\\st_dataset.py",
+    "st_dataset_sha256": "cd21cf5da712715e25cd335c912d70949e4a5a8db6eb01d1ca420ef40f48e9bf"
+  },
+  "results": {
+    "User5": {
+      "n_takes": 14,
+      "n_raw_frames": 4220,
+      "n_eval_frames": 4220,
+      "frame_acc": 68.81516587677726,
+      "vote_acc": 68.93638170974154,
+      "vote_windows": 4024,
+      "take_acc_mean": 68.85311339998806,
+      "take_acc_sd": 43.700143507516906,
+      "take_acc_min": 0.0,
+      "take_acc_max": 100.0,
+      "recall": {
+        "Fist": 69.98341625207297,
+        "FlatHand": 6.799336650082918,
+        "Dislike": 100.0,
+        "Like": 7.119205298013245,
+        "Love": 98.83720930232558,
+        "CrossHands": 99.17081260364843,
+        "BreakTime": 100.0
+      },
+      "precision": {
+        "Fist": 37.57791629563669,
+        "FlatHand": 18.385650224215247,
+        "Dislike": 58.7890625,
+        "Like": 100.0,
+        "Love": 100.0,
+        "CrossHands": 100.0,
+        "BreakTime": 98.2084690553746
+      },
+      "confusion_matrix": [
+        [
+          422,
+          181,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          562,
+          41,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          602,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          139,
+          0,
+          422,
+          43,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          595,
+          0,
+          7
+        ],
+        [
+          0,
+          1,
+          0,
+          0,
+          0,
+          598,
+          4
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          603
+        ]
+      ],
+      "top_confusions": [
+        {
+          "true": "FlatHand",
+          "pred": "Fist",
+          "frames": 562
+        },
+        {
+          "true": "Like",
+          "pred": "Dislike",
+          "frames": 422
+        },
+        {
+          "true": "Fist",
+          "pred": "FlatHand",
+          "frames": 181
+        },
+        {
+          "true": "Like",
+          "pred": "Fist",
+          "frames": 139
+        },
+        {
+          "true": "Love",
+          "pred": "BreakTime",
+          "frames": 7
+        }
+      ],
+      "per_take": [
+        {
+          "file": "log__20261009_213454__User5__take1.npz",
+          "class": "BreakTime",
+          "take": 1,
+          "n_raw": 301,
+          "n_eval": 301,
+          "frame_acc": 100.0,
+          "vote_acc": 100.0,
+          "median_nearest_mm": 272.0,
+          "most_common_pred": "BreakTime"
+        },
+        {
+          "file": "log__20261009_213543__User5__take2.npz",
+          "class": "BreakTime",
+          "take": 2,
+          "n_raw": 302,
+          "n_eval": 302,
+          "frame_acc": 100.0,
+          "vote_acc": 100.0,
+          "median_nearest_mm": 270.0,
+          "most_common_pred": "BreakTime"
+        },
+        {
+          "file": "log__20261009_213042__User5__take1.npz",
+          "class": "CrossHands",
+          "take": 1,
+          "n_raw": 301,
+          "n_eval": 301,
+          "frame_acc": 100.0,
+          "vote_acc": 100.0,
+          "median_nearest_mm": 281.0,
+          "most_common_pred": "CrossHands"
+        },
+        {
+          "file": "log__20261009_213121__User5__take2.npz",
+          "class": "CrossHands",
+          "take": 2,
+          "n_raw": 302,
+          "n_eval": 302,
+          "frame_acc": 98.34437086092716,
+          "vote_acc": 100.0,
+          "median_nearest_mm": 268.0,
+          "most_common_pred": "CrossHands"
+        },
+        {
+          "file": "log__20261009_212248__User5__take1.npz",
+          "class": "Dislike",
+          "take": 1,
+          "n_raw": 301,
+          "n_eval": 301,
+          "frame_acc": 100.0,
+          "vote_acc": 100.0,
+          "median_nearest_mm": 273.0,
+          "most_common_pred": "Dislike"
+        },
+        {
+          "file": "log__20261009_212318__User5__take2.npz",
+          "class": "Dislike",
+          "take": 2,
+          "n_raw": 301,
+          "n_eval": 301,
+          "frame_acc": 100.0,
+          "vote_acc": 100.0,
+          "median_nearest_mm": 276.0,
+          "most_common_pred": "Dislike"
+        },
+        {
+          "file": "log__20261009_211138__User5__take1.npz",
+          "class": "Fist",
+          "take": 1,
+          "n_raw": 301,
+          "n_eval": 301,
+          "frame_acc": 100.0,
+          "vote_acc": 100.0,
+          "median_nearest_mm": 275.0,
+          "most_common_pred": "Fist"
+        },
+        {
+          "file": "log__20261009_211422__User5__take2.npz",
+          "class": "Fist",
+          "take": 2,
+          "n_raw": 302,
+          "n_eval": 302,
+          "frame_acc": 40.06622516556291,
+          "vote_acc": 34.375,
+          "median_nearest_mm": 271.0,
+          "most_common_pred": "FlatHand"
+        },
+        {
+          "file": "log__20261009_211709__User5__take1.npz",
+          "class": "FlatHand",
+          "take": 1,
+          "n_raw": 302,
+          "n_eval": 302,
+          "frame_acc": 0.33112582781456956,
+          "vote_acc": 0.0,
+          "median_nearest_mm": 273.0,
+          "most_common_pred": "Fist"
+        },
+        {
+          "file": "log__20261009_211754__User5__take2.npz",
+          "class": "FlatHand",
+          "take": 2,
+          "n_raw": 301,
+          "n_eval": 301,
+          "frame_acc": 13.2890365448505,
+          "vote_acc": 13.937282229965156,
+          "median_nearest_mm": 274.0,
+          "most_common_pred": "Fist"
+        },
+        {
+          "file": "log__20261009_212428__User5__take1.npz",
+          "class": "Like",
+          "take": 1,
+          "n_raw": 302,
+          "n_eval": 302,
+          "frame_acc": 14.23841059602649,
+          "vote_acc": 17.36111111111111,
+          "median_nearest_mm": 276.0,
+          "most_common_pred": "Fist"
+        },
+        {
+          "file": "log__20261009_212518__User5__take2.npz",
+          "class": "Like",
+          "take": 2,
+          "n_raw": 302,
+          "n_eval": 302,
+          "frame_acc": 0.0,
+          "vote_acc": 0.0,
+          "median_nearest_mm": 270.5,
+          "most_common_pred": "Dislike"
+        },
+        {
+          "file": "log__20261009_212735__User5__take1.npz",
+          "class": "Love",
+          "take": 1,
+          "n_raw": 301,
+          "n_eval": 301,
+          "frame_acc": 97.67441860465115,
+          "vote_acc": 100.0,
+          "median_nearest_mm": 279.0,
+          "most_common_pred": "Love"
+        },
+        {
+          "file": "log__20261009_212843__User5__take2.npz",
+          "class": "Love",
+          "take": 2,
+          "n_raw": 301,
+          "n_eval": 301,
+          "frame_acc": 100.0,
+          "vote_acc": 100.0,
+          "median_nearest_mm": 270.0,
+          "most_common_pred": "Love"
+        }
+      ],
+      "checks": {
+        "P1": {
+          "frame_acc": 68.81516587677726,
+          "verdict": "INSIDE the 60-85 % band"
+        },
+        "P2": {
+          "high_group_mean_recall": 99.33600730199134,
+          "low_group_mean_recall": 45.97548955004228,
+          "holds": true
+        },
+        "P3": {
+          "vote_acc": 68.93638170974154,
+          "frame_acc": 68.81516587677726,
+          "holds": true
+        },
+        "H9": {
+          "four_lowest": [
+            "FlatHand",
+            "Like",
+            "Fist",
+            "Love"
+          ],
+          "holds": false
+        },
+        "decision_rule": "60-68.9 %: check preprocessing and orientation first"
+      }
+    }
+  }
+}
