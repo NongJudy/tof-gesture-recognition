@@ -42,7 +42,8 @@ setup or a conversation the assistant cannot observe directly
 | Phase 2 re-run (split fixed) | ST LOSO **85.28 %** (was 79.73); fixed production model on User 5: **68.8 %** — Love fixed (98.8), Like still 7.1, FlatHand fell to 6.8; strong seed dependence (§5.1h-R) |
 | **Phase 5.5 result (20 Oct 2026, 90 models, commit `5c724d9`)** | Selection rule picks **arm B** (subject-balanced weights): ST-fold mean **B 85.61** vs A 84.17 vs C 81.05 %; B − A over 6 subjects +1.35 pp, Wilcoxon W = 5, p = 0.31 → **B not shown better than A**, chosen by the pre-registered rule. Arm B on our subjects: User 5 **82.8 ± 5.2 %**, User 6 **86.6 ± 6.0 %** (5 seeds). Q1 Q2 Q4 Q5 hold (Q5 by 0.11 pp), **Q3 fails** (arm A User 5 Like 3.2 %; arm B 23.1 %). Full record §5.1i-R |
 | Error analysis of H8 (20 Oct) | hand position (vertical offset toward row 0, both subjects) is the best-supported cause of take-level failures, ρ = −0.58 over 28 takes, descriptive (§5.1j; full text `claude/ERROR_ANALYSIS_H8_2026-10-20.md`) |
-| **Next session (as of 20 Oct 2026 night)** | Start a **new chat** from this file. Order: (1) write a script that trains **arm B on all 6 subjects × 5 seeds and saves the models** (`train_phase55.py` saves none) → (2) pre-register **5.5b**: how the deployed model is chosen from the 5 (no held-out subject is left — rule needed) or whether a seed ensemble is used → (3) X-CUBE-AI conversion + on-board timing (Rule 6) → (4) Love edge/centre before/after live test (A5) with the new model. Round 2 (**5.5c**) candidates, none adopted: hand re-centring / metric-size normalisation, `padding="valid"` arm, normalisation constants recomputed on ST + ours (§5.1j, §5.1k). GAP support in X-CUBE-AI is **no longer blocking** (arm C not selected). Progress report 3 in planning (continues at section 7). Open list §8.6 |
+| **Phase 5.5 final models (20 Oct 2026 21:18–21:32)** | arm B, all 6 subjects (36,409 frames), seeds 42–46 → `results_phase55_final\` (5 `.keras`, `manifest.json` with sha256), commits `e1f08ee` + `b0bcc01`. No accuracy (no held-out subject). Deployment rule + new-day test pre-registered §5.1l |
+| **Next session (as of 20 Oct 2026 22:05)** | (1) Build E5 (mean of 5 softmax outputs) → `.tflite` → X-CUBE-AI → board; measure total per-frame work (≤ 33 ms?), Flash/RAM, 200-sample board-vs-PC agreement; fall back to seed 42 per §5.1l → (2) collect `data\phase56` on a new day (User 5 first) → (3) evaluate per §5.1l → (4) Love edge/centre live check → (5) decide on 5.5c. Progress report 3 in planning. Open list §8.6 |
 | Phase 5.5a (shift augmentation) | **negative**: −12.1 pp vs retrained baseline, paired over 3 seeds (§5.1g-R); not adopted |
 | Phase 4 data collection (`collect_own_data.py` **v5**) | ✅ **Done.** Chin (User 5) 42/42: main 14 (9 Oct) + extra 14 (9 Oct) + extra 14 (15 Oct, v5). Friend (User 6) 42/42: main 14 (14 Oct, v4) + extra 28 in one sitting (A10), file timestamps 18 Oct 2026 21:56–22:16 `[ตรวจแล้ว: xcopy listing 20 Oct]`; his first 14 extras (15 Oct) stay quarantined in `data\phase4_rejected` (A9, §9 #53). Manifest check of the 28 extras: missing frames 0, out-of-window 0, with warning 0 `[STUDENT]` (output pasted 20 Oct). `data\phase4_extra` holds 56 npz (28 + 28) + manifest = 57 files; `data\phase4` 28 npz + manifest = 29 files. Local backups on Chin's PC: `C:\Users\gaming\Documents\backup_phase4_20261020\phase4` (29) and `\phase4_extra` (57). Copy to Drive/USB: **not confirmed** |
 | Collection protocol | guided arming: hand must hold inside **220–320 mm for 3 s** before recording starts; take discarded if the hand leaves the window for **8 consecutive frames**; no frame-level filtering (§5.1e-A8) |
@@ -1984,6 +1985,59 @@ searches. No clone, no download.
 - Nothing new on a VL53L8 hand-posture paper or dataset after Sep 2026; no source on per-subject loss weighting for ToF LOSO (arm B is
   our own experiment).
 
+### 5.1l Phase 5.5b + 5.6 — deployed model and new-day test: PRE-REGISTRATION (written 20 Oct 2026 22:05, before any new-day data exists)
+
+**Status of inputs:** final models trained 20 Oct 2026 21:18–21:32 with `pc_tools\train_phase55_final.py` (arm B, all 6 subjects,
+36,409 frames, seeds 42–46, epochs 83/68/87/85/76, 4,511 params each), folder `results_phase55_final\` (models + `manifest.json`
+with sha256), commits `e1f08ee` (models) and `b0bcc01` (script). No accuracy exists for them (no held-out subject). Their val_loss
+was deliberately not displayed and is **not** used for any choice below. Chin was asked for his own predictions and deferred to
+Claude ("เอาทางที่ดีที่สุด ชัวร์สุด ละเอียดสุด", 20 Oct 22:03) `[STUDENT]`.
+
+**Questions:** (1) for our two (known) subjects on a new day, how accurate is the final recipe, and is User 5's Like fixed?
+(2) does a 5-model ensemble beat a single model? (3) does the converted model behave on the board as on the PC?
+
+**Deployed model — decided now:**
+- **Primary: ensemble E5** = one Keras model whose output is the mean of the 5 models' softmax outputs (single network for X-CUBE-AI).
+- E5 is deployed **if and only if** all hold on the board: X-CUBE-AI conversion and build succeed; **total per-frame work** (sensor
+  read + preprocessing + inference + decision, DWT, HSE, 8×8 data mode) **≤ 33 ms** (half the 66.17 ms frame period); and board vs
+  PC predicted class agree on **200 / 200** samples (Phase 3 used 50).
+- Otherwise: **single model seed 42**, fixed now, with the same 200-sample agreement check.
+- This choice does **not** depend on the new-day results. E5 is deployed whatever B3 shows, if it fits.
+
+**Test set (Phase 5.6):** `data\phase56`, `collect_own_data.py` v5, same protocol as the H8 main set: 7 postures × 2 takes × 20 s per
+subject, window 220–320 mm, hold 3 s, discard after 8 consecutive out-of-window frames, natural positioning, **no live predictions
+shown** (A2), operator confirms posture every take (A9). Collected on a **day different from every earlier collection**; log
+minutes-since-power-on and `--fw-note`. User 5 alone first is allowed; User 6 when available. **`data\phase56` is never used for
+training, early stopping, hyper-parameters, model choice or normalisation constants — for any later phase.** If it is ever used
+that way, a new test set must be collected.
+
+**Models evaluated on `data\phase56` (same preprocessing as `evaluate_phase4.py`, classes mapped by name):**
+1. Baseline 1 — ST-only fixed production model `results_phase2_fixed\production_model.keras` (sha256 `639d5453d9ff9717…`, §5.1h-R).
+2. Baseline 2 — each of the 5 single arm-B models; reported as mean ± SD over the 5.
+3. E5 (primary).
+
+**Metrics per subject:** per-frame accuracy, 15-frame vote accuracy, per-class recall, top confusion pairs, per-take accuracy.
+
+**Predictions (Claude, before any data):**
+- **B1:** User 5 Like recall, mean of the 5 single models, **> 50 %** (23.1 % when User 5 was unseen, §5.1i-R). Confidence ~55 %.
+  Main risk: Chin's natural Like sits where Dislike sits in other people's data (§5.1j).
+- **B2:** E5 per-frame accuracy **≥ 85 %** for each subject. Confidence ~60 %.
+- **B3:** E5 ≥ the mean of the 5 single models, for each subject. Confidence ~75 %.
+- **B4:** E5 ≥ Baseline 1 (ST-only) by **≥ 10 pp** for User 5. Confidence ~70 %.
+
+**Statistics:** n = 2 subjects (known users), 2 takes per posture → **descriptive only**; no p-values (frames within a take are
+correlated). Report per-subject numbers, the per-take spread, and the 5-model SD. These numbers describe **known users on a new day**,
+not new people — the new-person figure stays the LOSO 85.3 % (§5.1i-R).
+
+**Live check after deployment (A5):** Love, two-hand heart, **5 trials at the edge position and 5 at the centre position**, order
+randomised with `random.seed(55); random.shuffle(["edge"]*5 + ["centre"]*5)`; reading rule of §5.1e-R (label stable ≈ 1 s and
+agreement ≥ 70–80 %, else "unstable"); log every trial. Reference: deployed old model, edge correct / centre wrong (24–25 Sep).
+Descriptive (n = 1 subject).
+
+**Deliverable (Rule 6):** the deployed model running on the board, its measured per-frame timing, footprint, the 200-sample
+agreement, the new-day accuracy table, and the Love live check. If B1 fails badly (Like < 30 %), round 2 (5.5c, re-centring) is the
+next pre-registration, evaluated by the same 6-subject LOSO and then on `data\phase56`.
+
 ## 5.2 Dynamic-gesture datasets — what exists
 
 | Source | Gestures | Sensor | Data available? |
@@ -2319,8 +2373,9 @@ extracting and re-running the analysis).
 
 | Item | State |
 |---|---|
-| Final training: arm B on all 6 subjects × 5 seeds, **models saved** | ⬜ script not written (`train_phase55.py` saves no model) |
-| 5.5b pre-registration: rule for choosing 1 of 5 final models, or a seed ensemble (RAM/Flash for N models `[ยังไม่ได้ตรวจ]`) | ⬜ |
+| Final training: arm B on all 6 subjects × 5 seeds, **models saved** | ✅ 20 Oct 2026, `results_phase55_final\`, commits `e1f08ee`/`b0bcc01` |
+| 5.5b pre-registration: rule for choosing 1 of 5 final models, or a seed ensemble | ✅ written §5.1l (E5 if it fits the board, else seed 42) |
+| Phase 5.6 new-day test set `data\phase56` (never for training) | ⬜ not collected |
 | X-CUBE-AI conversion + on-board timing of the final model; compare a `padding="valid"` variant (D2) | ⬜ |
 | A5 Love edge/centre live test with the new model | ⬜ |
 | 5.5c (round 2) pre-registration: re-centring / metric-size normalisation, `padding="valid"`, recomputed constants — each needs firmware parity | ⬜ candidates only |
@@ -2905,3 +2960,7 @@ B 23.1 %). Error analysis (§5.1j): hand-position offset toward row 0 is the bes
 STSW-IMG050, dataset-specific normalisation constants, Hugging Face evidence that ST's model is the `padding="valid"` network.
 New §8.6 open list (incl. the skill reminder Chin asked for). Correction log now 58 entries (#57–#58). Next: new chat → final training
 of arm B with saved models → 5.5b → X-CUBE-AI.*
+
+*Last updated: 2026-10-20 22:05 · Final arm-B models trained and pushed (`results_phase55_final\`, `e1f08ee`, `b0bcc01`).
+§5.1l pre-registers the deployed model (5-model ensemble E5 if it fits the board, else seed 42) and the Phase 5.6 new-day test set
+`data\phase56` (never for training), with predictions B1–B4 and the Love edge/centre live check. Next: build E5 and convert.*
