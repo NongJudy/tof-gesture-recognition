@@ -1,0 +1,120 @@
+{
+  "run_at": "2026-10-20T21:28:06",
+  "smoke_test": false,
+  "arm": "B",
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "max_epochs": 1000,
+  "class_order": [
+    "Fist",
+    "FlatHand",
+    "Dislike",
+    "Like",
+    "Love",
+    "CrossHands",
+    "BreakTime"
+  ],
+  "git_commit": "e23820a",
+  "train_st_cnn2d": {
+    "path": "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\pc_tools\\train_st_cnn2d.py",
+    "sha256": "5ad0593da2e24b2ed335adef235ad508559d3e738c3472fbfff1d9cba897987e"
+  },
+  "train_phase55": {
+    "path": "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\pc_tools\\train_phase55.py",
+    "sha256": "34a13f85728d945a912cd502fccdf154de5f5d2d8a73e8fb886adcc31f7e5526"
+  },
+  "this_script_sha256": "cd07dd6aa941e0c746a4b21b28004ed3c27d3186e9b3311619721c5b5deadcd5",
+  "libs": {
+    "tensorflow": "2.21.0",
+    "keras": "3.15.1"
+  },
+  "frames_per_user": {
+    "User1": {
+      "frames": 4584,
+      "main": 4584,
+      "extra": 0
+    },
+    "User2": {
+      "frames": 2134,
+      "main": 2134,
+      "extra": 0
+    },
+    "User3": {
+      "frames": 2172,
+      "main": 2172,
+      "extra": 0
+    },
+    "User4": {
+      "frames": 2171,
+      "main": 2171,
+      "extra": 0
+    },
+    "User5": {
+      "frames": 12664,
+      "main": 4220,
+      "extra": 8444
+    },
+    "User6": {
+      "frames": 12684,
+      "main": 4228,
+      "extra": 8456
+    }
+  },
+  "n_frames": 36409,
+  "data_checksums": {
+    "C:\\ds\\ST_VL53L8CX_handposture_dataset": {
+      "n_files": 162,
+      "sha256": "539642ab570b647a4804e85c2e70e5e1e0a144856b3abd36011b11fc1835df26"
+    },
+    "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\data\\phase4": {
+      "n_files": 28,
+      "sha256": "094068dd85625feaca66205726ae127cbc34b186d4fd79d7e3ff6e3b46fd8506"
+    },
+    "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\data\\phase4_extra": {
+      "n_files": 56,
+      "sha256": "30162801d8ff48902e0109fcca369799b8c4809ee14256607276030bd996c10a"
+    }
+  },
+  "models": [
+    {
+      "seed": 42,
+      "model_file": "model_B_seed42.keras",
+      "model_sha256": "615479eb854575230115083399ebc1975f225548c452aa27824112320c012fd2",
+      "epochs": 83,
+      "params": 4511
+    },
+    {
+      "seed": 43,
+      "model_file": "model_B_seed43.keras",
+      "model_sha256": "aa4e20feed40905df612d98a33e6a7ebcc74719bdf10b749df87953f6e992e99",
+      "epochs": 68,
+      "params": 4511
+    },
+    {
+      "seed": 44,
+      "model_file": "model_B_seed44.keras",
+      "model_sha256": "e3fa8084a967976e75b2baada8340b5a5bbe0fd7c1d7cc80c966a965227673e0",
+      "epochs": 87,
+      "params": 4511
+    },
+    {
+      "seed": 45,
+      "model_file": "model_B_seed45.keras",
+      "model_sha256": "aa398e578839f5788ee15fc7535320c848bcc2d69c96a06f1c58742d20eb5340",
+      "epochs": 85,
+      "params": 4511
+    },
+    {
+      "seed": 46,
+      "model_file": "model_B_seed46.keras",
+      "model_sha256": "bd3c2c5ec72c5d8c0294655afb59cc401057382b7f6b03c98b6bbf3c90df9cc8",
+      "epochs": 76,
+      "params": 4511
+    }
+  ]
+}

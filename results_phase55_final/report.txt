@@ -1,0 +1,12 @@
+══════════════════════════════════════════════════════════════════
+  Phase 5.5 final training  ·  arm B  ·  all 6 subjects  ·  §5.1i-R
+══════════════════════════════════════════════════════════════════
+  seed    epochs   params  model file / sha256 (first 16)
+  42          83     4511  model_B_seed42.keras  615479eb85457523
+  43          68     4511  model_B_seed43.keras  aa4e20feed40905d
+  44          87     4511  model_B_seed44.keras  e3fa8084a967976e
+  45          85     4511  model_B_seed45.keras  aa398e578839f578
+  46          76     4511  model_B_seed46.keras  bd3c2c5ec72c5d8c
+  No accuracy here: every subject is in training (accuracy for new people = §5.1i-R LOSO).
+  Choosing 1 of these models, or an ensemble, is Phase 5.5b — pre-register first.
+══════════════════════════════════════════════════════════════════
