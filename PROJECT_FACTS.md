@@ -31,7 +31,7 @@ setup or a conversation the assistant cannot observe directly
 
 ---
 
-## QUICK STATUS — as of 20 Oct 2026
+## QUICK STATUS — as of 20 Oct 2026 (night)
 
 | Item | State |
 |---|---|
@@ -40,7 +40,9 @@ setup or a conversation the assistant cannot observe directly
 | **Phase 4 first result (User 5 only)** | per-frame **66.3 %**, vote 67.6 %; five postures 70–100 %, **Like 0.3 % (→ Dislike), Love 0.0 % (→ BreakTime)**; P2 and H9 do not hold; n = 1, descriptive. Diagnosis: our hand sits ~1–2 rows off ST's position (§5.1e-E). **Revised 10 Oct: Love's 0 % is now attributed mainly to a validation-split bug in Phase 2 that starved Love (§5.1g-R, §9 #51); the deployed model and the Phase 2 LOSO numbers must be re-made** |
 | **Phase 4 H8 evaluation, both subjects (20 Oct, deployed model with the §9 #51 bug)** | User 5 per-frame **66.3 %**, vote 67.6 %; User 6 per-frame **75.9 %**, vote 77.0 % (n = 2, descriptive). P1 and P3 hold; P2 and H9 do not (§5.1e-F). Like→Dislike is not shared (U5 Like 0.3 %, U6 Like 76.5 %) — hypothesis only |
 | Phase 2 re-run (split fixed) | ST LOSO **85.28 %** (was 79.73); fixed production model on User 5: **68.8 %** — Love fixed (98.8), Like still 7.1, FlatHand fell to 6.8; strong seed dependence (§5.1h-R) |
-| **Next session (as of 20 Oct 2026)** | Collection is **finished** and H8 is **evaluated on both subjects** (§5.1e-F). Order from here: (1) `train_phase55.py` real run (90 models, several hours on CPU `[ประมาณ ยังไม่ได้วัด]`, resumable; command in the script docstring) → (2) selection rule + Q1–Q5 (§5.1i) → (3) train the selected arm on all 6 subjects × 5 seeds → (4) ensemble pre-registration (5.5b) → (5) X-CUBE-AI conversion of the chosen model + on-board timing. Open before (5): whether X-CUBE-AI supports GlobalAveragePooling2D if arm C wins `[ยังไม่ได้ตรวจ]`; RAM/Flash for an ensemble `[ยังไม่ได้ตรวจ]`. Also open: error analysis of `per_frame.csv`; whether to evaluate the split-fixed ST-only model on User 6 with several seeds (§5.1h-R implication 1); the padding/parameter-count question (§9 #56). Progress report 3 is being planned (report 2 = sections 3–6, Phase 0–3; report 3 continues from section 7) |
+| **Phase 5.5 result (20 Oct 2026, 90 models, commit `5c724d9`)** | Selection rule picks **arm B** (subject-balanced weights): ST-fold mean **B 85.61** vs A 84.17 vs C 81.05 %; B − A over 6 subjects +1.35 pp, Wilcoxon W = 5, p = 0.31 → **B not shown better than A**, chosen by the pre-registered rule. Arm B on our subjects: User 5 **82.8 ± 5.2 %**, User 6 **86.6 ± 6.0 %** (5 seeds). Q1 Q2 Q4 Q5 hold (Q5 by 0.11 pp), **Q3 fails** (arm A User 5 Like 3.2 %; arm B 23.1 %). Full record §5.1i-R |
+| Error analysis of H8 (20 Oct) | hand position (vertical offset toward row 0, both subjects) is the best-supported cause of take-level failures, ρ = −0.58 over 28 takes, descriptive (§5.1j; full text `claude/ERROR_ANALYSIS_H8_2026-10-20.md`) |
+| **Next session (as of 20 Oct 2026 night)** | Start a **new chat** from this file. Order: (1) write a script that trains **arm B on all 6 subjects × 5 seeds and saves the models** (`train_phase55.py` saves none) → (2) pre-register **5.5b**: how the deployed model is chosen from the 5 (no held-out subject is left — rule needed) or whether a seed ensemble is used → (3) X-CUBE-AI conversion + on-board timing (Rule 6) → (4) Love edge/centre before/after live test (A5) with the new model. Round 2 (**5.5c**) candidates, none adopted: hand re-centring / metric-size normalisation, `padding="valid"` arm, normalisation constants recomputed on ST + ours (§5.1j, §5.1k). GAP support in X-CUBE-AI is **no longer blocking** (arm C not selected). Progress report 3 in planning (continues at section 7). Open list §8.6 |
 | Phase 5.5a (shift augmentation) | **negative**: −12.1 pp vs retrained baseline, paired over 3 seeds (§5.1g-R); not adopted |
 | Phase 4 data collection (`collect_own_data.py` **v5**) | ✅ **Done.** Chin (User 5) 42/42: main 14 (9 Oct) + extra 14 (9 Oct) + extra 14 (15 Oct, v5). Friend (User 6) 42/42: main 14 (14 Oct, v4) + extra 28 in one sitting (A10), file timestamps 18 Oct 2026 21:56–22:16 `[ตรวจแล้ว: xcopy listing 20 Oct]`; his first 14 extras (15 Oct) stay quarantined in `data\phase4_rejected` (A9, §9 #53). Manifest check of the 28 extras: missing frames 0, out-of-window 0, with warning 0 `[STUDENT]` (output pasted 20 Oct). `data\phase4_extra` holds 56 npz (28 + 28) + manifest = 57 files; `data\phase4` 28 npz + manifest = 29 files. Local backups on Chin's PC: `C:\Users\gaming\Documents\backup_phase4_20261020\phase4` (29) and `\phase4_extra` (57). Copy to Drive/USB: **not confirmed** |
 | Collection protocol | guided arming: hand must hold inside **220–320 mm for 3 s** before recording starts; take discarded if the hand leaves the window for **8 consecutive frames**; no frame-level filtering (§5.1e-A8) |
@@ -919,6 +921,11 @@ from ST and the comparison stays fair. (Consequence for hand position: §5.1f.)
 > never recorded here (Keras' default is "valid"). Until ST's file is inspected, "same architecture, only the split differs" is
 > **unverified**. Possibly relevant to the 3.197 ms vs 1.46 ms gap (§8.5 D2) — untested. Check: read the Conv2D config / `model.summary()`
 > of ST's `.keras`.
+>
+> **Added 20 Oct 2026 (night) `[WEB]` `[คำนวณ]`:** the Hugging Face card CNN2D_ST_HandPosture (commit 6f883ae) lists FLOAT32 weights
+> flash **10.75 KiB** = 11,008 B = exactly **2,752 × 4 B**, so ST's shipped model has 2,752 parameters → consistent with `padding="valid"`.
+> Strengthens, but does not close, §9 #56 — the `.keras` config itself is still unread. Phase 5.5's A/B/C comparison stays valid **within
+> our pipeline**; the thesis must not say "same architecture as ST".
 
 ### ⚠️ TRAP #5 — inference cost was overstated by 3.7×
 
@@ -1872,6 +1879,111 @@ seeing any fold result without a new pre-registration.
   candidates; ensemble vs single model is a separate, later pre-registration (Phase 5.5b), then
   X-CUBE-AI conversion and on-board timing (Rule 6).
 
+### 5.1i-R Result — real run 20 Oct 2026 (started 17:12 by the TensorFlow log timestamp; finished before Chin pasted the report at 20:38), `results_phase55\` (report.txt, runs.jsonl, summary.json), commit `5c724d9` `[MEASURED]`
+
+**Run:** `python pc_tools\train_phase55.py --st-data C:\ds\ST_VL53L8CX_handposture_dataset --ours data\phase4 data\phase4_extra`
+(full paths in the commit). Loaded: User1 4,584 · User2 2,134 · User3 2,172 · User4 2,171 · **User5 12,664** (main 4,220 + extra
+8,444) · **User6 12,684** (main 4,228 + extra 8,456) frames. 90/90 models, 0 resumed. Smoke test run first (passed, not committed).
+Settings exactly as pre-registered (§5.1i). Seed-level numbers re-computed by Claude from the pasted log: they reproduce the report
+table to 0.01 pp `[ตรวจแล้ว: log pasted by Chin 20 Oct 20:38]`.
+
+**Mean ± SD over 5 seeds (per-frame accuracy, %; our subjects tested on their MAIN set only):**
+
+| Held-out | Arm A | **Arm B** | Arm C | B seed range |
+|---|---|---|---|---|
+| User1 | 69.9 ± 0.9 | 71.4 ± 2.0 | 75.4 ± 2.5 | 68.8–73.5 |
+| User2 | 92.5 ± 1.4 | 92.4 ± 1.1 | 84.0 ± 2.8 | 91.3–94.1 |
+| User3 | 83.0 ± 4.7 | 87.2 ± 2.4 | 82.2 ± 5.5 | 85.1–91.3 |
+| User4 | 91.2 ± 3.1 | 91.6 ± 3.5 | 82.6 ± 3.1 | 85.9–95.1 |
+| User5 | 78.8 ± 3.0 | 82.8 ± 5.2 | 81.1 ± 7.6 | 76.4–90.4 |
+| User6 | 88.3 ± 5.9 | 86.6 ± 6.0 | 89.8 ± 2.9 | 80.7–94.1 |
+| **ST-fold mean (selection)** | 84.17 | **85.61** | 81.05 | |
+| mean of 6 | 83.96 | 85.30 | 82.53 | |
+
+**Selection (pre-registered rule):** best ST-fold mean = B, 1.44 pp above A (> the 1 pp tie margin) → **arm B selected**.
+
+**Paired over the 6 subjects (Wilcoxon signed-rank, exact):**
+- B − A per subject: +1.44, −0.18, +4.12, +0.40, +4.02, −1.74 pp; mean **+1.35 pp**, W = 5.0, **p = 0.312**. B higher for 4 of 6.
+- C − A per subject: +5.48, −8.54, −0.84, −8.52, +2.32, +1.50 pp; mean −1.44 pp, W = 9.0, p = 0.844.
+- n = 6 subjects: the smallest attainable two-sided exact p is 0.031. **No arm is shown to differ from A.** B is used because the rule
+  fixed in advance says so, not because it was shown to be better. Thesis wording: *"arm B was selected by the pre-registered rule; its
+  difference from arm A was not statistically distinguishable for these six subjects."*
+
+**Recall per class, arm B (mean over 5 seeds, %):**
+
+| | Fist | FlatHand | Dislike | Like | Love | CrossHands | BreakTime |
+|---|---|---|---|---|---|---|---|
+| User1 | 66.2 | 70.5 | **45.9** | 78.1 | 96.9 | 91.3 | 93.8 |
+| User2 | 85.0 | 92.6 | 94.9 | 93.1 | 98.2 | 94.4 | 88.1 |
+| User3 | 90.9 | 93.5 | 86.4 | 68.5 | 91.9 | 95.8 | 83.1 |
+| User4 | 97.8 | 97.4 | 75.2 | 73.8 | 99.7 | 98.3 | 99.2 |
+| User5 | 79.4 | 91.0 | 99.6 | **23.1** | 86.7 | 100.0 | 100.0 |
+| User6 | **67.5** | 98.7 | 84.6 | 81.3 | 93.1 | 99.8 | 80.8 |
+
+**Pre-registered predictions:**
+
+| | Prediction | Result | Verdict |
+|---|---|---|---|
+| Q1 | arm A ST-fold mean ≥ 85.28 − 3 = 82.28 | 84.17 (−1.11 pp vs the fixed Phase 2 LOSO) | ✅ holds |
+| Q2 | arm A User 5 > 68.8 | 78.8 | ✅ holds |
+| Q3 | arm A User 5 Like recall > 30 | **3.2** (arm B 23.1) | ❌ **does not hold** |
+| Q4 | arm B ≥ arm A on ST folds | 85.61 ≥ 84.17 | ✅ holds |
+| Q5 | arm C ≤ arm A − 3 on ST folds | 81.05 ≤ 81.17 | ✅ holds — **by 0.11 pp only** |
+
+**Reading (for these 6 subjects only):**
+- Adding our data: User 5 rises from 68.8 % (fixed ST-only production model, 1 seed, §5.1h-R) to 82.8 ± 5.2 % (arm B); User 6 from
+  75.9 % (deployed model **with bug #51**, §5.1e-F — not a clean baseline) to 86.6 ± 6.0 %. ST users barely move (Q1). Caveats: the
+  User 5 baseline is one seed vs five here; no split-fixed multi-seed ST-only baseline exists for User 6 (open, §8.6).
+- **Like for User 5 is not fixed by more data** (A 3.2 %, B 23.1 %), consistent with the position explanation of §5.1j: Chin's natural
+  Like sits where ST's and the friend's Dislike sits. Data volume is not the bottleneck for this class.
+- Other weak cells: User 1 Dislike 45.9 %, User 6 Fist 67.5 %, User 1 overall ≈ 70 % in every arm (as in Phase 2).
+- **Seed spread is large** (User 6 arm B 80.7–94.1 %; User 5 76.4–90.4 %): one trained model is one draw → the choice of the deployed
+  model needs its own rule or an ensemble (5.5b).
+- Arm C (GAP, 671 params) is worse on ST's users 2 and 4 by ≈ 8.5 pp but better on User 1 and our two; not selected.
+- Unchanged limits: n = 6 subjects; our two folds confound "new person" with "different sensor unit" (§5.1e-A1); our model is not ST's
+  exact network (§9 #56).
+
+**Deliverable (Rule 6):** train arm B on all 6 subjects × 5 seeds and **save** the models → 5.5b pre-registration (selection rule /
+ensemble) → X-CUBE-AI conversion + on-board timing → A5 Love edge/centre live test.
+
+### 5.1j Error analysis of the H8 evaluation — 20 Oct 2026 (full text: Project Knowledge `claude/ERROR_ANALYSIS_H8_2026-10-20.md`)
+
+Input: `results_phase4\eval_20261020_152457\per_frame.csv` (8,448 frames), `per_take.csv` (28 takes) and the 28 `data\phase4` npz files
+(sent as `phase4_for_claude.zip`). Model = deployed (bug #51). n = 2 subjects → descriptive; frames within a take are not independent,
+so no frame-level p-values. Method check: the centroid code reproduces §5.1e-E's User 5 table exactly.
+
+- **Errors cluster by take, not frame:** User 6 FlatHand 31.1 / 87.1 %, BreakTime 27.8 / 100 %, Love 100 / 24.5 % (take 1 / take 2).
+- **Errors come in long runs:** 72.5 % of wrong frames are in runs ≥ 30 frames (2 s) → the 15-frame vote cannot repair them.
+- **Confidence:** User 5's wrong frames are confident (mean 0.893; 69.7 % ≥ 0.9) → a confidence threshold is not a general fix
+  (User 6 kept-frame accuracy 75.9 → 86.7 % at 0.9, User 5 66.3 → 61.1 %).
+- **Distance:** inconclusive (within-take IQR ≈ 6 mm; direction inconsistent).
+- **Hand position — strongest signal:** row offset of each take's hand centroid outside ST's 4-user range vs take accuracy, Spearman
+  **ρ = −0.58** (column −0.11; 28 takes, descriptive). Inside ST's row range: 6 takes, mean 90.0 %; outside: 22 takes, 65.9 %.
+  **Every** out-of-range take is offset toward row 0, for both subjects; User 6 good-vs-bad take pairs 3/3 in the same direction.
+  Exceptions: Fist, BreakTime (U5) and FlatHand (U5) tolerate 0.3–0.6 rows of offset.
+- **Reading:** a shared direction for two people points to **setup geometry** (how the board sits relative to the hand) rather than
+  individual habit — not tested. Whether row 0 is physically "up" is still unverified.
+- **Implications:** hand re-centring is the best-supported 5.5c candidate; a position check in `collect_own_data.py` for any future data
+  (protocol change → pre-register); a positioning guide for the demo (§5.1f option 1).
+
+### 5.1k Literature / web update — 20 Oct 2026 (full text: `claude/LITERATURE_UPDATE_2026-10-20.md`) `[WEB]`
+
+Coverage: ~16 searches + 10 page fetches; Rule 3 angles 5 of 6 fully, citation-chasing partial. "Not found" = not found by these
+searches. No clone, no download.
+- **STSW-IMG050** (ST, active): AI hand-posture package for VL53L7CX/VL53L8CX on NUCLEO-F401RE; **no dataset or pre-trained model**
+  listed; workflow = define postures, collect from multiple users, retrain with the model-zoo script — the same thing Phase 5.5 does.
+- **ST moderator (ST Community, 18 Nov 2024):** the normalisation constants 295/196, 281/452 were computed on ST's public dataset and
+  should be recomputed for a new dataset → round-2 candidate (needs firmware parity, §5.1f).
+- **Hugging Face card:** 10.75 KiB = 2,752 × 4 B → ST's model is the `padding="valid"` network (§5.1 note, §9 #56). MACs: ours
+  13,536 vs ST's 7,744 = **1.75×**; measured time ratio 3.197 / 1.54 = **2.08×** → padding is the leading, **untested** D2 candidate.
+- **Oberweger, Wohlhart, Lepetit (arXiv 1502.06807):** fixed-size metric cube centred on the hand's centre of mass, normalised, to be
+  invariant to distance — supports Chin's 20 Oct idea (use distance to recover physical hand size) and re-centring; shown on
+  high-resolution depth cameras, not 8×8.
+- **GlobalAveragePooling2D** is listed in ST Edge AI Core's Keras operator page; not confirmed for X-CUBE-AI 10.2.1 via `.tflite`.
+  Moot unless arm C is revived.
+- Nothing new on a VL53L8 hand-posture paper or dataset after Sep 2026; no source on per-subject loss weighting for ToF LOSO (arm B is
+  our own experiment).
+
 ## 5.2 Dynamic-gesture datasets — what exists
 
 | Source | Gestures | Sensor | Data available? |
@@ -1936,6 +2048,7 @@ Before concluding "it does not exist", search using the manufacturer's terms.
 | `STMicroelectronics/STM32F4-GettingStarted-HandPosture` | Complete app for **NUCLEO-F401RE + X-NUCLEO-53LxA1**: prebuilt `.hex`, `app_sensor.c`, `app_network.c`, `app_comm.c`, converted model, ST Edge AI runtime |
 | `DenissStepanjuk/UWB-Gestures-classification...` (advisor's link) | PyTorch CNN / RNN / Transformer on UWB radar. RNN 98.41%, Transformer 96.03%, CNN ~92.5% |
 | UWB-Gestures dataset | **free on figshare** (not only IEEE): `figshare.com/articles/dataset/.../12652592` |
+| STSW-IMG050 (ST, added 20 Oct 2026 `[WEB]`) | AI hand-posture recognition package, VL53L7CX/VL53L8CX, NUCLEO-F401RE. No dataset or pre-trained model listed; ST's workflow: collect from multiple users, retrain with the model-zoo script (§5.1k) |
 
 ### ⚠️ TRAP #8 — do not copy the advisor's repo's split
 
@@ -2062,7 +2175,7 @@ subsection). No ADC exists in our system (§1.3) and none is needed for that tec
 | 3 | 8-condition timing matrix, one variable per step, both modes | not reported anywhere | ✅ done |
 | 3a | Mode-dependent effect of the same optimisation (headroom vs throughput) | not reported anywhere | ✅ done |
 | 3b | Working on-board inference + 4-stage latency breakdown | none of the 5 papers report a 4-stage on-device breakdown | ✅ done |
-| 4 | Subject-independent + cross-dataset evaluation | ST did not do this — **verified in their source**, `data_loader.py:184-191` shuffles and splits with no user grouping | 🟡 subject-independent part DONE 15 Sep (random 97.24% ± 0.34 vs leave-one-user-out 79.73% ± 8.63 pp, §5.1d); cross-dataset part pending (Phase 4 / 5.5). **With n = 2 own subjects (§5.1e-A1): cross-sensor H8 = descriptive case study; main quantitative result = 6-subject LOSO in Phase 5.5** |
+| 4 | Subject-independent + cross-dataset evaluation | ST did not do this — **verified in their source**, `data_loader.py:184-191` shuffles and splits with no user grouping | 🟡 subject-independent part DONE 15 Sep (random 97.24% ± 0.34 vs leave-one-user-out 79.73% ± 8.63 pp, §5.1d); cross-dataset part pending (Phase 4 / 5.5). **With n = 2 own subjects (§5.1e-A1): cross-sensor H8 = descriptive case study; main quantitative result = 6-subject LOSO in Phase 5.5**. **Phase 5.5 done 20 Oct:** 6-subject LOSO, arm B 85.30 % mean of 6 (ST folds 85.61), our subjects 82.8 / 86.6 % (§5.1i-R) |
 | 4a | Position sensitivity of the ST architecture characterised live, per posture (§5.1e-R, §5.1f) | not reported in the papers in this file `[ยังไม่ได้ตรวจ beyond them]` | 🟡 observed (n = 1); before/after test planned for Phase 5.5 |
 | 5 | First dynamic-gesture dataset for VL53L8CX | nothing comparable exists | ⬜ |
 
@@ -2080,6 +2193,7 @@ Phase 5    collect our own static dataset (4-6 people)                     MERGE
                                                                            only 2 people exist (§5.1e-A1)
 Phase 5.5a shift-augmentation ablation on ST only, tested on User 5            PRE-REGISTERED 10 Oct (§5.1g)
 Phase 5.5  PRE-REGISTERED 14 Oct (§5.1i): arms A/B/C, 5 seeds, 6-subject LOSO, selection on ST folds;
+           LOSO RUN DONE 20 Oct (§5.1i-R): arm B selected; next = final training on 6 subjects + 5.5b;
            train on ST + our 2 (6-subject LOSO), cross-dataset comparison,
            Love edge/centre before/after test, deploy                      1-2 wk
 Phase 5.6  different-day test of Chin + friend (not used for training) —
@@ -2201,6 +2315,24 @@ extracting and re-running the analysis).
 
 ---
 
+## 8.6 Open items — as of 20 Oct 2026 (night)
+
+| Item | State |
+|---|---|
+| Final training: arm B on all 6 subjects × 5 seeds, **models saved** | ⬜ script not written (`train_phase55.py` saves no model) |
+| 5.5b pre-registration: rule for choosing 1 of 5 final models, or a seed ensemble (RAM/Flash for N models `[ยังไม่ได้ตรวจ]`) | ⬜ |
+| X-CUBE-AI conversion + on-board timing of the final model; compare a `padding="valid"` variant (D2) | ⬜ |
+| A5 Love edge/centre live test with the new model | ⬜ |
+| 5.5c (round 2) pre-registration: re-centring / metric-size normalisation, `padding="valid"`, recomputed constants — each needs firmware parity | ⬜ candidates only |
+| Split-fixed ST-only model on User 6, several seeds (clean baseline for §5.1i-R's User 6 comparison) | ⬜ |
+| Read ST's `.keras` Conv2D config directly (closes §9 #56) | ⬜ |
+| Is row 0 physically "up" on our mount? | ⬜ `[ยังไม่ได้ตรวจ]` |
+| Disclose the quarantined friend takes (A9) in the thesis | ⬜ writing |
+| Copy `backup_phase4_20261020` to Drive/USB | ⬜ not confirmed; `phase4_for_claude.zip` (Documents) may be deleted |
+| Progress report 3 (sections from 7): due date unknown; check whether report 2 contains "79.73" (now superseded by 85.28) | ⬜ |
+| **Reminder (Chin's explicit request, 20 Oct 2026):** when the project ends — or when thesis/defence wrap-up starts — remind Chin, even if he forgets, to build a **reusable skill** capturing every good working method of this project, from §9, the project memory's learnings and preferences | ⬜ at project end |
+
+
 # 8.5 DEFERRED WORK — questions consciously left open, with the plan to resume
 
 Not abandoned. Each entry records what is unanswered, why it was deferred, the
@@ -2285,7 +2417,9 @@ A second ST source (Hugging Face model card, CNN2D_ST_HandPosture, FLOAT32 8×8�
 (README, §5.1) and 1.53–1.54 ms, both about half of our 3.197 ms.
 
 Candidates, **none tested**: compiler optimisation level; runtime library / kernel
-choice; what the two measurements include; **our model has 4,511 parameters vs ST's published 2,752 (§9 #56)**. Resume when inference time starts to matter
+choice; what the two measurements include; **our model has 4,511 parameters vs ST's published 2,752 (§9 #56)**.
+**Leading candidate (20 Oct 2026, `[คำนวณ]`, untested):** padding "same" vs "valid" gives 13,536 vs 7,744 MACs = 1.75×, against a
+measured time ratio of 3.197 / 1.54 = 2.08× (§5.1k). Test: convert a `padding="valid"` model with the same tool chain and time it. Resume when inference time starts to matter
 (a larger or temporal model, Phase 6.5).
 
 ## D3 — Independent (logic-analyser) check of the Phase 3 stage timings — optional
@@ -2437,6 +2571,8 @@ Hybrid CNN–SVM Framework With FPGA Acceleration", IEEE Trans. Radar Systems, V
 # 9. CORRECTION LOG — mistakes the assistant actually made
 
 Kept so the same errors are not repeated. Each was caught by the student.
+**Scope (20 Oct 2026):** only mistakes in this project's work go here. Side tasks in the same chat (e.g. Office / Claude-for-Word set-up)
+are not logged in this file — it lives in the repo.
 
 | # | Claim made | Reality | Root cause |
 |---|---|---|---|
@@ -2496,6 +2632,8 @@ Kept so the same errors are not repeated. Each was caught by the student.
 | 54 | Said (and the v4 docstring says) that Thai-keyboard letters ั/พ/ห work for y/r/s, tested only on a fake `input()` | On Chin's Windows PC (15 Oct, first prompt of the session) a Thai-keyboard `ั` came back as "Unknown answer". The re-ask worked and nothing was lost; the cause was not diagnosed (console encoding is a guess). Rule: switch to the English keyboard before starting | Same family as #47 and #50 — a simulation reproduces only what you imagined; the assumption was carried over from the #48 fix |
 | 55 | Told Chin (16 Oct) that the friend's extras must be split over two days and guessed that 28 takes in one sitting would tire him | A7's revision is a reasoned preference and §5.1e-P step 5 says "if possible"; Chin himself did 28 takes in one evening on 9 Oct (board on 19:47, last take 23:11). The fatigue claim had no measurement. Chin pushed back with the right fact; decision recorded in A10 | Turned a recorded preference into a rule and stated a risk with no evidence (Rules 1 and 2) |
 | 56 | Told Chin (20 Oct) "the model has 2,752 parameters" as if it were ours | 2,752 is ST's published 8-class model (§5.1). Our `build_model` (`padding="same"`) has **4,511** parameters for 7 classes `[คำนวณ จากโค้ด]`; 2,752 matches `padding="valid"` (152 + 2,336 + 264). So "exact same architecture as ST" (§5.1, `train_st_cnn2d.py` docstring) is unverified; ST's padding was never recorded. Noticed while explaining "parameters" to Chin from the code. Whether it explains 3.197 vs 1.46 ms (D2): untested | Quoted a number from §5.1 for the wrong model (same family as #40) and the architecture note carried no padding / parameter-count check |
+| 57 | Gave `cd /d C:\...` (20 Oct) as "the" command after saying "open cmd" | Chin opened **PowerShell**, where `/d` is rejected; the following `git add/commit/push` ran outside the repo and did nothing (no harm). Fix: `cd "C:\..."` works in both shells | Wrote a shell-specific command without checking which shell the student would use — give commands valid in both cmd and PowerShell |
+| 58 | Estimated 8–30 h for the 90-model run before any model had finished | Measured: started 17:12 (TensorFlow log timestamp), report pasted 20:38 → at most ≈ 3 h 26 min on Chin's CPU; the script's own running estimate was of that order | Gave a duration without a measurement — label guesses as `[ประมาณ]` and replace them with the first measured rate |
 
 **Real finding behind #36 (not an assistant mistake — a genuine project fact):**
 The `53L8A1_SimpleRanging` project's `.ioc` has always been configured for **STM32F401RETx / NUCLEO-F401RE**, while the physical board (confirmed by a photo of the chip marking) is **STM32F411RET6**. Confirmed via the linker script header: *"Linker script for NUCLEO-F401RE Board embedding STM32F401RETx Device... 96KBytes RAM"*. This has been true since the project was first created and was never the assistant's error to log — it predates this conversation.
@@ -2759,3 +2897,11 @@ confirmed). First two-subject H8 evaluation (§5.1e-F): per-frame 66.3 % (User 5
 bug-affected model; P1 and P3 hold, P2 and H9 do not; descriptive, n = 2. New open item: our model has 4,511 parameters vs ST's
 published 2,752 (padding "same" vs "valid"), so "same architecture" is unverified (§5.1, §9 #56). Next: Phase 5.5 real run;
 progress report 3 planning. Correction log now 56 entries.*
+
+*Last updated: 2026-10-20 (night) · **Phase 5.5 LOSO run done** (§5.1i-R, commit `5c724d9`): 90 models; the pre-registered rule
+selects arm B (ST folds 85.61 vs A 84.17, C 81.05); B − A not significant over 6 subjects (Wilcoxon W = 5, p = 0.31). Our subjects
+with arm B: User 5 82.8 ± 5.2 %, User 6 86.6 ± 6.0 %. Q1/Q2/Q4/Q5 hold (Q5 by 0.11 pp), Q3 fails — User 5's Like stays low (A 3.2 %,
+B 23.1 %). Error analysis (§5.1j): hand-position offset toward row 0 is the best-supported cause. Literature update (§5.1k):
+STSW-IMG050, dataset-specific normalisation constants, Hugging Face evidence that ST's model is the `padding="valid"` network.
+New §8.6 open list (incl. the skill reminder Chin asked for). Correction log now 58 entries (#57–#58). Next: new chat → final training
+of arm B with saved models → 5.5b → X-CUBE-AI.*
