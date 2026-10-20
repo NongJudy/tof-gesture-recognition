@@ -31,19 +31,21 @@ setup or a conversation the assistant cannot observe directly
 
 ---
 
-## QUICK STATUS — as of 9 Oct 2026
+## QUICK STATUS — as of 20 Oct 2026
 
 | Item | State |
 |---|---|
 | Phases 0–3 | ✅ complete (Phase 3 deployed on-board inference, 21 Sep 2026) |
 | Phase 4 pre-flight check 6 (21-trial live test) | ✅ done 24–25 Sep 2026, 21/21 correct **with per-posture hand positioning** (§5.1e-R) |
 | **Phase 4 first result (User 5 only)** | per-frame **66.3 %**, vote 67.6 %; five postures 70–100 %, **Like 0.3 % (→ Dislike), Love 0.0 % (→ BreakTime)**; P2 and H9 do not hold; n = 1, descriptive. Diagnosis: our hand sits ~1–2 rows off ST's position (§5.1e-E). **Revised 10 Oct: Love's 0 % is now attributed mainly to a validation-split bug in Phase 2 that starved Love (§5.1g-R, §9 #51); the deployed model and the Phase 2 LOSO numbers must be re-made** |
+| **Phase 4 H8 evaluation, both subjects (20 Oct, deployed model with the §9 #51 bug)** | User 5 per-frame **66.3 %**, vote 67.6 %; User 6 per-frame **75.9 %**, vote 77.0 % (n = 2, descriptive). P1 and P3 hold; P2 and H9 do not (§5.1e-F). Like→Dislike is not shared (U5 Like 0.3 %, U6 Like 76.5 %) — hypothesis only |
 | Phase 2 re-run (split fixed) | ST LOSO **85.28 %** (was 79.73); fixed production model on User 5: **68.8 %** — Love fixed (98.8), Like still 7.1, FlatHand fell to 6.8; strong seed dependence (§5.1h-R) |
-| **Next session (as of 10 Oct 04:35)** | friend (User 6) collection **postponed** — was briefed (consent asked, posture shapes shown away from the sensor, no position coaching) but stopped before/around Fist take 1; check `data\phase4` for any partial `User6` takes before restarting. Then: Phase 5.5 pre-registration (ST + ours, ≥ 5 seeds, LOSO 6 subjects, methods chosen on validation folds only), update `evaluate_phase4.py` baseline constants to 85.28 % |
+| **Next session (as of 20 Oct 2026)** | Collection is **finished** and H8 is **evaluated on both subjects** (§5.1e-F). Order from here: (1) `train_phase55.py` real run (90 models, several hours on CPU `[ประมาณ ยังไม่ได้วัด]`, resumable; command in the script docstring) → (2) selection rule + Q1–Q5 (§5.1i) → (3) train the selected arm on all 6 subjects × 5 seeds → (4) ensemble pre-registration (5.5b) → (5) X-CUBE-AI conversion of the chosen model + on-board timing. Open before (5): whether X-CUBE-AI supports GlobalAveragePooling2D if arm C wins `[ยังไม่ได้ตรวจ]`; RAM/Flash for an ensemble `[ยังไม่ได้ตรวจ]`. Also open: error analysis of `per_frame.csv`; whether to evaluate the split-fixed ST-only model on User 6 with several seeds (§5.1h-R implication 1); the padding/parameter-count question (§9 #56). Progress report 3 is being planned (report 2 = sections 3–6, Phase 0–3; report 3 continues from section 7) |
 | Phase 5.5a (shift augmentation) | **negative**: −12.1 pp vs retrained baseline, paired over 3 seeds (§5.1g-R); not adopted |
-| Phase 4 data collection (`collect_own_data.py` v4) | 🟡 **Chin (User 5) done 9 Oct 2026:** main set 14/14 in `data\phase4` + extra day 1 14/14 in `data\phase4_extra` (§5.1e-P step 4). **Remaining:** Chin extra day 2 (another day), friend (User 6) main + extras, then the evaluation script |
+| Phase 4 data collection (`collect_own_data.py` **v5**) | ✅ **Done.** Chin (User 5) 42/42: main 14 (9 Oct) + extra 14 (9 Oct) + extra 14 (15 Oct, v5). Friend (User 6) 42/42: main 14 (14 Oct, v4) + extra 28 in one sitting (A10), file timestamps 18 Oct 2026 21:56–22:16 `[ตรวจแล้ว: xcopy listing 20 Oct]`; his first 14 extras (15 Oct) stay quarantined in `data\phase4_rejected` (A9, §9 #53). Manifest check of the 28 extras: missing frames 0, out-of-window 0, with warning 0 `[STUDENT]` (output pasted 20 Oct). `data\phase4_extra` holds 56 npz (28 + 28) + manifest = 57 files; `data\phase4` 28 npz + manifest = 29 files. Local backups on Chin's PC: `C:\Users\gaming\Documents\backup_phase4_20261020\phase4` (29) and `\phase4_extra` (57). Copy to Drive/USB: **not confirmed** |
 | Collection protocol | guided arming: hand must hold inside **220–320 mm for 3 s** before recording starts; take discarded if the hand leaves the window for **8 consecutive frames**; no frame-level filtering (§5.1e-A8) |
-| Collection volume | 2 takes/posture/subject in `data\phase4` (H8 test set, as registered) **+ 4 extra takes/posture** in `data\phase4_extra` for Phase 5.5 training only, **split 2 + 2 over two different days** (§5.1e-A7) |
+| Pre-registration commit | Phase 5.5 pre-registration (§5.1i) written 14 Oct 22:55 **before** any friend extra data existed. Chin said "push แล้ว" on 15 Oct 00:31 `[STUDENT]` after being told to commit `PROJECT_FACTS.md`, `pc_tools\train_phase55.py`, `collect_own_data.py` (v5) and `quarantine_takes.py` and to leave out `results_phase55_SMOKE_TEST` and all `User6` data; the assistant did not check the remote (not needed, Rule 12). Friend's **main** set (collected 14 Oct, before the push) was first evaluated on 20 Oct 2026 (§5.1e-F) |
+| Collection volume | 2 takes/posture/subject in `data\phase4` (H8 test set, as registered) **+ 4 extra takes/posture** in `data\phase4_extra` for Phase 5.5 training only. Chin's extras: **2 + 2 over two different days** (9 and 15 Oct, §5.1e-A7). Friend's extras: **one sitting** (Chin's decision 16 Oct, §5.1e-A10) — both subjects end with 3 × 14 = 42 takes |
 | Subject pool | **hard limit n = 2 (Chin + 1 friend)**, stated by Chin 24 Sep 2026 — Phase 5 as originally planned (4–6 people) cannot happen (§8) |
 | Deployed model file | `results_phase2_final\production_model.keras` (§5.1d-F) |
 | Logic-analyser probes | **still attached** as of 28 Sep 2026 `[STUDENT]` — not removed (§8, corrects the 11 Sep note) |
@@ -910,6 +912,14 @@ Dense     8, softmax
 Use this exact architecture for our own training, so that only the *split* differs
 from ST and the comparison stays fair. (Consequence for hand position: §5.1f.)
 
+> ⚠️ **OPEN (20 Oct 2026, §9 #56): is our architecture really the same as ST's?** `train_st_cnn2d.build_model` uses
+> `Conv2D(8, 3, padding="same")` `[ตรวจแล้ว: train_st_cnn2d.py]` → Flatten input 4×4×8 = 128 → **4,511 parameters for 7 classes**
+> (152 + 4,128 + 231; 4,544 for 8 classes) `[คำนวณ]`. ST's published count is **2,752** (8 classes, above), which matches
+> `padding="valid"` exactly (152 + 2,336 + 264 = 2,752; Flatten input 3×3×8 = 72) `[คำนวณ]`. The padding in ST's `.keras` was
+> never recorded here (Keras' default is "valid"). Until ST's file is inspected, "same architecture, only the split differs" is
+> **unverified**. Possibly relevant to the 3.197 ms vs 1.46 ms gap (§8.5 D2) — untested. Check: read the Conv2D config / `model.summary()`
+> of ST's `.keras`.
+
 ### ⚠️ TRAP #5 — inference cost was overstated by 3.7×
 
 The assistant used **5.34 ms** (from Bartoli 2024's own CNN) for weeks.
@@ -1401,6 +1411,45 @@ Accuracy of User 5 frames after transforming them (exploratory; best transform c
   collapsing. Keeping ST's architecture keeps the comparison fair; global pooling is an alternative
   that changes the architecture and would need to be reported as such.
 
+### 5.1e-F H8 evaluation — User 5 + User 6, 20 Oct 2026 15:24 `[MEASURED]`
+
+**Run:** `pc_tools\evaluate_phase4.py --data-dir data\phase4 --model results_phase2_final\production_model.keras`
+(28 takes, User 5 and User 6). Model = the **deployed** one, sha256 `f4be0cda420393d0…`, i.e. the model
+**with the §9 #51 validation-split bug**. Preprocessing `pc_tools\st_dataset.py`; cross-check against the
+training code: same within float32 rounding (max 3.1e-07). Manifest: 28 rows, missing 0, brief out-of-window
+0, files match. ST baseline printed: LOSO 66.3–94.3 % (mean 85.3 %, corrected). Output folder
+`results_phase4\eval_20261020_152457\` (report.txt, summary.json, per_take.csv, per_frame.csv, confusion PNGs).
+Report text pasted by Chin, 20 Oct 2026.
+
+| Metric | User 5 | User 6 |
+|---|---|---|
+| Frames evaluated | 4,220 | 4,228 |
+| Per-frame accuracy | 66.3 % | 75.9 % |
+| 15-frame vote accuracy | 67.6 % | 77.0 % |
+| Per-take accuracy (n = 14 takes) | mean 66.3, SD 44.6, range 0.0–100.0 | mean 75.9, SD 28.5, range 24.5–100.0 |
+
+Per-class recall (take 1 / take 2 in brackets for User 6):
+- User 5: Fist 97.8 · FlatHand 99.3 · Dislike 96.2 · **Like 0.3** · **Love 0.0** · CrossHands 70.1 · BreakTime 100.0
+- User 6: Fist 98.3 (99.3/97.4) · FlatHand 59.1 (31.1/87.1) · Dislike 71.2 (79.1/63.2) · Like 76.5 (76.5/76.5) · Love 62.3 (100.0/24.5) · CrossHands 100.0 (100/100) · BreakTime 63.9 (27.8/100.0)
+
+Top confusions (frames): User 5 — Love→BreakTime 601, Like→Dislike 572, CrossHands→FlatHand 180.
+User 6 — Love→BreakTime 225, BreakTime→FlatHand 218, FlatHand→Fist 205, Dislike→FlatHand 131, Like→Dislike 112.
+
+**Determinism check:** the User 5 block is identical to §5.1e-E (9 Oct) in every reported number — the script has no randomness.
+
+**Against the pre-registration (n = 2, descriptive; no significance claim, A1):**
+- P1 (60–85 %): **holds** — 66.3 and 75.9 both inside; mean of the two 71.1 % (central guess ~72 %, which §5.1e already calls weak).
+- P2 (Love/CrossHands/BreakTime recall > Fist/FlatHand/Dislike/Like, per subject): **does not hold** — User 5 56.7 vs 73.4; User 6 75.4 vs 76.3 (−0.9 pp).
+- P3 (vote ≥ frame): **holds, barely** — +1.3 pp (U5), +1.1 pp (U6); errors are systematic, voting cannot fix them.
+- H9 (four lowest = Fist/FlatHand/Dislike/Like): **does not hold** for either (U5 lowest: Love, Like, CrossHands, Dislike; U6: FlatHand, Love, BreakTime, Dislike).
+- Decision rule: User 5 66.3 % vs ST's lowest 66.33 % (0.03 pp below — rounding-level) → "check preprocessing and orientation first": both already checked (§5.1e-E and its position diagnosis). User 6 ≥ 66.33 % → consistent with ST's per-user spread.
+
+**Caveats:** (1) the deployed model has the §9 #51 bug, so per-class numbers (Love especially) are not a clean test of the sensor/board; (2) one model = one seed (§5.1h-R: per-class results for unseen subjects depend strongly on the seed); (3) within-class take-to-take spread for User 6 reaches 75.5 pp (Love), 72.2 (BreakTime), 56.0 (FlatHand) `[คำนวณ]`, as large as the between-subject gap of 9.6 pp, so the order of the two subjects is not interpretable; (4) n = 2 subjects, 2 takes per posture.
+
+**Hypothesis, not finding:** Like→Dislike is not shared between subjects (U5 Like 0.3 %, U6 Like 76.5 %), which fits a subject-specific hand-position shift rather than a VL53L8CA-vs-CX sensor effect (§5.1e-E working hypothesis). Not tested: footprint of User 6 vs ST (`diagnose_position.py` not run on User 6).
+
+**Not done:** error analysis (categorise misclassified frames from `per_frame.csv`); split-fixed model / multi-seed evaluation on User 6.
+
 ### 5.1e-A Amendments after registration — dated, not merged silently into the text above
 
 **A1 — Subject pool fixed at n = 2 (Chin stated 24 Sep 2026 `[STUDENT]`): "only 2 people, no way
@@ -1492,7 +1541,39 @@ the hand at a controlled distance throughout.
 - Screen text is **English** (9 Oct): the Windows Terminal font has no Thai glyphs, so leading vowels
   (เ แ ไ) were spaced out in screenshots meant for the report.
 
-### 5.1e-P Execution plan for Phase 4 (as of 9 Oct 2026)
+**A9 — Operator confirms the posture after every take (`collect_own_data.py` v5) + quarantine
+procedure (15 Oct 2026).** *Trigger:* the friend's first extra set (15 Oct 00:01–00:10, v4) contained
+one wrong posture. v4 checks only distance and frame loss, and a take with no `[WARNING]` was saved
+without any prompt (`[CODE]` the `else: action = "save"` branch). Chin noticed only afterwards that
+one take was wrong, not which. *Fix:* v5 asks `Posture correct the whole time?  y = save, r = redo,
+s = skip` after every take, so the operator must watch all 20 s. Operator rule: `r` for any
+posture-**shape** error or doubt; **never** `r` because of hand position (A2, A8 — natural
+positioning). Tested on the fake board (10 cases + main loop, incl. an unknown answer being re-asked);
+seen live on Chin's board 15 Oct (the question appeared every take). *Quarantine:*
+`pc_tools\quarantine_takes.py` **moves** takes (never deletes) to `data\phase4_rejected\` and appends
+`quarantine_log.csv` (moved_at, class, user, take, recorded_at, src, dst, reason); dry run by default,
+`--apply` to move; refuses to overwrite. The training loader reads only `data\phase4` and
+`data\phase4_extra`. Applied once, ~15 Oct 00:19: 14 takes of User 6 (`--since 20261014_233700`),
+reason "User6 extra day1: subject reported a wrong posture in one take, take unknown"; the dry-run list
+was checked before `--apply` (14 takes, 2 per posture, all User 6, none of User 5, none from the main
+set). The **whole** set was removed because guessing which take was wrong could leave the wrong one
+in. *Caveat:* `manifest_collect.csv` in `data\phase4_extra` still has those 14 rows (the script only
+appends); anything that joins takes to that manifest must also read `quarantine_log.csv`.
+`train_phase55.py` does not read a manifest `[CODE]`, and `evaluate_phase4.py` uses the manifest of
+`data\phase4`, which was not touched.
+
+**A10 — Friend's extras in one sitting (Chin's decision, 16 Oct 2026 23:27 `[STUDENT]`).** A7's
+2 + 2 split is a reasoned preference and §5.1e-P step 5 says "if possible"; it is not a hard rule.
+Chin's own 9 Oct evening was 28 takes in one sitting (main 14 + extra 14; board on 19:47, last take
+23:11), and he wants equal counts: both subjects 3 sets × 14 = 42 takes. Command: `--user 6 --takes 4
+--out-dir ...\data\phase4_extra --fw-note "c88c0d2 not re-verified; extra day1+day2 single sitting
+(deviation from A7)"`. *Cost:* the friend's extras carry **no between-day variation** (Chin's carry
+two days) → thesis limitation. The operator may pause between postures (the script waits at "Press
+Enter to start"). *Status 20 Oct:* **collected** — 28/28 saved in one sitting (file timestamps 18 Oct 2026 21:56–22:16); discarded attempts Dislike 2, BreakTime 1; manifest missing 0 / out-of-window 0 / warnings 0; both subjects now 42 takes. *(17 Oct: not collected yet.)* If the friend cannot sit for 28 takes, fall
+back to two sittings on different days, which restores A7. Assistant's first answer on this treated
+the split as required and guessed fatigue (§9 #55).
+
+### 5.1e-P Execution plan for Phase 4 (as of 17 Oct 2026)
 
 1. ✅ **Located** (8 Oct 2026, `dir /s /b`): one copy only,
    `C:\Users\gaming\Documents\GitHub\tof-gesture-recognition\pc_tools\collect_own_data.py`.
@@ -1529,11 +1610,13 @@ the hand at a controlled distance throughout.
    `manifest_collect.csv` when the evaluation script is written.
    **Observation (Chin, 9 Oct):** Dislike is awkward to form ("งอมือยาก") — the one discarded take was
    Chin losing the posture mid-take. Possible explanation to check (not a conclusion) if Dislike later
-   scores worse than other postures; watch whether the friend finds it hard too.
-4b. **Chin extra day 2:** same extra command on another day with `--fw-note "c88c0d2 not re-verified; extra day2"`.
-5. **Friend's collection:** same commands with `--user 6`, **same `--out-dir`s**, naive (A2–A3);
-   extras also split over two days if possible.
-6. **Evaluation script — does not exist yet:** load `data/phase4` with `st_dataset.load_dataset()`,
+   scores worse than other postures; watch whether the friend finds it hard too. **Update 14–15 Oct:** the friend also found Dislike hard — 3 discarded attempts in his main set (wrist rotation, hand left the window) `[STUDENT]`; Chin lost 1 attempt on 9 Oct and none in his 15 Oct extras. Only n = 2 subjects → a pattern to mention, not a conclusion. Saved Dislike takes are the ones the subject managed to hold, so they are a survivor sample (selection effect → thesis limitation).
+4b. ✅ **Chin extra day 2 — done 15 Oct 2026** (v5; board on since ≈ 23:00 on 14 Oct, `--minutes-since-poweron 92`; file timestamps 00:35:20 → 00:48:17; `--fw-note "c88c0d2 not re-verified; extra day2 (v5)"`): **14/14 saved** in `data\phase4_extra`. 1 take auto-discarded (FlatHand take 1: the hand left the window at 2.4 s, 14 frames out). 1 take redone by the operator (BreakTime take 1: 291 frames, 14.5 Hz, **11 frames missing mid-take**, `[WARNING]` → `r`; cause **not determined**, n = 1, Chin was asked what was running and did not answer). Every saved take in the pasted log: 302 frames (15.1 Hz), 0 missing, 0 out-of-window, median 263–274.5 mm. Board check 14.8 Hz `[PASS]`; its `[WARNING] 0 %` only means the hand was not yet in front of the sensor (that check is not recorded). The first answer typed with the Thai keyboard (`ั`) was rejected as "Unknown answer" (§9 #54); nothing was lost. Screenshots `collect_v5_confirm.png` and `frame_loss_warning.png` were requested; capture **not confirmed**. Laptop charging pause: board unplugged ≈ 00:56 15 Oct, replugged 16 Oct ≈ 23:20 (list_ports first showed no ports, then COM3 — cause not diagnosed, probably the cable).
+5. **Friend's collection (User 6), naive (A2–A3):**
+   - **Main — ✅ 14/14 in `data\phase4`, 14 Oct 2026** (v4; board plugged ≈ 23:00; `--minutes-since-poweron 3`; `--fw-note "c88c0d2 not re-verified"`; first file `log__20261014_231812__User6__take1`; finished before 23:36). Board check 14.8 Hz `[PASS]`, `[WARNING]` median 157 mm (his hand was closer than the window during the unrecorded check). Fist take 1: 302 frames, median 265.5 mm; take 2: 302 frames, median 252.5 mm; both 0 missing / 0 out-of-window. Collection Summary: all 7 postures 2/2 saved; **Dislike had 3 discarded attempts** (Chin: the friend found rotating the wrist hard and the hand left the window `[STUDENT]`), the other postures 0. The assistant saw only the two Fist Result blocks and the Summary — the other 12 per-take Results were not pasted `[ยังไม่ได้ตรวจ]`; confirm from `manifest_collect.csv` when evaluating.
+   - **First extra attempt — quarantined** (15 Oct 2026 00:01:52 → 00:10:06, v4): 14/14 saved, Like had 2 discards; Chin reported one wrong posture, which take unknown → all 14 moved to `data\phase4_rejected` (A9).
+   - **Extras — ✅ 28/28 in one sitting (A10), 18 Oct 2026 21:56–22:16** (file timestamps) into `data\phase4_extra`. Collection Summary (pasted 20 Oct): discarded attempts Dislike 2, BreakTime 1, others 0. Manifest check: missing 0, out-of-window 0, with warning 0.
+6. **Evaluation script — ✅ written (`pc_tools\evaluate_phase4.py`, §9 #50; ST baseline updated to the corrected LOSO 14 Oct); original plan:** load `data/phase4` with `st_dataset.load_dataset()`,
    run `results_phase2_final\production_model.keras`, report per subject: per-frame accuracy,
    15-frame vote accuracy, per-class recall, confusion matrix — mapping classes **by name** (§9 #38).
 7. Compare with the decision rules and P1–P3/H9 (descriptive), then Phase 5.5 (§8).
@@ -1743,7 +1826,7 @@ not seen — in particular for our subjects' natural Like (→ Dislike so far) a
 hurting ST's users?
 
 **Data:** ST 4 users (11,061 frames, `train_st_cnn2d.load_dataset`, split-bug fix applied) + User 5 and
-User 6, each `data\phase4` (main, 14 takes) + `data\phase4_extra` (2 + 2 days, 28 takes) ≈ **12,600 frames
+User 6, each `data\phase4` (main, 14 takes) + `data\phase4_extra` (28 takes; Chin 2 + 2 days, friend one sitting — §5.1e-A10) ≈ **12,600 frames
 per subject** vs ST's ~2,100–4,600 per user. Pooled naively our two subjects would be ~70 % of training.
 
 **Folds — leave-one-subject-out over 6 subjects:**
@@ -1990,9 +2073,9 @@ Phase 0    lock the data format + clock + measurement matrix               DONE 
 Phase 1    logic analyser verification                                     DONE 11 Sep
 Phase 2    train on ST's dataset; subject-independent split                DONE 15 Sep
 Phase 3    deploy AI to board, instrument 4 stages                         DONE 21 Sep
-Phase 4    closed-loop check: our board's data → ST's model                NEXT (§5.1e)
+Phase 4    closed-loop check: our board's data → ST's model                DONE 20 Oct (§5.1e-F)
              pre-flight 21-trial live test                                 DONE 24–25 Sep (§5.1e-R)
-             collection: Chin (informed) + 1 friend (naive), n = 2         TODO (§5.1e-P)
+             collection: Chin (informed) + 1 friend (naive), n = 2         DONE 18 Oct (§5.1e-P)
 Phase 5    collect our own static dataset (4-6 people)                     MERGED INTO PHASE 4 —
                                                                            only 2 people exist (§5.1e-A1)
 Phase 5.5a shift-augmentation ablation on ST only, tested on User 5            PRE-REGISTERED 10 Oct (§5.1g)
@@ -2018,7 +2101,7 @@ Advisor 1 (อ.Sakreya) sent the UWB-Gestures reference repo, both related-work 
 and the message "เปลี่ยนจาก UWB เป็น ToF เป็นอีกแนวทางหนึ่งครับ" — the point at which the project's
 sensor choice moved from UWB radar to ToF. Useful for the thesis introduction (why ToF over UWB).
 
-**Status as of 9 Oct 2026 (late): Phases 0–3 complete; Phase 4 pre-flight done (21/21 with per-posture
+**Superseded by QUICK STATUS (17 Oct 2026). Status as of 9 Oct 2026 (late): Phases 0–3 complete; Phase 4 pre-flight done (21/21 with per-posture
 positioning, §5.1e-R); `collect_own_data.py` v4 (guided arming, A8) dry-run passed; **Chin's data
 collected** — main 14/14 + extra day 1 14/14 (§5.1e-P step 4). Next, in any order that suits the
 people involved: evaluation script (step 6, can run on User 5 alone first), friend (User 6), Chin extra
@@ -2202,7 +2285,7 @@ A second ST source (Hugging Face model card, CNN2D_ST_HandPosture, FLOAT32 8×8�
 (README, §5.1) and 1.53–1.54 ms, both about half of our 3.197 ms.
 
 Candidates, **none tested**: compiler optimisation level; runtime library / kernel
-choice; what the two measurements include. Resume when inference time starts to matter
+choice; what the two measurements include; **our model has 4,511 parameters vs ST's published 2,752 (§9 #56)**. Resume when inference time starts to matter
 (a larger or temporal model, Phase 6.5).
 
 ## D3 — Independent (logic-analyser) check of the Phase 3 stage timings — optional
@@ -2409,6 +2492,10 @@ Kept so the same errors are not repeated. Each was caught by the student.
 | 50 | First `evaluate_phase4.py` loaded `st_dataset.py` with `importlib` without registering it in `sys.modules`; `@dataclass` + `from __future__ import annotations` then crashed (`'NoneType' object has no attribute '__dict__'`) on Chin's PC, 9 Oct 2026 | Fixed by `sys.modules[name] = mod` before `exec_module`. The local test had used a trimmed copy of `st_dataset.py` without the dataclass, so it could not reproduce the crash; the test now includes it | Tested against a trimmed copy instead of the real file — same family as #47 (simulation only reproduces what you put in) |
 | 51 | `train_st_cnn2d.py` (Phase 2, written by the assistant) used `model.fit(validation_split=0.1)` on arrays ordered by class folder | Keras takes the last 10 % before shuffling (confirmed from Keras 3.15.1 source on Chin's PC, 10 Oct); with alphabetical class order that is ≈ all of Love, so Love was starved in the deployed model and in the Phase 2 LOSO runs. Exposed 10 Oct 2026 by the pre-registered sanity check S1 of Phase 5.5a (§5.1g-R) | Used a library default without checking what it does to ordered data — always shuffle (or split explicitly, stratified) before any "last n %" split |
 | 52 | Gave two Keras-internals commands from memory on 10 Oct (`keras.Model.fit.__doc__` → None in Keras 3; `data_adapter_utils.train_validation_split` → moved to `array_slicing.py`) | Found by searching the installed package for `def train_validation_split` instead of guessing its location | Same family as #49 — a command written from memory for a version not checked; for library internals, search the installed files first |
+| 53 | Designed `collect_own_data.py` v4 to save any take that raised no `[WARNING]` without asking the operator | The script can check distance and frame loss but not posture correctness. The friend's first extra set (15 Oct 00:01–00:10) contained one wrong posture; Chin noticed afterwards but not which take, so all 14 takes were quarantined (A9). Fixed in v5: ask after every take | Automated everything the script could measure and assumed the one thing it cannot measure — label correctness — was covered; a human confirmation belongs exactly where the human is the only sensor |
+| 54 | Said (and the v4 docstring says) that Thai-keyboard letters ั/พ/ห work for y/r/s, tested only on a fake `input()` | On Chin's Windows PC (15 Oct, first prompt of the session) a Thai-keyboard `ั` came back as "Unknown answer". The re-ask worked and nothing was lost; the cause was not diagnosed (console encoding is a guess). Rule: switch to the English keyboard before starting | Same family as #47 and #50 — a simulation reproduces only what you imagined; the assumption was carried over from the #48 fix |
+| 55 | Told Chin (16 Oct) that the friend's extras must be split over two days and guessed that 28 takes in one sitting would tire him | A7's revision is a reasoned preference and §5.1e-P step 5 says "if possible"; Chin himself did 28 takes in one evening on 9 Oct (board on 19:47, last take 23:11). The fatigue claim had no measurement. Chin pushed back with the right fact; decision recorded in A10 | Turned a recorded preference into a rule and stated a risk with no evidence (Rules 1 and 2) |
+| 56 | Told Chin (20 Oct) "the model has 2,752 parameters" as if it were ours | 2,752 is ST's published 8-class model (§5.1). Our `build_model` (`padding="same"`) has **4,511** parameters for 7 classes `[คำนวณ จากโค้ด]`; 2,752 matches `padding="valid"` (152 + 2,336 + 264). So "exact same architecture as ST" (§5.1, `train_st_cnn2d.py` docstring) is unverified; ST's padding was never recorded. Noticed while explaining "parameters" to Chin from the code. Whether it explains 3.197 vs 1.46 ms (D2): untested | Quoted a number from §5.1 for the wrong model (same family as #40) and the architecture note carried no padding / parameter-count check |
 
 **Real finding behind #36 (not an assistant mistake — a genuine project fact):**
 The `53L8A1_SimpleRanging` project's `.ioc` has always been configured for **STM32F401RETx / NUCLEO-F401RE**, while the physical board (confirmed by a photo of the chip marking) is **STM32F411RET6**. Confirmed via the linker script header: *"Linker script for NUCLEO-F401RE Board embedding STM32F401RETx Device... 96KBytes RAM"*. This has been true since the project was first created and was never the assistant's error to log — it predates this conversation.
@@ -2659,3 +2746,16 @@ Love recovered (98.8 %), Like still fails (7.1 %), FlatHand fell to 6.8 %. Per-c
 subjects are strongly seed-dependent → multi-seed evaluation / ensemble needed. Friend (User 6) collection next.*
 
 *2026-10-10 04:35: session ended; friend's collection postponed to another day (see QUICK STATUS).* 
+
+*Last updated: 2026-10-17 evening · Collection record for 14–17 Oct 2026. Friend's main set 14/14 (14 Oct);
+his first 14 extra takes quarantined after one unidentified wrong posture (§5.1e-A9, §9 #53); `collect_own_data.py`
+v5 asks the operator to confirm the posture every take; `quarantine_takes.py` added. Chin's extra day 2 done
+15 Oct (14/14, one 11-frame loss event, cause unknown, n = 1). Friend's 28 extra takes planned as one sitting
+(A10), postponed on 17 Oct. Phase 5.5 pre-registration pushed 15 Oct 00:31 `[STUDENT]` before any friend extra
+data. Correction log now 55 entries (#53–#55).*
+
+*Last updated: 2026-10-20 · Phase 4 collection complete (both subjects 42 takes; local backups made, Drive/USB copy not
+confirmed). First two-subject H8 evaluation (§5.1e-F): per-frame 66.3 % (User 5) and 75.9 % (User 6) with the deployed,
+bug-affected model; P1 and P3 hold, P2 and H9 do not; descriptive, n = 2. New open item: our model has 4,511 parameters vs ST's
+published 2,752 (padding "same" vs "valid"), so "same architecture" is unverified (§5.1, §9 #56). Next: Phase 5.5 real run;
+progress report 3 planning. Correction log now 56 entries.*

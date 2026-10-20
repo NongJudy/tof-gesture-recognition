@@ -1,0 +1,65 @@
+══════════════════════════════════════════════════════════════════
+  Phase 4 Evaluation (H8)  ·  ST-trained model on our VL53L8CA board
+══════════════════════════════════════════════════════════════════
+  Model          results_phase2_final\production_model.keras
+                 sha256 f4be0cda420393d0…  ·  7 classes
+  Data           data\phase4  ·  28 takes  ·  User5, User6
+  Preprocessing  st_dataset.py (ST rules, 100–400 mm)  ·  vs training code: same within float32 rounding (max 3.1e-07)
+                 from C:\Users\gaming\Documents\GitHub\tof-gesture-recognition\pc_tools\st_dataset.py
+  Manifest       28 rows  ·  missing frames 0  ·  brief out-of-window 0  ·  files match: yes
+  Baselines      chance 14.3 %  ·  ST leave-one-user-out 66.3–94.3 % (mean 85.3 %, corrected)
+
+════ User5 ════════════════════════════════════════════════════════
+  Frames evaluated     4,220 of 4,220 (14 takes; others removed by the 100–400 mm rule)
+  Per-frame accuracy    66.3 %  █████████████░░░░░░░
+  15-frame vote acc.    67.6 %  ██████████████░░░░░░
+  Per-take accuracy    mean 66.3 %  ·  SD 44.6  ·  range 0.0–100.0  (n = 14)
+  Per-class recall
+    Fist         97.8 %  ████████████████   t1  95.7  t2 100.0
+    FlatHand     99.3 %  ████████████████   t1  98.7  t2 100.0
+    Dislike      96.2 %  ███████████████░   t1 100.0  t2  92.4
+    Like          0.3 %  ░░░░░░░░░░░░░░░░   t1   0.7  t2   0.0
+    Love          0.0 %  ░░░░░░░░░░░░░░░░   t1   0.0  t2   0.0
+    CrossHands   70.1 %  ███████████░░░░░   t1  67.1  t2  73.2
+    BreakTime   100.0 %  ████████████████   t1 100.0  t2 100.0
+  Top confusions (true → predicted, frames)
+    Love        → BreakTime     601
+    Like        → Dislike       572
+    CrossHands  → FlatHand      180
+    Like        → Fist           30
+    Dislike     → Fist           23
+  Pre-registered checks (§5.1e)
+    P1  frame accuracy 66.3 %  →  INSIDE the 60-85 % band
+    P2  recall Love/CrossHands/BreakTime 56.7 %  vs  Fist/FlatHand/Dislike/Like 73.4 %  →  DOES NOT HOLD
+    P3  vote 67.6 %  ≥  frame 66.3 %  →  HOLDS
+    H9  four lowest recall: Love, Like, CrossHands, Dislike  →  DOES NOT HOLD
+    Decision rule: 60-66.3 %: check preprocessing and orientation first
+
+════ User6 ════════════════════════════════════════════════════════
+  Frames evaluated     4,228 of 4,228 (14 takes; others removed by the 100–400 mm rule)
+  Per-frame accuracy    75.9 %  ███████████████░░░░░
+  15-frame vote acc.    77.0 %  ███████████████░░░░░
+  Per-take accuracy    mean 75.9 %  ·  SD 28.5  ·  range 24.5–100.0  (n = 14)
+  Per-class recall
+    Fist         98.3 %  ████████████████   t1  99.3  t2  97.4
+    FlatHand     59.1 %  █████████░░░░░░░   t1  31.1  t2  87.1
+    Dislike      71.2 %  ███████████░░░░░   t1  79.1  t2  63.2
+    Like         76.5 %  ████████████░░░░   t1  76.5  t2  76.5
+    Love         62.3 %  ██████████░░░░░░   t1 100.0  t2  24.5
+    CrossHands  100.0 %  ████████████████   t1 100.0  t2 100.0
+    BreakTime    63.9 %  ██████████░░░░░░   t1  27.8  t2 100.0
+  Top confusions (true → predicted, frames)
+    Love        → BreakTime     225
+    BreakTime   → FlatHand      218
+    FlatHand    → Fist          205
+    Dislike     → FlatHand      131
+    Like        → Dislike       112
+  Pre-registered checks (§5.1e)
+    P1  frame accuracy 75.9 %  →  INSIDE the 60-85 % band
+    P2  recall Love/CrossHands/BreakTime 75.4 %  vs  Fist/FlatHand/Dislike/Like 76.3 %  →  DOES NOT HOLD
+    P3  vote 77.0 %  ≥  frame 75.9 %  →  HOLDS
+    H9  four lowest recall: FlatHand, Love, BreakTime, Dislike  →  DOES NOT HOLD
+    Decision rule: >= 66.33 % (ST's lowest user, corrected LOSO): consistent with ST's per-user spread
+
+  Pilot: n = 2 subject(s) — descriptive only, no significance test (§5.1e-A1).
+══════════════════════════════════════════════════════════════════
