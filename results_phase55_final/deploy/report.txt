@@ -1,0 +1,11 @@
+══════════════════════════════════════════════════════════════════
+  Phase 5.5b build  ·  E5 ensemble + fallback seed 42  ·  §5.1l
+══════════════════════════════════════════════════════════════════
+  E5 parameters      22,555
+  E5 == mean of 5    PASS  (max |diff| 6.0e-08 over 8,448 frames)
+  E5.tflite          PASS  (100.9 KiB, same class on 100 % of 2000 frames)
+  seed42.tflite      PASS  (21.1 KiB, same class on 100 % of 2000 frames)
+  board-check set    200 frames saved
+  No accuracy computed: check data is in the training set.
+  Output: C:\Users\gaming\Documents\GitHub\tof-gesture-recognition\results_phase55_final\deploy
+══════════════════════════════════════════════════════════════════

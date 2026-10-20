@@ -1,0 +1,52 @@
+{
+  "run_at": "2026-10-20T22:14:29",
+  "git_commit": "efb6e95",
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "fallback_seed": 42,
+  "e5_params": 22555,
+  "class_order": [
+    "Fist",
+    "FlatHand",
+    "Dislike",
+    "Like",
+    "Love",
+    "CrossHands",
+    "BreakTime"
+  ],
+  "check_data": "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\data\\phase4",
+  "n_check_frames": 8448,
+  "checks": {
+    "1_sha256": "PASS",
+    "3_branch_max_abs_diff": 0.0,
+    "3_mean_max_abs_diff": 5.960464477539063e-08,
+    "4_E5_method": "from_keras_model",
+    "4_seed42_method": "from_keras_model",
+    "5_E5_argmax_agree": 1.0,
+    "5_E5_max_abs_diff": 2.384185791015625e-07,
+    "5_seed42_argmax_agree": 1.0,
+    "5_seed42_max_abs_diff": 2.980232238769531e-07,
+    "6_classes_in_sample": {
+      "Fist": 28,
+      "FlatHand": 29,
+      "Dislike": 29,
+      "Like": 28,
+      "Love": 29,
+      "CrossHands": 29,
+      "BreakTime": 28
+    }
+  },
+  "files": {
+    "board_check_E5_probs_200.npy": "30aeb26bcc3f30e8e5b2ec62db7428209ec0d2f719293db3a3d573bc9931fe87",
+    "board_check_inputs_200.npy": "3b03d8f3b83a1ad2db69294ee62471632fc882cf905fc4b66efeb7a7977f316c",
+    "board_check_seed42_probs_200.npy": "f3bfcc8ea5dbcd774b5109ce7656edabd65dd6cad2abd9f723f9c4819f390c52",
+    "E5.keras": "1a2268d3b5ab4fe7abfd17f39545a1748b032ede1afbb7e1ab4225555e648936",
+    "E5.tflite": "68487ce93575dd6a8593f93bbff79297b515330c3085c4f7b872e9f6bba794a5",
+    "seed42.tflite": "5a9e7a2b1fbfaa88047c5c444cc25aa2277aef5c3f9d31289d03dfd164de9f4e"
+  }
+}
