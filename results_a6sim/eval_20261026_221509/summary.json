@@ -1,0 +1,3613 @@
+{
+  "generated": "2026-10-26T22:14:53",
+  "shifts": {
+    "none": [
+      0,
+      0
+    ],
+    "row+1": [
+      1,
+      0
+    ],
+    "row-1": [
+      -1,
+      0
+    ],
+    "col+1": [
+      0,
+      1
+    ],
+    "col-1": [
+      0,
+      -1
+    ],
+    "row+2": [
+      2,
+      0
+    ],
+    "row-2": [
+      -2,
+      0
+    ],
+    "col+2": [
+      0,
+      2
+    ],
+    "col-2": [
+      0,
+      -2
+    ]
+  },
+  "model_sha256": {
+    "baseline_ST_only": "639d5453d9ff9717",
+    "seed42": "615479eb85457523",
+    "seed43": "aa4e20feed40905d",
+    "seed44": "e3fa8084a967976e",
+    "seed45": "aa398e578839f578",
+    "seed46": "bd3c2c5ec72c5d8c",
+    "E5": "1a2268d3b5ab4fe7"
+  },
+  "datasets": {
+    "data\\phase56": {
+      "name": "phase56",
+      "user": "User5",
+      "n_takes": 14,
+      "lost_fraction": {
+        "none": 0.0,
+        "row+1": 0.09614744151751893,
+        "row-1": 0.023434631922307863,
+        "col+1": 0.04029433016909012,
+        "col-1": 0.0678941998651741,
+        "row+2": 0.20463915520719933,
+        "row-2": 0.14183780619710742,
+        "col+2": 0.08630500317124172,
+        "col-2": 0.1971921166328682
+      },
+      "models": {
+        "baseline_ST_only": {
+          "none": {
+            "n": 4219,
+            "acc": 68.23891917515999,
+            "vote_acc": 68.13323390504598,
+            "recall": {
+              "Fist": 76.15894039735099,
+              "FlatHand": 11.129568106312291,
+              "Dislike": 8.13953488372093,
+              "Like": 85.40630182421228,
+              "Love": 97.6782752902156,
+              "CrossHands": 100.0,
+              "BreakTime": 99.00332225913621
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 4219,
+            "acc": 70.15880540412421,
+            "vote_acc": 70.76808351976138,
+            "recall": {
+              "Fist": 96.35761589403974,
+              "FlatHand": 29.900332225913623,
+              "Dislike": 6.64451827242525,
+              "Like": 58.540630182421225,
+              "Love": 99.50248756218906,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 297,
+            "wrong_to_correct": 378,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 4219,
+            "acc": 34.131310737141504,
+            "vote_acc": 33.33333333333333,
+            "recall": {
+              "Fist": 68.04635761589404,
+              "FlatHand": 35.21594684385382,
+              "Dislike": 10.631229235880399,
+              "Like": 15.257048092868988,
+              "Love": 100.0,
+              "CrossHands": 9.618573797678277,
+              "BreakTime": 0.0
+            },
+            "correct_to_wrong": 1762,
+            "wrong_to_correct": 323,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 4219,
+            "acc": 60.51196966105712,
+            "vote_acc": 59.93040019885657,
+            "recall": {
+              "Fist": 99.83443708609272,
+              "FlatHand": 22.425249169435215,
+              "Dislike": 3.9867109634551494,
+              "Like": 56.053067993366504,
+              "Love": 58.70646766169154,
+              "CrossHands": 89.88391376451078,
+              "BreakTime": 92.52491694352159
+            },
+            "correct_to_wrong": 559,
+            "wrong_to_correct": 233,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 4219,
+            "acc": 51.83692818203366,
+            "vote_acc": 52.2744220730798,
+            "recall": {
+              "Fist": 92.88079470198676,
+              "FlatHand": 77.24252491694352,
+              "Dislike": 20.09966777408638,
+              "Like": 41.29353233830846,
+              "Love": 19.900497512437813,
+              "CrossHands": 26.036484245439468,
+              "BreakTime": 85.38205980066445
+            },
+            "correct_to_wrong": 1319,
+            "wrong_to_correct": 627,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 4219,
+            "acc": 73.14529509362409,
+            "vote_acc": 72.93064876957494,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 57.80730897009967,
+              "Dislike": 1.3289036544850499,
+              "Like": 52.736318407960205,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 250,
+            "wrong_to_correct": 457,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 4219,
+            "acc": 10.950462194832898,
+            "vote_acc": 10.91225453641561,
+            "recall": {
+              "Fist": 21.85430463576159,
+              "FlatHand": 50.16611295681063,
+              "Dislike": 2.3255813953488373,
+              "Like": 2.321724709784411,
+              "Love": 0.0,
+              "CrossHands": 0.0,
+              "BreakTime": 0.0
+            },
+            "correct_to_wrong": 2681,
+            "wrong_to_correct": 264,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 4219,
+            "acc": 47.902346527613176,
+            "vote_acc": 48.59557544121302,
+            "recall": {
+              "Fist": 88.90728476821192,
+              "FlatHand": 74.08637873754152,
+              "Dislike": 4.983388704318937,
+              "Like": 74.46102819237149,
+              "Love": 0.8291873963515755,
+              "CrossHands": 0.0,
+              "BreakTime": 92.02657807308971
+            },
+            "correct_to_wrong": 1382,
+            "wrong_to_correct": 524,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 4219,
+            "acc": 40.104290116141264,
+            "vote_acc": 40.36788466318668,
+            "recall": {
+              "Fist": 73.34437086092716,
+              "FlatHand": 37.54152823920266,
+              "Dislike": 38.70431893687707,
+              "Like": 94.85903814262024,
+              "Love": 0.0,
+              "CrossHands": 0.16583747927031509,
+              "BreakTime": 36.04651162790697
+            },
+            "correct_to_wrong": 1714,
+            "wrong_to_correct": 527,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          }
+        },
+        "seed42": {
+          "none": {
+            "n": 4219,
+            "acc": 87.1533538753259,
+            "vote_acc": 87.62117822520507,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 23.754152823920265,
+              "Like": 86.23548922056385,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 4219,
+            "acc": 77.19838824365964,
+            "vote_acc": 77.03206562266965,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 40.53156146179402,
+              "Dislike": 0.0,
+              "Like": 99.66832504145937,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 503,
+            "wrong_to_correct": 83,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 4219,
+            "acc": 75.11258592083432,
+            "vote_acc": 75.7394978871489,
+            "recall": {
+              "Fist": 85.26490066225165,
+              "FlatHand": 100.0,
+              "Dislike": 74.4186046511628,
+              "Like": 1.658374792703151,
+              "Love": 100.0,
+              "CrossHands": 64.51077943615256,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 851,
+            "wrong_to_correct": 343,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 4219,
+            "acc": 83.9535434937189,
+            "vote_acc": 83.7434750186428,
+            "recall": {
+              "Fist": 97.68211920529801,
+              "FlatHand": 100.0,
+              "Dislike": 4.817275747508306,
+              "Like": 87.06467661691542,
+              "Love": 100.0,
+              "CrossHands": 98.00995024875621,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 195,
+            "wrong_to_correct": 60,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 4219,
+            "acc": 85.44678833846882,
+            "vote_acc": 86.00546855580411,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 53.48837209302325,
+              "Like": 67.49585406301824,
+              "Love": 77.11442786069652,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 267,
+            "wrong_to_correct": 195,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 4219,
+            "acc": 85.63640673145295,
+            "vote_acc": 85.80661198110863,
+            "recall": {
+              "Fist": 99.33774834437085,
+              "FlatHand": 100.0,
+              "Dislike": 2.4916943521594686,
+              "Like": 97.51243781094527,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 147,
+            "wrong_to_correct": 83,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 4219,
+            "acc": 33.37283716520503,
+            "vote_acc": 34.3027591349739,
+            "recall": {
+              "Fist": 0.0,
+              "FlatHand": 98.83720930232558,
+              "Dislike": 14.61794019933555,
+              "Like": 19.900497512437813,
+              "Love": 11.276948590381426,
+              "CrossHands": 0.0,
+              "BreakTime": 89.20265780730897
+            },
+            "correct_to_wrong": 2378,
+            "wrong_to_correct": 109,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 4219,
+            "acc": 74.97037212609624,
+            "vote_acc": 76.0129256773552,
+            "recall": {
+              "Fist": 80.62913907284768,
+              "FlatHand": 100.0,
+              "Dislike": 5.3156146179401995,
+              "Like": 73.96351575456053,
+              "Love": 100.0,
+              "CrossHands": 64.8424543946932,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 575,
+            "wrong_to_correct": 61,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 4219,
+            "acc": 46.74093387058545,
+            "vote_acc": 46.63186676609495,
+            "recall": {
+              "Fist": 61.258278145695364,
+              "FlatHand": 96.01328903654485,
+              "Dislike": 72.9235880398671,
+              "Like": 35.98673300165838,
+              "Love": 21.393034825870647,
+              "CrossHands": 5.306799336650083,
+              "BreakTime": 34.38538205980066
+            },
+            "correct_to_wrong": 2061,
+            "wrong_to_correct": 356,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          }
+        },
+        "seed43": {
+          "none": {
+            "n": 4219,
+            "acc": 92.13083669115905,
+            "vote_acc": 92.31916480238628,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 84.0531561461794,
+              "Like": 60.86235489220564,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 4219,
+            "acc": 87.9355297463854,
+            "vote_acc": 88.14317673378076,
+            "recall": {
+              "Fist": 99.83443708609272,
+              "FlatHand": 96.17940199335548,
+              "Dislike": 22.259136212624583,
+              "Like": 97.18076285240464,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 407,
+            "wrong_to_correct": 230,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 4219,
+            "acc": 84.94904005688552,
+            "vote_acc": 85.55804126273925,
+            "recall": {
+              "Fist": 97.01986754966887,
+              "FlatHand": 99.00332225913621,
+              "Dislike": 99.66777408637874,
+              "Like": 0.16583747927031509,
+              "Love": 100.0,
+              "CrossHands": 98.8391376451078,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 399,
+            "wrong_to_correct": 96,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 4219,
+            "acc": 83.38468831476654,
+            "vote_acc": 83.81804623415363,
+            "recall": {
+              "Fist": 98.84105960264901,
+              "FlatHand": 100.0,
+              "Dislike": 29.2358803986711,
+              "Like": 55.88723051409619,
+              "Love": 100.0,
+              "CrossHands": 99.66832504145937,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 558,
+            "wrong_to_correct": 189,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 4219,
+            "acc": 85.44678833846882,
+            "vote_acc": 85.3343276162068,
+            "recall": {
+              "Fist": 77.48344370860927,
+              "FlatHand": 100.0,
+              "Dislike": 94.51827242524917,
+              "Like": 26.202321724709783,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 413,
+            "wrong_to_correct": 131,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 4219,
+            "acc": 78.26499170419531,
+            "vote_acc": 78.6477752920706,
+            "recall": {
+              "Fist": 51.82119205298014,
+              "FlatHand": 99.83388704318938,
+              "Dislike": 0.0,
+              "Like": 96.18573797678275,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 799,
+            "wrong_to_correct": 214,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 4219,
+            "acc": 31.19222564588765,
+            "vote_acc": 32.83619189659458,
+            "recall": {
+              "Fist": 0.0,
+              "FlatHand": 67.94019933554817,
+              "Dislike": 3.820598006644518,
+              "Like": 0.0,
+              "Love": 61.52570480928689,
+              "CrossHands": 0.0,
+              "BreakTime": 85.21594684385381
+            },
+            "correct_to_wrong": 2577,
+            "wrong_to_correct": 6,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 4219,
+            "acc": 53.56719601801375,
+            "vote_acc": 53.517275664926665,
+            "recall": {
+              "Fist": 0.6622516556291391,
+              "FlatHand": 100.0,
+              "Dislike": 30.066445182724255,
+              "Like": 16.417910447761194,
+              "Love": 100.0,
+              "CrossHands": 28.026533996683252,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 1662,
+            "wrong_to_correct": 35,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 4219,
+            "acc": 75.3970135103105,
+            "vote_acc": 75.59035545612727,
+            "recall": {
+              "Fist": 57.615894039735096,
+              "FlatHand": 63.78737541528239,
+              "Dislike": 41.36212624584717,
+              "Like": 70.81260364842454,
+              "Love": 99.83416252072969,
+              "CrossHands": 98.8391376451078,
+              "BreakTime": 95.51495016611295
+            },
+            "correct_to_wrong": 924,
+            "wrong_to_correct": 218,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          }
+        },
+        "seed44": {
+          "none": {
+            "n": 4219,
+            "acc": 91.30125622185352,
+            "vote_acc": 91.34973900074571,
+            "recall": {
+              "Fist": 86.09271523178808,
+              "FlatHand": 100.0,
+              "Dislike": 74.91694352159467,
+              "Like": 78.1094527363184,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 4219,
+            "acc": 81.1092675989571,
+            "vote_acc": 80.78548347004723,
+            "recall": {
+              "Fist": 77.98013245033113,
+              "FlatHand": 100.0,
+              "Dislike": 0.6644518272425249,
+              "Like": 89.05472636815921,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 566,
+            "wrong_to_correct": 136,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 4219,
+            "acc": 82.08106186300071,
+            "vote_acc": 82.00347999005717,
+            "recall": {
+              "Fist": 81.29139072847681,
+              "FlatHand": 100.0,
+              "Dislike": 100.0,
+              "Like": 4.477611940298507,
+              "Love": 100.0,
+              "CrossHands": 88.88888888888889,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 558,
+            "wrong_to_correct": 169,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 4219,
+            "acc": 86.79781938848068,
+            "vote_acc": 88.46631866766094,
+            "recall": {
+              "Fist": 81.45695364238411,
+              "FlatHand": 100.0,
+              "Dislike": 57.9734219269103,
+              "Like": 86.23548922056385,
+              "Love": 100.0,
+              "CrossHands": 81.92371475953566,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 470,
+            "wrong_to_correct": 280,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 4219,
+            "acc": 99.3600379236786,
+            "vote_acc": 99.4034302759135,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 100.0,
+              "Like": 95.52238805970148,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 27,
+            "wrong_to_correct": 367,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 4219,
+            "acc": 82.67361934107609,
+            "vote_acc": 82.47576435495898,
+            "recall": {
+              "Fist": 99.17218543046357,
+              "FlatHand": 88.20598006644518,
+              "Dislike": 1.495016611295681,
+              "Like": 89.71807628524047,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 576,
+            "wrong_to_correct": 212,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 4219,
+            "acc": 46.24318558900213,
+            "vote_acc": 46.930151628138205,
+            "recall": {
+              "Fist": 33.27814569536424,
+              "FlatHand": 81.89368770764119,
+              "Dislike": 18.6046511627907,
+              "Like": 0.16583747927031509,
+              "Love": 100.0,
+              "CrossHands": 0.0,
+              "BreakTime": 89.8671096345515
+            },
+            "correct_to_wrong": 1960,
+            "wrong_to_correct": 59,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 4219,
+            "acc": 63.09552026546575,
+            "vote_acc": 63.982102908277405,
+            "recall": {
+              "Fist": 7.450331125827815,
+              "FlatHand": 100.0,
+              "Dislike": 39.8671096345515,
+              "Like": 94.5273631840796,
+              "Love": 100.0,
+              "CrossHands": 0.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 1366,
+            "wrong_to_correct": 176,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 4219,
+            "acc": 75.96586868926286,
+            "vote_acc": 77.38006462838678,
+            "recall": {
+              "Fist": 84.60264900662253,
+              "FlatHand": 69.76744186046511,
+              "Dislike": 100.0,
+              "Like": 65.67164179104478,
+              "Love": 99.83416252072969,
+              "CrossHands": 19.56882255389718,
+              "BreakTime": 92.35880398671097
+            },
+            "correct_to_wrong": 936,
+            "wrong_to_correct": 289,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          }
+        },
+        "seed45": {
+          "none": {
+            "n": 4219,
+            "acc": 84.19056648494903,
+            "vote_acc": 83.99204573701218,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 24.58471760797342,
+              "Like": 64.6766169154229,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 4219,
+            "acc": 80.89594690684997,
+            "vote_acc": 81.68033805617698,
+            "recall": {
+              "Fist": 82.6158940397351,
+              "FlatHand": 96.3455149501661,
+              "Dislike": 10.79734219269103,
+              "Like": 76.45107794361525,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 223,
+            "wrong_to_correct": 84,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 4219,
+            "acc": 79.45010666034605,
+            "vote_acc": 79.49291573452648,
+            "recall": {
+              "Fist": 73.01324503311258,
+              "FlatHand": 100.0,
+              "Dislike": 75.91362126245848,
+              "Like": 8.291873963515755,
+              "Love": 100.0,
+              "CrossHands": 99.00497512437812,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 550,
+            "wrong_to_correct": 350,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 4219,
+            "acc": 80.35079402702063,
+            "vote_acc": 80.28834203330848,
+            "recall": {
+              "Fist": 81.29139072847681,
+              "FlatHand": 100.0,
+              "Dislike": 0.9966777408637874,
+              "Like": 80.2653399668325,
+              "Love": 100.0,
+              "CrossHands": 99.83416252072969,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 274,
+            "wrong_to_correct": 112,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 4219,
+            "acc": 86.82152168760369,
+            "vote_acc": 87.49689286602037,
+            "recall": {
+              "Fist": 97.01986754966887,
+              "FlatHand": 100.0,
+              "Dislike": 50.83056478405316,
+              "Like": 59.86733001658375,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 111,
+            "wrong_to_correct": 222,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 4219,
+            "acc": 82.15216876036976,
+            "vote_acc": 82.22719363658962,
+            "recall": {
+              "Fist": 98.84105960264901,
+              "FlatHand": 100.0,
+              "Dislike": 0.0,
+              "Like": 76.11940298507463,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 167,
+            "wrong_to_correct": 81,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 4219,
+            "acc": 42.450817729319745,
+            "vote_acc": 42.878448918717375,
+            "recall": {
+              "Fist": 0.0,
+              "FlatHand": 96.01328903654485,
+              "Dislike": 11.627906976744185,
+              "Like": 73.46600331674958,
+              "Love": 25.37313432835821,
+              "CrossHands": 0.0,
+              "BreakTime": 90.86378737541528
+            },
+            "correct_to_wrong": 1929,
+            "wrong_to_correct": 168,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 4219,
+            "acc": 77.64873192699692,
+            "vote_acc": 77.28063634103903,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 47.674418604651166,
+              "Like": 24.378109452736318,
+              "Love": 99.17081260364843,
+              "CrossHands": 72.30514096185739,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 482,
+            "wrong_to_correct": 206,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 4219,
+            "acc": 72.6949514102868,
+            "vote_acc": 72.95550584141188,
+            "recall": {
+              "Fist": 91.55629139072848,
+              "FlatHand": 86.04651162790698,
+              "Dislike": 52.65780730897009,
+              "Like": 49.4195688225539,
+              "Love": 99.50248756218906,
+              "CrossHands": 29.684908789386398,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 774,
+            "wrong_to_correct": 289,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          }
+        },
+        "seed46": {
+          "none": {
+            "n": 4219,
+            "acc": 90.32946195780991,
+            "vote_acc": 90.35545612726821,
+            "recall": {
+              "Fist": 99.66887417218543,
+              "FlatHand": 100.0,
+              "Dislike": 49.667774086378735,
+              "Like": 82.91873963515755,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 4219,
+            "acc": 79.04716757525479,
+            "vote_acc": 78.7223465075814,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 48.17275747508305,
+              "Dislike": 5.149501661129568,
+              "Like": 99.83416252072969,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 593,
+            "wrong_to_correct": 117,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 4219,
+            "acc": 74.54373074188196,
+            "vote_acc": 73.85036042754164,
+            "recall": {
+              "Fist": 42.88079470198676,
+              "FlatHand": 99.16943521594685,
+              "Dislike": 66.77740863787376,
+              "Like": 18.90547263681592,
+              "Love": 100.0,
+              "CrossHands": 94.19568822553897,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 963,
+            "wrong_to_correct": 297,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 4219,
+            "acc": 82.62621474283006,
+            "vote_acc": 82.64976385781755,
+            "recall": {
+              "Fist": 97.84768211920529,
+              "FlatHand": 100.0,
+              "Dislike": 9.46843853820598,
+              "Like": 99.83416252072969,
+              "Love": 100.0,
+              "CrossHands": 71.14427860696517,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 444,
+            "wrong_to_correct": 119,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 4219,
+            "acc": 79.28419056648495,
+            "vote_acc": 79.16977380064628,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 77.24252491694352,
+              "Like": 24.543946932006634,
+              "Love": 83.74792703150912,
+              "CrossHands": 83.5820895522388,
+              "BreakTime": 85.88039867109634
+            },
+            "correct_to_wrong": 661,
+            "wrong_to_correct": 195,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 4219,
+            "acc": 84.4275894761792,
+            "vote_acc": 85.21004225702212,
+            "recall": {
+              "Fist": 92.3841059602649,
+              "FlatHand": 100.0,
+              "Dislike": 0.16611295681063123,
+              "Like": 98.34162520729684,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 353,
+            "wrong_to_correct": 104,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 4219,
+            "acc": 43.94406257406969,
+            "vote_acc": 44.966442953020135,
+            "recall": {
+              "Fist": 69.5364238410596,
+              "FlatHand": 67.27574750830566,
+              "Dislike": 34.38538205980066,
+              "Like": 0.16583747927031509,
+              "Love": 54.56053067993366,
+              "CrossHands": 0.0,
+              "BreakTime": 81.72757475083057
+            },
+            "correct_to_wrong": 2096,
+            "wrong_to_correct": 139,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 4219,
+            "acc": 66.39013984356482,
+            "vote_acc": 67.2135222470793,
+            "recall": {
+              "Fist": 54.47019867549668,
+              "FlatHand": 100.0,
+              "Dislike": 73.9202657807309,
+              "Like": 36.650082918739635,
+              "Love": 94.85903814262024,
+              "CrossHands": 4.975124378109453,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 1235,
+            "wrong_to_correct": 225,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 4219,
+            "acc": 59.13723631192226,
+            "vote_acc": 59.905543127019634,
+            "recall": {
+              "Fist": 45.033112582781456,
+              "FlatHand": 99.00332225913621,
+              "Dislike": 99.33554817275747,
+              "Like": 44.27860696517413,
+              "Love": 64.01326699834162,
+              "CrossHands": 0.33167495854063017,
+              "BreakTime": 62.12624584717608
+            },
+            "correct_to_wrong": 1695,
+            "wrong_to_correct": 379,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          }
+        },
+        "E5": {
+          "none": {
+            "n": 4219,
+            "acc": 93.00782175871059,
+            "vote_acc": 92.69202087994034,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 69.60132890365448,
+              "Like": 81.4262023217247,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 4219,
+            "acc": 86.53709409812753,
+            "vote_acc": 86.67660949540145,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 96.3455149501661,
+              "Dislike": 9.634551495016613,
+              "Like": 99.66832504145937,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 385,
+            "wrong_to_correct": 112,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 4219,
+            "acc": 84.71201706565536,
+            "vote_acc": 85.35918468804374,
+            "recall": {
+              "Fist": 97.01986754966887,
+              "FlatHand": 100.0,
+              "Dislike": 97.17607973421927,
+              "Like": 0.33167495854063017,
+              "Love": 100.0,
+              "CrossHands": 98.50746268656717,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 533,
+            "wrong_to_correct": 183,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 4219,
+            "acc": 87.05854467883385,
+            "vote_acc": 87.04946557295551,
+            "recall": {
+              "Fist": 99.83443708609272,
+              "FlatHand": 100.0,
+              "Dislike": 21.262458471760798,
+              "Like": 88.22553897180762,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 386,
+            "wrong_to_correct": 135,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 4219,
+            "acc": 94.73808959469069,
+            "vote_acc": 95.07829977628636,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 99.66777408637874,
+              "Like": 63.51575456053068,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 164,
+            "wrong_to_correct": 237,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 4219,
+            "acc": 85.13865844986964,
+            "vote_acc": 85.03604275416356,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 0.16611295681063123,
+              "Like": 95.6882255389718,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 445,
+            "wrong_to_correct": 113,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 4219,
+            "acc": 35.387532590661294,
+            "vote_acc": 35.74446930151628,
+            "recall": {
+              "Fist": 0.0,
+              "FlatHand": 95.51495016611295,
+              "Dislike": 14.451827242524917,
+              "Like": 0.33167495854063017,
+              "Love": 47.2636815920398,
+              "CrossHands": 0.0,
+              "BreakTime": 90.36544850498339
+            },
+            "correct_to_wrong": 2489,
+            "wrong_to_correct": 58,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 4219,
+            "acc": 77.48281583313582,
+            "vote_acc": 78.00149142431022,
+            "recall": {
+              "Fist": 79.80132450331125,
+              "FlatHand": 100.0,
+              "Dislike": 61.627906976744185,
+              "Like": 40.13266998341625,
+              "Love": 100.0,
+              "CrossHands": 60.86235489220564,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 757,
+            "wrong_to_correct": 102,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 4219,
+            "acc": 86.06304811566721,
+            "vote_acc": 86.75118071091225,
+            "recall": {
+              "Fist": 95.19867549668875,
+              "FlatHand": 92.69102990033223,
+              "Dislike": 92.19269102990033,
+              "Like": 68.1592039800995,
+              "Love": 100.0,
+              "CrossHands": 54.39469320066335,
+              "BreakTime": 99.83388704318938
+            },
+            "correct_to_wrong": 588,
+            "wrong_to_correct": 295,
+            "paired": 4219,
+            "dropped_out_of_range": 0
+          }
+        }
+      }
+    },
+    "data\\phase56_stand": {
+      "name": "phase56_stand",
+      "user": "User5",
+      "n_takes": 14,
+      "lost_fraction": {
+        "none": 0.0,
+        "row+1": 0.07231983427453474,
+        "row-1": 0.08141673303332544,
+        "col+1": 0.04834240474326662,
+        "col-1": 0.0455553450935089,
+        "row+2": 0.162762512352147,
+        "row-2": 0.23412537612331613,
+        "col+2": 0.1055364229979467,
+        "col-2": 0.11090447323168337
+      },
+      "models": {
+        "baseline_ST_only": {
+          "none": {
+            "n": 4221,
+            "acc": 71.71286425017769,
+            "vote_acc": 71.72670807453416,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 28.57142857142857,
+              "Dislike": 98.34437086092716,
+              "Like": 46.26865671641791,
+              "Love": 47.682119205298015,
+              "CrossHands": 99.66832504145937,
+              "BreakTime": 81.3953488372093
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 4221,
+            "acc": 83.34517886756693,
+            "vote_acc": 83.67701863354037,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 31.893687707641195,
+              "Dislike": 100.0,
+              "Like": 99.66832504145937,
+              "Love": 51.82119205298014,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 103,
+            "wrong_to_correct": 594,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 4221,
+            "acc": 32.314617389244255,
+            "vote_acc": 32.47204968944099,
+            "recall": {
+              "Fist": 76.28524046434494,
+              "FlatHand": 66.94352159468438,
+              "Dislike": 55.794701986754966,
+              "Like": 0.0,
+              "Love": 0.0,
+              "CrossHands": 27.197346600331674,
+              "BreakTime": 0.0
+            },
+            "correct_to_wrong": 1957,
+            "wrong_to_correct": 294,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 4221,
+            "acc": 74.65055674010898,
+            "vote_acc": 75.77639751552795,
+            "recall": {
+              "Fist": 97.51243781094527,
+              "FlatHand": 93.18936877076412,
+              "Dislike": 81.12582781456953,
+              "Like": 63.18407960199005,
+              "Love": 18.046357615894042,
+              "CrossHands": 71.64179104477611,
+              "BreakTime": 98.00664451827242
+            },
+            "correct_to_wrong": 517,
+            "wrong_to_correct": 641,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 4221,
+            "acc": 50.29613835583985,
+            "vote_acc": 51.70186335403727,
+            "recall": {
+              "Fist": 79.27031509121062,
+              "FlatHand": 89.20265780730897,
+              "Dislike": 84.60264900662253,
+              "Like": 55.223880597014926,
+              "Love": 0.0,
+              "CrossHands": 14.096185737976782,
+              "BreakTime": 29.73421926910299
+            },
+            "correct_to_wrong": 1355,
+            "wrong_to_correct": 451,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 4221,
+            "acc": 87.82279080786543,
+            "vote_acc": 88.24844720496895,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 54.15282392026578,
+              "Dislike": 100.0,
+              "Like": 97.6782752902156,
+              "Love": 62.913907284768214,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 102,
+            "wrong_to_correct": 782,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 4221,
+            "acc": 14.309405354181473,
+            "vote_acc": 14.26086956521739,
+            "recall": {
+              "Fist": 0.4975124378109453,
+              "FlatHand": 99.83388704318938,
+              "Dislike": 0.0,
+              "Like": 0.0,
+              "Love": 0.0,
+              "CrossHands": 0.0,
+              "BreakTime": 0.0
+            },
+            "correct_to_wrong": 2853,
+            "wrong_to_correct": 430,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 4221,
+            "acc": 55.934612651030555,
+            "vote_acc": 55.92546583850931,
+            "recall": {
+              "Fist": 94.19568822553897,
+              "FlatHand": 97.34219269102991,
+              "Dislike": 12.748344370860929,
+              "Like": 89.88391376451078,
+              "Love": 0.0,
+              "CrossHands": 0.0,
+              "BreakTime": 97.67441860465115
+            },
+            "correct_to_wrong": 1441,
+            "wrong_to_correct": 775,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 4221,
+            "acc": 39.872068230277186,
+            "vote_acc": 40.79503105590062,
+            "recall": {
+              "Fist": 66.33499170812604,
+              "FlatHand": 75.41528239202658,
+              "Dislike": 94.37086092715232,
+              "Like": 42.95190713101161,
+              "Love": 0.0,
+              "CrossHands": 0.0,
+              "BreakTime": 0.0
+            },
+            "correct_to_wrong": 1732,
+            "wrong_to_correct": 388,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          }
+        },
+        "seed42": {
+          "none": {
+            "n": 4221,
+            "acc": 92.91637052831084,
+            "vote_acc": 93.04347826086956,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 98.01324503311258,
+              "Like": 100.0,
+              "Love": 52.483443708609265,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 4221,
+            "acc": 98.17578772802653,
+            "vote_acc": 98.98136645962732,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 91.86046511627907,
+              "Dislike": 96.52317880794702,
+              "Like": 98.8391376451078,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 71,
+            "wrong_to_correct": 293,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 4221,
+            "acc": 56.52688936271025,
+            "vote_acc": 56.04968944099379,
+            "recall": {
+              "Fist": 75.787728026534,
+              "FlatHand": 100.0,
+              "Dislike": 69.86754966887418,
+              "Like": 48.258706467661696,
+              "Love": 1.9867549668874174,
+              "CrossHands": 0.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 1541,
+            "wrong_to_correct": 5,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 4221,
+            "acc": 95.40393271736556,
+            "vote_acc": 96.07453416149069,
+            "recall": {
+              "Fist": 97.18076285240464,
+              "FlatHand": 100.0,
+              "Dislike": 73.34437086092716,
+              "Like": 100.0,
+              "Love": 97.68211920529801,
+              "CrossHands": 99.66832504145937,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 176,
+            "wrong_to_correct": 281,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 4221,
+            "acc": 87.04098554844823,
+            "vote_acc": 87.1055900621118,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 45.52980132450331,
+              "Like": 100.0,
+              "Love": 96.19205298013244,
+              "CrossHands": 67.66169154228857,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 515,
+            "wrong_to_correct": 267,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 4221,
+            "acc": 96.80170575692964,
+            "vote_acc": 96.72049689440993,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 99.83443708609272,
+              "Like": 100.0,
+              "Love": 77.81456953642383,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 1,
+            "wrong_to_correct": 165,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 4221,
+            "acc": 30.18242122719735,
+            "vote_acc": 29.217391304347828,
+            "recall": {
+              "Fist": 0.0,
+              "FlatHand": 100.0,
+              "Dislike": 5.4635761589403975,
+              "Like": 6.135986733001658,
+              "Love": 0.0,
+              "CrossHands": 0.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 2648,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 4221,
+            "acc": 73.08694622127459,
+            "vote_acc": 73.11801242236025,
+            "recall": {
+              "Fist": 38.80597014925373,
+              "FlatHand": 100.0,
+              "Dislike": 26.490066225165563,
+              "Like": 98.67330016583747,
+              "Love": 52.152317880794705,
+              "CrossHands": 95.6882255389718,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 838,
+            "wrong_to_correct": 1,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 4221,
+            "acc": 53.7076522151149,
+            "vote_acc": 54.38509316770186,
+            "recall": {
+              "Fist": 97.51243781094527,
+              "FlatHand": 100.0,
+              "Dislike": 60.59602649006622,
+              "Like": 92.86898839137645,
+              "Love": 24.668874172185433,
+              "CrossHands": 0.0,
+              "BreakTime": 0.33222591362126247
+            },
+            "correct_to_wrong": 1662,
+            "wrong_to_correct": 7,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          }
+        },
+        "seed43": {
+          "none": {
+            "n": 4221,
+            "acc": 89.10210850509358,
+            "vote_acc": 89.24223602484473,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 63.78737541528239,
+              "Dislike": 94.70198675496688,
+              "Like": 99.66832504145937,
+              "Love": 65.56291390728477,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 4221,
+            "acc": 90.73679222932954,
+            "vote_acc": 91.15527950310559,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 36.37873754152824,
+              "Dislike": 100.0,
+              "Like": 98.67330016583747,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 175,
+            "wrong_to_correct": 244,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 4221,
+            "acc": 45.13148542999289,
+            "vote_acc": 44.94409937888199,
+            "recall": {
+              "Fist": 95.85406301824212,
+              "FlatHand": 82.890365448505,
+              "Dislike": 6.125827814569536,
+              "Like": 0.9950248756218906,
+              "Love": 28.14569536423841,
+              "CrossHands": 2.155887230514096,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 2034,
+            "wrong_to_correct": 178,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 4221,
+            "acc": 90.33404406538736,
+            "vote_acc": 90.26086956521739,
+            "recall": {
+              "Fist": 82.75290215588723,
+              "FlatHand": 100.0,
+              "Dislike": 99.66887417218543,
+              "Like": 99.66832504145937,
+              "Love": 53.807947019867555,
+              "CrossHands": 96.51741293532339,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 212,
+            "wrong_to_correct": 264,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 4221,
+            "acc": 87.15944089078418,
+            "vote_acc": 87.50310559006212,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 96.02649006622516,
+              "Like": 99.33665008291874,
+              "Love": 44.70198675496689,
+              "CrossHands": 70.1492537313433,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 319,
+            "wrong_to_correct": 237,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 4221,
+            "acc": 99.90523572613125,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 100.0,
+              "Like": 99.33665008291874,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 4,
+            "wrong_to_correct": 460,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 4221,
+            "acc": 28.28713574982232,
+            "vote_acc": 28.04968944099379,
+            "recall": {
+              "Fist": 7.2968490878938645,
+              "FlatHand": 100.0,
+              "Dislike": 0.0,
+              "Like": 0.0,
+              "Love": 0.0,
+              "CrossHands": 0.0,
+              "BreakTime": 91.0299003322259
+            },
+            "correct_to_wrong": 2785,
+            "wrong_to_correct": 218,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 4221,
+            "acc": 59.346126510305616,
+            "vote_acc": 60.14906832298137,
+            "recall": {
+              "Fist": 8.12603648424544,
+              "FlatHand": 100.0,
+              "Dislike": 84.76821192052981,
+              "Like": 98.34162520729684,
+              "Love": 3.642384105960265,
+              "CrossHands": 20.729684908789388,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 1486,
+            "wrong_to_correct": 230,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 4221,
+            "acc": 66.64297559819948,
+            "vote_acc": 66.6086956521739,
+            "recall": {
+              "Fist": 77.61194029850746,
+              "FlatHand": 100.0,
+              "Dislike": 96.8543046357616,
+              "Like": 47.59535655058043,
+              "Love": 20.695364238410598,
+              "CrossHands": 36.650082918739635,
+              "BreakTime": 87.20930232558139
+            },
+            "correct_to_wrong": 1198,
+            "wrong_to_correct": 250,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          }
+        },
+        "seed44": {
+          "none": {
+            "n": 4221,
+            "acc": 99.85785358919688,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 99.83443708609272,
+              "Like": 100.0,
+              "Love": 100.0,
+              "CrossHands": 99.17081260364843,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 4221,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 100.0,
+              "Like": 100.0,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 6,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 4221,
+            "acc": 63.278843875858804,
+            "vote_acc": 63.40372670807454,
+            "recall": {
+              "Fist": 99.83416252072969,
+              "FlatHand": 85.71428571428571,
+              "Dislike": 73.67549668874173,
+              "Like": 0.33167495854063017,
+              "Love": 83.44370860927152,
+              "CrossHands": 0.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 1544,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 4221,
+            "acc": 92.96375266524521,
+            "vote_acc": 93.66459627329192,
+            "recall": {
+              "Fist": 97.01492537313433,
+              "FlatHand": 98.83720930232558,
+              "Dislike": 99.83443708609272,
+              "Like": 99.33665008291874,
+              "Love": 100.0,
+              "CrossHands": 55.72139303482587,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 292,
+            "wrong_to_correct": 1,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 4221,
+            "acc": 92.13456526889362,
+            "vote_acc": 92.12422360248446,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 94.70198675496688,
+              "Like": 100.0,
+              "Love": 98.01324503311258,
+              "CrossHands": 52.23880597014925,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 327,
+            "wrong_to_correct": 1,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 4221,
+            "acc": 97.8441127694859,
+            "vote_acc": 98.26086956521739,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 86.25827814569537,
+              "Like": 98.67330016583747,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 91,
+            "wrong_to_correct": 6,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 4221,
+            "acc": 48.18763326226013,
+            "vote_acc": 49.06832298136646,
+            "recall": {
+              "Fist": 56.71641791044776,
+              "FlatHand": 96.01328903654485,
+              "Dislike": 5.629139072847682,
+              "Like": 0.0,
+              "Love": 79.13907284768213,
+              "CrossHands": 0.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 2181,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 4221,
+            "acc": 60.57806207059938,
+            "vote_acc": 61.813664596273284,
+            "recall": {
+              "Fist": 30.679933665008292,
+              "FlatHand": 100.0,
+              "Dislike": 69.37086092715232,
+              "Like": 99.33665008291874,
+              "Love": 13.741721854304636,
+              "CrossHands": 17.24709784411277,
+              "BreakTime": 93.85382059800665
+            },
+            "correct_to_wrong": 1659,
+            "wrong_to_correct": 1,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 4221,
+            "acc": 77.99099739398247,
+            "vote_acc": 79.27950310559007,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 97.50830564784053,
+              "Dislike": 96.68874172185431,
+              "Like": 97.18076285240464,
+              "Love": 85.76158940397352,
+              "CrossHands": 0.0,
+              "BreakTime": 68.77076411960132
+            },
+            "correct_to_wrong": 924,
+            "wrong_to_correct": 1,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          }
+        },
+        "seed45": {
+          "none": {
+            "n": 4221,
+            "acc": 98.60222696043591,
+            "vote_acc": 98.55900621118012,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 100.0,
+              "Like": 99.17081260364843,
+              "Love": 91.05960264900662,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 4221,
+            "acc": 92.51362236436863,
+            "vote_acc": 92.24844720496894,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 49.16943521594684,
+              "Dislike": 100.0,
+              "Like": 98.34162520729684,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 311,
+            "wrong_to_correct": 54,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 4221,
+            "acc": 65.33996683250415,
+            "vote_acc": 65.44099378881988,
+            "recall": {
+              "Fist": 68.32504145936981,
+              "FlatHand": 95.51495016611295,
+              "Dislike": 68.21192052980133,
+              "Like": 77.28026533996683,
+              "Love": 43.211920529801326,
+              "CrossHands": 4.975124378109453,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 1404,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 4221,
+            "acc": 83.77161809997631,
+            "vote_acc": 83.90062111801242,
+            "recall": {
+              "Fist": 78.44112769485903,
+              "FlatHand": 100.0,
+              "Dislike": 60.099337748344375,
+              "Like": 98.00995024875621,
+              "Love": 51.98675496688742,
+              "CrossHands": 98.00995024875621,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 626,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 4221,
+            "acc": 92.53731343283582,
+            "vote_acc": 92.79503105590062,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 98.50993377483444,
+              "Like": 99.17081260364843,
+              "Love": 52.317880794701985,
+              "CrossHands": 97.8441127694859,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 256,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 4221,
+            "acc": 99.76308931532813,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 99.66777408637874,
+              "Dislike": 100.0,
+              "Like": 98.67330016583747,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 5,
+            "wrong_to_correct": 54,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 4221,
+            "acc": 32.95427623785832,
+            "vote_acc": 32.8944099378882,
+            "recall": {
+              "Fist": 0.0,
+              "FlatHand": 100.0,
+              "Dislike": 0.0,
+              "Like": 31.01160862354892,
+              "Love": 0.0,
+              "CrossHands": 0.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 2771,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 4221,
+            "acc": 86.66192845297323,
+            "vote_acc": 87.35403726708074,
+            "recall": {
+              "Fist": 96.84908789386401,
+              "FlatHand": 99.16943521594685,
+              "Dislike": 100.0,
+              "Like": 87.23051409618574,
+              "Love": 35.9271523178808,
+              "CrossHands": 87.56218905472637,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 504,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 4221,
+            "acc": 77.46979388770433,
+            "vote_acc": 78.01242236024845,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 95.03311258278146,
+              "Like": 98.00995024875621,
+              "Love": 41.72185430463576,
+              "CrossHands": 44.776119402985074,
+              "BreakTime": 62.7906976744186
+            },
+            "correct_to_wrong": 892,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          }
+        },
+        "seed46": {
+          "none": {
+            "n": 4221,
+            "acc": 99.50248756218906,
+            "vote_acc": 99.75155279503105,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 96.67774086378738,
+              "Dislike": 99.83443708609272,
+              "Like": 100.0,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 4221,
+            "acc": 92.46624022743426,
+            "vote_acc": 92.32298136645963,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 47.176079734219265,
+              "Dislike": 100.0,
+              "Like": 100.0,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 312,
+            "wrong_to_correct": 15,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 4221,
+            "acc": 50.130300876569535,
+            "vote_acc": 50.409937888198755,
+            "recall": {
+              "Fist": 26.202321724709783,
+              "FlatHand": 89.3687707641196,
+              "Dislike": 96.68874172185431,
+              "Like": 0.0,
+              "Love": 35.59602649006622,
+              "CrossHands": 3.9800995024875623,
+              "BreakTime": 99.16943521594685
+            },
+            "correct_to_wrong": 2105,
+            "wrong_to_correct": 21,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 4221,
+            "acc": 96.42264866145463,
+            "vote_acc": 96.472049689441,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 78.64238410596026,
+              "Like": 100.0,
+              "Love": 100.0,
+              "CrossHands": 96.35157545605307,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 151,
+            "wrong_to_correct": 21,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 4221,
+            "acc": 90.31035299692016,
+            "vote_acc": 90.03726708074534,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 88.41059602649007,
+              "Like": 100.0,
+              "Love": 99.17218543046357,
+              "CrossHands": 76.61691542288557,
+              "BreakTime": 67.94019933554817
+            },
+            "correct_to_wrong": 409,
+            "wrong_to_correct": 21,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 4221,
+            "acc": 93.01113480217957,
+            "vote_acc": 92.94409937888199,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 55.14950166112956,
+              "Dislike": 100.0,
+              "Like": 100.0,
+              "Love": 95.86092715231787,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 295,
+            "wrong_to_correct": 21,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 4221,
+            "acc": 24.543946932006634,
+            "vote_acc": 23.403726708074537,
+            "recall": {
+              "Fist": 70.48092868988391,
+              "FlatHand": 27.906976744186046,
+              "Dislike": 13.90728476821192,
+              "Like": 6.633499170812604,
+              "Love": 0.0,
+              "CrossHands": 0.0,
+              "BreakTime": 52.99003322259136
+            },
+            "correct_to_wrong": 3164,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 4221,
+            "acc": 66.00331674958541,
+            "vote_acc": 64.79503105590062,
+            "recall": {
+              "Fist": 80.76285240464345,
+              "FlatHand": 100.0,
+              "Dislike": 29.47019867549669,
+              "Like": 99.83416252072969,
+              "Love": 52.152317880794705,
+              "CrossHands": 0.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 1435,
+            "wrong_to_correct": 21,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 4221,
+            "acc": 55.38971807628524,
+            "vote_acc": 55.40372670807453,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 98.84105960264901,
+              "Like": 82.91873963515755,
+              "Love": 2.152317880794702,
+              "CrossHands": 3.814262023217247,
+              "BreakTime": 0.0
+            },
+            "correct_to_wrong": 1883,
+            "wrong_to_correct": 21,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          }
+        },
+        "E5": {
+          "none": {
+            "n": 4221,
+            "acc": 98.72068230277186,
+            "vote_acc": 98.58385093167702,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 99.83443708609272,
+              "Like": 100.0,
+              "Love": 91.22516556291392,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 4221,
+            "acc": 98.4126984126984,
+            "vote_acc": 99.00621118012423,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 88.87043189368771,
+              "Dislike": 100.0,
+              "Like": 100.0,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 67,
+            "wrong_to_correct": 54,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 4221,
+            "acc": 58.28002842928216,
+            "vote_acc": 57.86335403726708,
+            "recall": {
+              "Fist": 91.87396351575457,
+              "FlatHand": 100.0,
+              "Dislike": 74.33774834437085,
+              "Like": 3.482587064676617,
+              "Love": 36.920529801324506,
+              "CrossHands": 1.4925373134328357,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 1707,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 4221,
+            "acc": 99.54986969912343,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 99.66887417218543,
+              "Like": 99.66832504145937,
+              "Love": 97.51655629139073,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 11,
+            "wrong_to_correct": 46,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 4221,
+            "acc": 94.59843638948117,
+            "vote_acc": 95.00621118012423,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 96.68874172185431,
+              "Like": 100.0,
+              "Love": 94.5364238410596,
+              "CrossHands": 70.97844112769486,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 218,
+            "wrong_to_correct": 44,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 4221,
+            "acc": 99.92892679459844,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 100.0,
+              "Like": 99.50248756218906,
+              "Love": 100.0,
+              "CrossHands": 100.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 3,
+            "wrong_to_correct": 54,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 4221,
+            "acc": 31.79341388296612,
+            "vote_acc": 31.72670807453416,
+            "recall": {
+              "Fist": 12.271973466003317,
+              "FlatHand": 100.0,
+              "Dislike": 0.33112582781456956,
+              "Like": 10.281923714759536,
+              "Love": 0.0,
+              "CrossHands": 0.0,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 2825,
+            "wrong_to_correct": 0,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 4221,
+            "acc": 80.17057569296375,
+            "vote_acc": 82.06211180124224,
+            "recall": {
+              "Fist": 66.16915422885572,
+              "FlatHand": 100.0,
+              "Dislike": 79.30463576158941,
+              "Like": 98.8391376451078,
+              "Love": 44.867549668874176,
+              "CrossHands": 72.13930348258707,
+              "BreakTime": 100.0
+            },
+            "correct_to_wrong": 784,
+            "wrong_to_correct": 1,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 4221,
+            "acc": 70.69414830608861,
+            "vote_acc": 69.54037267080744,
+            "recall": {
+              "Fist": 100.0,
+              "FlatHand": 100.0,
+              "Dislike": 100.0,
+              "Like": 98.00995024875621,
+              "Love": 24.668874172185433,
+              "CrossHands": 10.281923714759536,
+              "BreakTime": 61.96013289036545
+            },
+            "correct_to_wrong": 1184,
+            "wrong_to_correct": 1,
+            "paired": 4221,
+            "dropped_out_of_range": 0
+          }
+        }
+      }
+    },
+    "data\\a5_love": {
+      "name": "a5_love",
+      "user": "User5",
+      "n_takes": 10,
+      "lost_fraction": {
+        "none": 0.0,
+        "row+1": 0.0046020337368433695,
+        "row-1": 0.04557667816175152,
+        "col+1": 0.1098022038497926,
+        "col-1": 0.11111879966359026,
+        "row+2": 0.054933684770366496,
+        "row-2": 0.1458695785875157,
+        "col+2": 0.21888593662890896,
+        "col-2": 0.23581199371288203
+      },
+      "models": {
+        "baseline_ST_only": {
+          "none": {
+            "n": 1501,
+            "acc": 94.33710859427049,
+            "vote_acc": 95.59147685525349,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 94.33710859427049,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 1501,
+            "acc": 99.86675549633578,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 99.86675549633578,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 2,
+            "wrong_to_correct": 85,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 1501,
+            "acc": 75.4163890739507,
+            "vote_acc": 77.8104335047759,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 75.4163890739507,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 316,
+            "wrong_to_correct": 32,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 1501,
+            "acc": 75.48301132578281,
+            "vote_acc": 78.47171197648788,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 75.48301132578281,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 330,
+            "wrong_to_correct": 47,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 1501,
+            "acc": 35.30979347101932,
+            "vote_acc": 36.443791329904485,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 35.30979347101932,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 886,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 85,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 1501,
+            "acc": 54.763491005996,
+            "vote_acc": 57.09037472446731,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 54.763491005996,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 596,
+            "wrong_to_correct": 2,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 1501,
+            "acc": 22.984676882078613,
+            "vote_acc": 20.720058780308598,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 22.984676882078613,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 1071,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 1501,
+            "acc": 0.0,
+            "vote_acc": 0.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 0.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 1416,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          }
+        },
+        "seed42": {
+          "none": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 1501,
+            "acc": 85.80946035976015,
+            "vote_acc": 85.2314474650992,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 85.80946035976015,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 213,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 1501,
+            "acc": 78.61425716189207,
+            "vote_acc": 79.35341660543718,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 78.61425716189207,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 321,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 1501,
+            "acc": 59.96002664890073,
+            "vote_acc": 59.95591476855253,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 59.96002664890073,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 601,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 1501,
+            "acc": 72.95136575616256,
+            "vote_acc": 73.47538574577517,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 72.95136575616256,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 406,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 1501,
+            "acc": 2.5316455696202533,
+            "vote_acc": 0.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 2.5316455696202533,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 1463,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          }
+        },
+        "seed43": {
+          "none": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 1501,
+            "acc": 94.27048634243837,
+            "vote_acc": 96.03232916972814,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 94.27048634243837,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 86,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 1501,
+            "acc": 97.06862091938707,
+            "vote_acc": 97.42836149889786,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 97.06862091938707,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 44,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 1501,
+            "acc": 55.76282478347768,
+            "vote_acc": 56.13519470977223,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 55.76282478347768,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 664,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 1501,
+            "acc": 85.80946035976015,
+            "vote_acc": 87.80308596620132,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 85.80946035976015,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 213,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 1501,
+            "acc": 77.21518987341773,
+            "vote_acc": 78.6921381337252,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 77.21518987341773,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 342,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          }
+        },
+        "seed44": {
+          "none": {
+            "n": 1501,
+            "acc": 99.93337774816789,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 99.93337774816789,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 1,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 1,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 1501,
+            "acc": 99.86675549633578,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 99.86675549633578,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 2,
+            "wrong_to_correct": 1,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 1501,
+            "acc": 93.73750832778148,
+            "vote_acc": 96.4731814842028,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 93.73750832778148,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 93,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 1,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 1501,
+            "acc": 99.53364423717521,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 99.53364423717521,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 7,
+            "wrong_to_correct": 1,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 1501,
+            "acc": 86.27581612258494,
+            "vote_acc": 86.92138133725203,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 86.27581612258494,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 205,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 1501,
+            "acc": 18.9873417721519,
+            "vote_acc": 20.20573108008817,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 18.9873417721519,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 1215,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          }
+        },
+        "seed45": {
+          "none": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 1501,
+            "acc": 89.27381745502998,
+            "vote_acc": 89.9338721528288,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 89.27381745502998,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 161,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 1501,
+            "acc": 99.60026648900732,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 99.60026648900732,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 6,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 1501,
+            "acc": 93.40439706862091,
+            "vote_acc": 95.59147685525349,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 93.40439706862091,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 99,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 1501,
+            "acc": 59.96002664890073,
+            "vote_acc": 59.95591476855253,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 59.96002664890073,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 601,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 1501,
+            "acc": 84.8767488341106,
+            "vote_acc": 86.1131520940485,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 84.8767488341106,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 227,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 1501,
+            "acc": 57.69487008660893,
+            "vote_acc": 63.70315944158706,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 57.69487008660893,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 635,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          }
+        },
+        "seed46": {
+          "none": {
+            "n": 1501,
+            "acc": 99.26715522984676,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 99.26715522984676,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 11,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 1501,
+            "acc": 90.07328447701532,
+            "vote_acc": 90.15429831006612,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 90.07328447701532,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 149,
+            "wrong_to_correct": 11,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 1501,
+            "acc": 98.40106595602931,
+            "vote_acc": 98.89786921381337,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 98.40106595602931,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 16,
+            "wrong_to_correct": 3,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 1501,
+            "acc": 47.56828780812791,
+            "vote_acc": 48.420279206465835,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 47.56828780812791,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 776,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 11,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 1501,
+            "acc": 62.22518321119254,
+            "vote_acc": 61.79279941219692,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 62.22518321119254,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 567,
+            "wrong_to_correct": 11,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 1501,
+            "acc": 51.03264490339774,
+            "vote_acc": 52.97575312270389,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 51.03264490339774,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 724,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 1501,
+            "acc": 0.0,
+            "vote_acc": 0.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 0.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 1490,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          }
+        },
+        "E5": {
+          "none": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row+1": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row-1": {
+            "n": 1501,
+            "acc": 92.87141905396402,
+            "vote_acc": 94.34239529757531,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 92.87141905396402,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 107,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col+1": {
+            "n": 1501,
+            "acc": 99.86675549633578,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 99.86675549633578,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 2,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col-1": {
+            "n": 1501,
+            "acc": 99.20053297801465,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 99.20053297801465,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 12,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row+2": {
+            "n": 1501,
+            "acc": 100.0,
+            "vote_acc": 100.0,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 100.0,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 0,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "row-2": {
+            "n": 1501,
+            "acc": 61.225849433710856,
+            "vote_acc": 61.20499632623071,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 61.225849433710856,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 582,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col+2": {
+            "n": 1501,
+            "acc": 94.27048634243837,
+            "vote_acc": 96.10580455547392,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 94.27048634243837,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 86,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          },
+          "col-2": {
+            "n": 1501,
+            "acc": 19.52031978680879,
+            "vote_acc": 16.752387950036738,
+            "recall": {
+              "Fist": NaN,
+              "FlatHand": NaN,
+              "Dislike": NaN,
+              "Like": NaN,
+              "Love": 19.52031978680879,
+              "CrossHands": NaN,
+              "BreakTime": NaN
+            },
+            "correct_to_wrong": 1208,
+            "wrong_to_correct": 0,
+            "paired": 1501,
+            "dropped_out_of_range": 0
+          }
+        }
+      }
+    }
+  },
+  "predictions": [
+    {
+      "name": "Q1 phase56: E5 mean of ±1 shifts >= 5 pp below unshifted",
+      "holds": false,
+      "value": "drop 4.7 pp"
+    },
+    {
+      "name": "Q2 phase56: row-1 is the worst ±1 shift",
+      "holds": true,
+      "value": "worst row-1 (row+1 86.5, row-1 84.7, col+1 87.1, col-1 94.7)"
+    },
+    {
+      "name": "Q3 phase56: largest mean ±1 recall drop is Like or Dislike",
+      "holds": true,
+      "value": "largest Like 18.5 pp"
+    },
+    {
+      "name": "Q1 phase56_stand: E5 mean of ±1 shifts >= 5 pp below unshifted",
+      "holds": true,
+      "value": "drop 11.0 pp"
+    },
+    {
+      "name": "Q2 phase56_stand: row-1 is the worst ±1 shift",
+      "holds": true,
+      "value": "worst row-1 (row+1 98.4, row-1 58.3, col+1 99.5, col-1 94.6)"
+    },
+    {
+      "name": "Q3 phase56_stand: largest mean ±1 recall drop is Like or Dislike",
+      "holds": false,
+      "value": "largest CrossHands 31.9 pp"
+    },
+    {
+      "name": "Q4 a5_love: E5 Love >= 90 % at row+1 and row-1",
+      "holds": true,
+      "value": "row+1 100.0, row-1 92.9"
+    },
+    {
+      "name": "Q5 phase56: ±2 worse than ±1 for every model",
+      "holds": true,
+      "value": "exceptions: none"
+    },
+    {
+      "name": "Q6 phase56: E5 drop <= singles' mean drop",
+      "holds": true,
+      "value": "E5 4.7 pp, singles 6.2 pp"
+    },
+    {
+      "name": "Q5 phase56_stand: ±2 worse than ±1 for every model",
+      "holds": true,
+      "value": "exceptions: none"
+    },
+    {
+      "name": "Q6 phase56_stand: E5 drop <= singles' mean drop",
+      "holds": true,
+      "value": "E5 11.0 pp, singles 12.9 pp"
+    }
+  ],
+  "decision": {
+    "trigger_5_5c": true,
+    "hits": [
+      "phase56_stand row-1 −40.4 pp"
+    ]
+  }
+}

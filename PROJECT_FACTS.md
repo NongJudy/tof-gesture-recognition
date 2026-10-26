@@ -2409,6 +2409,35 @@ not a timing problem.
 **Thesis wording:** "a known user on a new day: 93.0 % sitting, 98.7 % standing (same model, on the board); difference not significant at
 the take level and confounded with session order". New-user figure stays LOSO 85.3 %.
 
+### 5.1v A6-sim result — simulated whole-zone shift (26 Oct 2026 22:14) `[MEASURED, simulated]`
+
+`pc_tools\a6_sim.py` (committed before running) → `results_a6sim\eval_20261026_221509\` (report.txt, summary.json, table.csv,
+a6sim_E5.png). Data: phase56 (sitting, 4,219 frames), phase56_stand (4,221), a5_love (1,501). PC prediction (board = PC established).
+
+**E5 per-frame accuracy % by shift** (none / row+1 / row−1 / col+1 / col−1 / row+2 / row−2 / col+2 / col−2):
+- sitting: 93.0 / 86.5 / **84.7** / 87.1 / 94.7 / 85.1 / **35.4** / 77.5 / 86.1
+- standing: 98.7 / 98.4 / **58.3** / 99.5 / 94.6 / 99.9 / **31.8** / 80.2 / 70.7
+- a5_love: 100 / 100 / 92.9 / 99.9 / 99.2 / 100 / 61.2 / 94.3 / 19.5
+Singles mean (sitting / standing, none → row−1): 89.0 → 79.2, 96.0 → 56.1. ST-only: 68.2 → 34.1, 71.7 → 32.3.
+Hand zones pushed off the grid at row−1: 2.3 % (sitting), 8.1 % (standing) → the row−1 collapse is **not** clipping.
+Standing row−1 by posture (E5 recall): Like 100 → **3.5**, CrossHands 100 → **1.5**, Love 91.2 → 36.9, Dislike 99.8 → 74.3, Fist 91.9,
+FlatHand and BreakTime 100. Sitting row−1: Like 81.4 → **0.3**; sitting row+1: Dislike 69.6 → 9.6 (standing row+1 Dislike 100).
+**Main finding:** a strong **asymmetry** — shifting toward higher rows (toward ST's hand positions) is tolerated even by 2 zones
+(standing row+2 99.9 %), shifting toward row 0 fails fast (row−1 −40.4 pp standing, row−2 ≈ 32–35 % on both). This is the §5.1j failure
+direction, and it matches a real event: standing Love take 1 (82 %, → BreakTime) had Love's centroid 1.0 row toward row 0 (§5.1u).
+Interpretation: E5 learned where hands sit in its training data (ST rows ≥ ~3.5–4.5) and does not generalise below it — a
+training-distribution effect, not a sensor limit.
+**Predictions:** Q1 sitting ❌ (drop 4.7 pp < 5) / standing ✅ (11.0) · Q2 ✅ both (row−1 worst) · Q3 sitting ✅ (Like 18.5 pp) / standing ❌
+(CrossHands 31.9 pp) · Q4 ✅ (row+1 100, row−1 92.9) · Q5 ✅ both · Q6 ✅ both (E5 drop ≤ singles: 4.7 vs 6.2, 11.0 vs 12.9).
+**Decision rule: TRIGGERED** (standing row−1 −40.4 pp) → **5.5c re-centring is to be pre-registered next** (§5.1s/§5.1t).
+**Important caveat for 5.5c:** integer re-centring makes a model invariant to whole-zone shifts *by construction*, so A6-sim will look
+almost perfect for it and is **not** a fair test of 5.5c; it may only be reported as a sanity check. 5.5c must be judged by
+6-subject LOSO (new people) and the natural new-day sets (phase56, phase56_stand) — and ideally a physical shift check (move the board
+3 cm with a ruler), because real shifts are not whole zones and change the viewing angle.
+**Practical (demo / thesis):** until 5.5c, users should keep their hand at or "above" (toward higher rows) the trained position;
+which physical direction row 0 is remains unverified — needed for a demo instruction.
+Limits: simulated; n = 1 subject; frames correlated → descriptive.
+
 ## 5.2 Dynamic-gesture datasets — what exists
 
 | Source | Gestures | Sensor | Data available? |
@@ -3361,3 +3390,4 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *2026-10-26 21:18 addendum: A6 pre-registration commit `343c8c2` pushed (plan `data\a6_shift\a6_plan_User5.json`; natural centroids identical to the phase4 values in §5.1p). No A6 data existed at that time.*
 *2026-10-26 21:50 addendum: **A13** — live A6 guide abandoned before any data (practice only), replaced by simulated shift A6-sim; **A14** — standing new-day set `data\phase56_stand` pre-registered (§5.1t).*
 *2026-10-26 22:05 addendum: **A14 done** (§5.1u): standing E5 98.7 % on the board (= PC 4,221/4,221) vs sitting 93.0 %; take-level U = 106, p = 0.52. Love take 1 82 % (→ BreakTime), Love sat 1 row toward row 0. Next: A6-sim.*
+*2026-10-26 22:16 addendum: **A6-sim done** (§5.1v): strong asymmetry — row−1 standing 98.7 → 58.3 %, row−2 ≈ 32–35 %, row+1/+2 tolerated; decision rule TRIGGERED → pre-register 5.5c re-centring next (new chat). A6-sim is not a fair test of re-centring.*

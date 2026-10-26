@@ -1,0 +1,66 @@
+A6-sim — simulated whole-zone hand shift, predicted on the PC (board = PC)  ·  PROJECT_FACTS §5.1t (A13)
+generated 2026-10-26T22:14:53
+
+══ phase56  (User5, 14 takes) ══
+model               none  row+1  row-1  col+1  col-1  row+2  row-2  col+2  col-2   (per-frame accuracy %)
+baseline_ST_only    68.2   70.2   34.1   60.5   51.8   73.1   11.0   47.9   40.1
+E5                  93.0   86.5   84.7   87.1   94.7   85.1   35.4   77.5   86.1
+singles mean        89.0   81.2   79.2   83.4   87.3   82.6   39.4   67.1   66.0
+singles SD           3.3    4.1    4.5    2.3    7.4    2.8    6.7    9.7   12.8
+E5 vote             92.7   86.7   85.4   87.0   95.1   85.0   35.7   78.0   86.8
+hand lost %          0.0    9.6    2.3    4.0    6.8   20.5   14.2    8.6   19.7
+E5 recall % by posture:
+  Fist             100.0  100.0   97.0   99.8  100.0  100.0    0.0   79.8   95.2
+  FlatHand         100.0   96.3  100.0  100.0  100.0  100.0   95.5  100.0   92.7
+  Dislike           69.6    9.6   97.2   21.3   99.7    0.2   14.5   61.6   92.2
+  Like              81.4   99.7    0.3   88.2   63.5   95.7    0.3   40.1   68.2
+  Love             100.0  100.0  100.0  100.0  100.0  100.0   47.3  100.0  100.0
+  CrossHands       100.0  100.0   98.5  100.0  100.0  100.0    0.0   60.9   54.4
+  BreakTime        100.0  100.0  100.0  100.0  100.0  100.0   90.4  100.0   99.8
+E5 frames correct→wrong / wrong→correct vs unshifted: row+1 385/112, row-1 533/183, col+1 386/135, col-1 164/237, row+2 445/113, row-2 2489/58, col+2 757/102, col-2 588/295
+
+══ phase56_stand  (User5, 14 takes) ══
+model               none  row+1  row-1  col+1  col-1  row+2  row-2  col+2  col-2   (per-frame accuracy %)
+baseline_ST_only    71.7   83.3   32.3   74.7   50.3   87.8   14.3   55.9   39.9
+E5                  98.7   98.4   58.3   99.5   94.6   99.9   31.8   80.2   70.7
+singles mean        96.0   94.8   56.1   91.8   89.8   97.5   32.8   69.1   66.2
+singles SD           4.8    4.1    8.6    5.1    2.6    2.8    9.1   11.2   11.6
+E5 vote             98.6   99.0   57.9  100.0   95.0  100.0   31.7   82.1   69.5
+hand lost %          0.0    7.2    8.1    4.8    4.6   16.3   23.4   10.6   11.1
+E5 recall % by posture:
+  Fist             100.0  100.0   91.9  100.0  100.0  100.0   12.3   66.2  100.0
+  FlatHand         100.0   88.9  100.0  100.0  100.0  100.0  100.0  100.0  100.0
+  Dislike           99.8  100.0   74.3   99.7   96.7  100.0    0.3   79.3  100.0
+  Like             100.0  100.0    3.5   99.7  100.0   99.5   10.3   98.8   98.0
+  Love              91.2  100.0   36.9   97.5   94.5  100.0    0.0   44.9   24.7
+  CrossHands       100.0  100.0    1.5  100.0   71.0  100.0    0.0   72.1   10.3
+  BreakTime        100.0  100.0  100.0  100.0  100.0  100.0  100.0  100.0   62.0
+E5 frames correct→wrong / wrong→correct vs unshifted: row+1 67/54, row-1 1707/0, col+1 11/46, col-1 218/44, row+2 3/54, row-2 2825/0, col+2 784/1, col-2 1184/1
+
+══ a5_love  (User5, 10 takes) ══
+model               none  row+1  row-1  col+1  col-1  row+2  row-2  col+2  col-2   (per-frame accuracy %)
+baseline_ST_only    94.3   99.9   75.4   75.5   35.3  100.0   54.8   23.0    0.0
+E5                 100.0  100.0   92.9   99.9   99.2  100.0   61.2   94.3   19.5
+singles mean        99.8  100.0   91.9   99.6   82.1  100.0   67.5   76.2   31.3
+singles SD           0.3    0.0    5.4    0.7   20.6    0.0   18.1   15.1   34.5
+E5 vote            100.0  100.0   94.3  100.0  100.0  100.0   61.2   96.1   16.8
+hand lost %          0.0    0.5    4.6   11.0   11.1    5.5   14.6   21.9   23.6
+E5 recall % by posture:
+  Love             100.0  100.0   92.9   99.9   99.2  100.0   61.2   94.3   19.5
+E5 frames correct→wrong / wrong→correct vs unshifted: row+1 0/0, row-1 107/0, col+1 2/0, col-1 12/0, row+2 0/0, row-2 582/0, col+2 86/0, col-2 1208/0
+
+Pre-registered predictions (§5.1t):
+  FAILS  Q1 phase56: E5 mean of ±1 shifts >= 5 pp below unshifted   [drop 4.7 pp]
+  HOLDS  Q2 phase56: row-1 is the worst ±1 shift   [worst row-1 (row+1 86.5, row-1 84.7, col+1 87.1, col-1 94.7)]
+  HOLDS  Q3 phase56: largest mean ±1 recall drop is Like or Dislike   [largest Like 18.5 pp]
+  HOLDS  Q1 phase56_stand: E5 mean of ±1 shifts >= 5 pp below unshifted   [drop 11.0 pp]
+  HOLDS  Q2 phase56_stand: row-1 is the worst ±1 shift   [worst row-1 (row+1 98.4, row-1 58.3, col+1 99.5, col-1 94.6)]
+  FAILS  Q3 phase56_stand: largest mean ±1 recall drop is Like or Dislike   [largest CrossHands 31.9 pp]
+  HOLDS  Q4 a5_love: E5 Love >= 90 % at row+1 and row-1   [row+1 100.0, row-1 92.9]
+  HOLDS  Q5 phase56: ±2 worse than ±1 for every model   [exceptions: none]
+  HOLDS  Q6 phase56: E5 drop <= singles' mean drop   [E5 4.7 pp, singles 6.2 pp]
+  HOLDS  Q5 phase56_stand: ±2 worse than ±1 for every model   [exceptions: none]
+  HOLDS  Q6 phase56_stand: E5 drop <= singles' mean drop   [E5 11.0 pp, singles 12.9 pp]
+
+Decision rule (any ±1 shift lowers E5 by >= 10 pp on phase56 or phase56_stand → pre-register 5.5c): TRIGGERED — phase56_stand row-1 −40.4 pp
+limits: simulated shift (no perspective / edge-illumination change); n = 1 subject; frames correlated → descriptive only
