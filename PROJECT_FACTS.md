@@ -2438,6 +2438,32 @@ almost perfect for it and is **not** a fair test of 5.5c; it may only be reporte
 which physical direction row 0 is remains unverified — needed for a demo instruction.
 Limits: simulated; n = 1 subject; frames correlated → descriptive.
 
+### 5.1w Phase 5.5c — hand re-centring: PRE-REGISTRATION (written 26 Oct 2026 22:35, before any 5.5c run)
+
+**Trigger:** A6-sim decision rule (§5.1v). Chin asked to continue in this chat and for "the best, surest, most detailed" option
+`[STUDENT, 22:20]`. Earlier alternatives already tried: shift augmentation (5.5a, −12.1 pp, §5.1g-R) and GlobalAveragePooling (arm C,
+ST-fold mean −3.1 pp vs A, §5.1i-R). Re-centring is the remaining §5.1f option and the one §5.1j / Oberweger et al. (§5.1k) support.
+**Method (`pc_tools\recentre.py`, one function used for training, testing, PC re-checks; firmware must match it exactly):** on the
+preprocessed 8×8×2 frame, hand zones = distance channel not empty (< 2,000 mm before normalisation); integer counts cnt, Σrow, Σcol;
+shift **dr = ⌊(4·cnt − Σrow)/cnt⌋, dc = ⌊(4·cnt − Σcol)/cnt⌋** (= ⌊3.5 − centroid + 0.5⌋, integer floor division, so Python and C
+agree bit-for-bit); both channels shifted, vacated zones = empty values, zones pushed off the grid dropped, no-hand frames unchanged.
+Afterwards every hand centroid lies in (3.0, 4.0] on both axes. Unweighted centroid, same definition as §5.1j.
+**LOSO experiment (`pc_tools\train_phase55c.py`):** arm **B** = the E5 recipe (§5.1i arm B) **re-run in the same job**; arm **R** = B +
+`recentre()` on the training frames (after the left-right flip) and on the test frames — the only difference. Seeds 42–46 × 6 folds × 2
+arms = 60 models; folds, data (`data\phase4` + `phase4_extra`, ST 4 users), weighting, early stopping exactly as §5.1i (reuses
+`train_phase55.load_all / fold_indices / subject_weights`). Our subjects' folds test on their main set only.
+**Adoption rule (fixed now):** use R if **mean of 6 (R) − mean of 6 (B) ≥ +1.0 pp** **and** **ST-fold mean (R) ≥ ST-fold mean (B) − 1.0 pp**.
+Report per-subject R − B with exact Wilcoxon (n = 6, smallest p 0.031), per-class recall for both arms.
+**Predictions (Claude):** P1 mean-of-6 R ≥ B + 1 pp (55 %). P2 User 5: R ≥ B + 3 pp (60 %). P3 User 5 Like recall under R > 50 %
+(B was 23.1 %) (55 %). P4 ST-fold mean |R − B| ≤ 2 pp (60 %). P5 the B re-run's mean of 6 is within ±1 pp of 85.30 (70 %).
+Risk named in advance: re-centring discards absolute position, which may have carried class information (e.g. two-hand postures).
+**If R is adopted (Rule 6 chain, each step its own check):** (1) train 5 final R models on all 6 subjects (seeds 42–46) → ensemble
+**E5R**; (2) report on the natural new-day sets `phase56` and `phase56_stand` (report only, never for choosing) and A6-sim (sanity only —
+R is shift-invariant to whole zones by construction, §5.1v); (3) X-CUBE-AI conversion; (4) firmware switch `MY_TOF_RECENTRE` with
+integer-exact C, board vs PC on every frame of a fresh check; (5) per-frame timing (expected +< 0.2 ms); (6) a physical shift check
+(move the board 3 cm with a ruler; separately pre-registered); (7) deploy E5R only if (4) is 100 % and (5) ≤ 33 ms.
+**If R is not adopted:** E5 stays deployed; the thesis reports the position asymmetry (§5.1v) as a limitation with a positioning guide.
+
 ## 5.2 Dynamic-gesture datasets — what exists
 
 | Source | Gestures | Sensor | Data available? |
@@ -3391,3 +3417,4 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *2026-10-26 21:50 addendum: **A13** — live A6 guide abandoned before any data (practice only), replaced by simulated shift A6-sim; **A14** — standing new-day set `data\phase56_stand` pre-registered (§5.1t).*
 *2026-10-26 22:05 addendum: **A14 done** (§5.1u): standing E5 98.7 % on the board (= PC 4,221/4,221) vs sitting 93.0 %; take-level U = 106, p = 0.52. Love take 1 82 % (→ BreakTime), Love sat 1 row toward row 0. Next: A6-sim.*
 *2026-10-26 22:16 addendum: **A6-sim done** (§5.1v): strong asymmetry — row−1 standing 98.7 → 58.3 %, row−2 ≈ 32–35 %, row+1/+2 tolerated; decision rule TRIGGERED → pre-register 5.5c re-centring next (new chat). A6-sim is not a fair test of re-centring.*
+*2026-10-26 22:35 addendum: **5.5c pre-registered** (§5.1w): re-centring arm R vs re-run arm B, 60-model LOSO; tools `recentre.py`, `train_phase55c.py` tested on synthetic data.*
