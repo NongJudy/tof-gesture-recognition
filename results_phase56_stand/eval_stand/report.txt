@@ -1,0 +1,50 @@
+==============================================================================
+  Phase 5.6 — new-day test set data\phase56 (§5.1l + §5.1o)  ·  known users, descriptive
+==============================================================================
+  takes 14, frames 4221, users User5
+
+  ── User5 ──  per-frame accuracy % / 15-frame vote accuracy %
+    ST-only baseline         71.7 /   71.7
+    5 singles mean ± SD      96.0 ± 4.8 /   96.1 ± 4.8   (range 89.1–99.9)
+    E5 (PC)                  98.7 /   98.6   n = 4221 frames
+    E5 (ON THE BOARD)        98.7 /   98.6
+    recall %         Fist  FlatHa  Dislik    Like    Love  CrossH  BreakT
+    ST-only         100.0    28.6    98.3    46.3    47.7    99.7    81.4
+    E5              100.0   100.0    99.8   100.0    91.2   100.0   100.0
+    singles mean    100.0    92.1    98.5    99.8    81.8    99.8   100.0
+    E5 top confusions: Love→BreakTime 53, Dislike→BreakTime 1
+    E5 per take: Break1 100, Break2 100, Cross1 100, Cross2 100, Disli1 100, Disli2 100, Fist1 100, Fist2 100, FlatH1 100, FlatH2 100, Like1 100, Like2 100, Love1 82, Love2 100
+
+  ── Board vs PC (E5), every collected frame ──
+    compared 4221, class agree 4221/4221, gate mismatch 0, rows without board data 0
+    prob |diff| max 2.24e-06, median 3.57e-07
+
+  ── On-board per-frame work, every predicted frame (Q lines), n = 4221 ──
+    sensor_us      mean  13255.1  sd    0.3  median    13255  p99    13256  min    13254  max    13256
+    preprocess_us  mean    125.0  sd    3.1  median      123  p99      130  min      122  max      132
+    inference_us   mean  15814.0  sd   21.0  median    15814  p99    15892  min    15754  max    15910
+    decision_us    mean      2.1  sd    0.3  median        2  p99        3  min        2  max        9
+    total_us       mean  29196.1  sd   20.8  median    29195  p99    29278  min    29141  max    29297
+    frames over 33000 us: 0
+
+  ── Hand centroid row | col (phase56 vs phase4 main set; ST row range) ──
+    User5 Fist        phase56 4.21 | 3.21   phase4 4.06 | 2.61   ST rows 4.54–5.59
+    User5 FlatHand    phase56 3.37 | 3.24   phase4 3.45 | 2.43   ST rows 3.89–4.52
+    User5 Dislike     phase56 3.13 | 3.84   phase4 3.94 | 3.48   ST rows 3.82–4.54
+    User5 Like        phase56 3.74 | 2.82   phase4 3.55 | 2.42   ST rows 4.64–5.29
+    User5 Love        phase56 1.53 | 3.45   phase4 2.55 | 3.49   ST rows 4.29–4.96
+    User5 CrossHands  phase56 3.31 | 3.45   phase4 3.28 | 3.47   ST rows 4.50–4.70
+    User5 BreakTime   phase56 2.72 | 3.62   phase4 3.14 | 3.57   ST rows 3.47–4.27
+
+  ── Pre-registered predictions ──
+    HOLDS  B1 User5 Like recall, mean of 5 singles > 50 %   [99.8]
+    HOLDS  B4 User5 E5 - ST-only baseline >= 10 pp   [27.0]
+    HOLDS  B2 User5 E5 per-frame >= 85 %   [98.7]
+    HOLDS  B3 User5 E5 >= mean of 5 singles (96.0)   [2.7]
+    HOLDS  B5 board vs PC class agreement = 100 %, gate mismatch 0   [4221/4221, gate 0]
+    HOLDS  B6 on-board accuracy == PC E5 accuracy   [equal]
+    FAILS  B7 total mean 29.3±0.1 ms, max <= 30.0 ms, 0 frames > 33 ms   [mean 29196 us, max 29297 us, >33ms 0]
+
+  Not accuracy for new people (that stays LOSO 85.3 %, §5.1i-R). n = subjects listed above.
+  output: results_phase56_stand\eval_stand
+==============================================================================

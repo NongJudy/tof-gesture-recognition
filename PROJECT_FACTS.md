@@ -2360,6 +2360,9 @@ Predictions (Claude): Q1 E5's mean accuracy over the four ±1 shifts is ≥ 5 pp
 Q2 **row−1** (toward row 0, the §5.1j failure direction) is the worst ±1 shift (60 %). Q3 Like or Dislike has the largest ±1 drop (60 %).
 Q4 Love on `a5_love` stays ≥ 90 % at row±1 (65 %, A5). Q5 ±2 shifts are worse than ±1 for every model (80 %). Q6 E5's drop under
 shift is ≤ the singles' mean drop (65 %).
+Operational definitions (fixed 22:15, before A6-sim was run on real data; script `pc_tools\a6_sim.py`): Q1–Q3, Q5, Q6 are checked on
+`phase56` and `phase56_stand` separately; Q3 = posture with the largest mean E5 recall drop over the four ±1 shifts; Q5 = mean accuracy
+over ±2 < mean over ±1 for baseline, each single and E5; Q6 = E5's (unshifted − mean ±1) ≤ the singles' mean of the same.
 Decision rule (unchanged from §5.1s): any ±1 shift that lowers E5 per-frame accuracy by ≥ 10 pp on either dataset → 5.5c re-centring is
 pre-registered next (selected by LOSO; A6-sim and the A6-sim script re-run on it as report-only before/after).
 Limits: a simulated shift ignores perspective change and the weaker illumination near the edge of the field (FoI 43.4° < FoV 45°, §2);
@@ -2374,6 +2377,37 @@ never replaces, the sitting result (93.0 %). Test set only (§5.1l).
 Predictions: Chin — standing scores higher than sitting `[STUDENT, 19:15]`. Claude — S1 E5 per-frame ≥ 90 % (70 %); S2 |standing −
 sitting| ≤ 5 pp (60 %); S3 Like's centroid row is closer to its phase4 value (3.55) than phase56's 4.50 was (60 %); S4 board = PC on
 every frame (95 %). Caveat carried over: Chin has watched many live predictions today (§5.1p).
+
+### 5.1u A14 result — standing new-day set `data\phase56_stand`, User 5 (26 Oct 2026, 21:52–22:03) `[MEASURED]`
+
+**Collection:** `collect_own_data.py` v6.2 without `--plan`, defaults (7 × 2 × 20 s), `--minutes-since-poweron 441`, Chin standing:
+14/14 takes, 0 discarded, 301–302 frames per take (15.1 Hz), 0 missing, 0 out-of-window, medians 269–276 mm, Y and Q on every frame.
+The board check showed 0 % in range only because no hand was held. **Evaluation:** `evaluate_phase56.py --data-dir data\phase56_stand
+--out-dir results_phase56_stand\eval_stand`, 4,221 frames. (The report header still prints "data\phase56" — hard-coded title text, data
+dir is correct; cosmetic bug to fix.)
+
+| Model (User 5) | standing % (frame / vote) | sitting % (§5.1p) |
+|---|---|---|
+| ST-only baseline | 71.7 / 71.7 | 68.2 / 68.1 |
+| 5 singles mean ± SD | 96.0 ± 4.8 / 96.1 ± 4.8 (89.1–99.9) | 89.0 ± 3.3 / 89.1 ± 3.4 |
+| **E5 on the board** (= PC) | **98.7 / 98.6** | 93.0 / 92.7 |
+
+E5 recall: 100 / 100 / 99.8 / 100 / **91.2** / 100 / 100 (Fist … BreakTime). Errors: Love→BreakTime 53 frames, Dislike→BreakTime 1;
+all in **Love take 1 (82 %)**; the other 13 takes 100 %. Like and Dislike, the sitting weak spots, are 100 / 99.8 %.
+Board vs PC **4,221/4,221**, max |Δp| 2.2e-06. Per-frame work 29,196 ± 21 µs, max 29,297, 0 > 33 ms.
+Centroids (row | col, standing vs phase4): Fist 4.21|3.21 vs 4.06|2.61 · FlatHand 3.37|3.24 vs 3.45|2.43 · Dislike 3.13|3.84 vs 3.94|3.48 ·
+Like 3.74|2.82 vs 3.55|2.42 · **Love 1.53|3.45 vs 2.55|3.49** · CrossHands 3.31|3.45 vs 3.28|3.47 · BreakTime 2.72|3.62 vs 3.14|3.57.
+Love sat **1.0 row further toward row 0** than in training and failed toward BreakTime — the old Love failure mode, in §5.1j's failure
+direction (per-take centroids not yet extracted; A6-sim will look).
+**Standing vs sitting:** E5 +5.7 pp per-frame. Take level (14 vs 14 takes; sitting 12×100, 39, 63; standing 13×100, 82): Mann-Whitney
+U = 106, p = 0.52, rank-biserial r = 0.08 → **no detectable difference at the take level**; the frame-level gap comes from 2 bad takes
+sitting vs 1 standing. Confounded with order (sitting 18:41, standing 21:52), practice, fatigue and having watched live predictions.
+**Predictions:** S1 (E5 ≥ 90 %) 98.7 ✅ · **S2 (|stand − sit| ≤ 5 pp) 5.7 ❌** — Chin's prediction "standing higher" holds in direction ·
+S3 (Like row closer to 3.55 than 4.50 was) 3.74 ✅ · S4 (board = PC) ✅. The evaluator's B-lines (written for the sitting set) also hold
+except **B7 literally fails by 4 µs** (mean 29.196 ms vs band 29.2–29.4; max 29.297 ≤ 30.0, none > 33 ms): the ±0.1 ms band was too tight;
+not a timing problem.
+**Thesis wording:** "a known user on a new day: 93.0 % sitting, 98.7 % standing (same model, on the board); difference not significant at
+the take level and confounded with session order". New-user figure stays LOSO 85.3 %.
 
 ## 5.2 Dynamic-gesture datasets — what exists
 
@@ -3326,3 +3360,4 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *2026-10-26 20:33 addendum: **A6 pre-registered** (§5.1s) — tools `collect_own_data.py` v6.2 (`--plan` position guide), `a6_plan.py`, `a6_eval.py`, tested on simulated data. Plan file + tools + this file to be committed before any A6 data.*
 *2026-10-26 21:18 addendum: A6 pre-registration commit `343c8c2` pushed (plan `data\a6_shift\a6_plan_User5.json`; natural centroids identical to the phase4 values in §5.1p). No A6 data existed at that time.*
 *2026-10-26 21:50 addendum: **A13** — live A6 guide abandoned before any data (practice only), replaced by simulated shift A6-sim; **A14** — standing new-day set `data\phase56_stand` pre-registered (§5.1t).*
+*2026-10-26 22:05 addendum: **A14 done** (§5.1u): standing E5 98.7 % on the board (= PC 4,221/4,221) vs sitting 93.0 %; take-level U = 106, p = 0.52. Love take 1 82 % (→ BreakTime), Love sat 1 row toward row 0. Next: A6-sim.*

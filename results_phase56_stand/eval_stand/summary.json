@@ -1,0 +1,1527 @@
+{
+ "models": {
+  "baseline_ST_only": {
+   "User5": {
+    "n_frames": 4221,
+    "acc": 71.71286425017769,
+    "vote_acc": 71.72670807453416,
+    "recall": {
+     "Fist": 100.0,
+     "FlatHand": 28.57142857142857,
+     "Dislike": 98.34437086092716,
+     "Like": 46.26865671641791,
+     "Love": 47.682119205298015,
+     "CrossHands": 99.66832504145937,
+     "BreakTime": 81.3953488372093
+    },
+    "cm": [
+     [
+      603,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      430,
+      172,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      4,
+      0,
+      594,
+      0,
+      0,
+      0,
+      6
+     ],
+     [
+      0,
+      0,
+      324,
+      279,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      308,
+      0,
+      0,
+      288,
+      0,
+      8
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      2,
+      601,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0,
+      112,
+      490
+     ]
+    ],
+    "top_confusions": [
+     [
+      430,
+      "FlatHand",
+      "Fist"
+     ],
+     [
+      324,
+      "Like",
+      "Dislike"
+     ],
+     [
+      308,
+      "Love",
+      "FlatHand"
+     ],
+     [
+      112,
+      "BreakTime",
+      "CrossHands"
+     ],
+     [
+      8,
+      "Love",
+      "BreakTime"
+     ]
+    ],
+    "per_take": [
+     {
+      "cls": "BreakTime",
+      "take": 1,
+      "acc": 90.03322259136213
+     },
+     {
+      "cls": "BreakTime",
+      "take": 2,
+      "acc": 72.75747508305648
+     },
+     {
+      "cls": "CrossHands",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "CrossHands",
+      "take": 2,
+      "acc": 99.33554817275747
+     },
+     {
+      "cls": "Dislike",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Dislike",
+      "take": 2,
+      "acc": 96.68874172185431
+     },
+     {
+      "cls": "Fist",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Fist",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "FlatHand",
+      "take": 1,
+      "acc": 54.15282392026578
+     },
+     {
+      "cls": "FlatHand",
+      "take": 2,
+      "acc": 2.990033222591362
+     },
+     {
+      "cls": "Like",
+      "take": 1,
+      "acc": 53.31125827814569
+     },
+     {
+      "cls": "Like",
+      "take": 2,
+      "acc": 39.202657807308974
+     },
+     {
+      "cls": "Love",
+      "take": 1,
+      "acc": 9.933774834437086
+     },
+     {
+      "cls": "Love",
+      "take": 2,
+      "acc": 85.43046357615894
+     }
+    ]
+   }
+  },
+  "seed42": {
+   "User5": {
+    "n_frames": 4221,
+    "acc": 92.91637052831084,
+    "vote_acc": 93.04347826086956,
+    "recall": {
+     "Fist": 100.0,
+     "FlatHand": 100.0,
+     "Dislike": 98.01324503311258,
+     "Like": 100.0,
+     "Love": 52.483443708609265,
+     "CrossHands": 100.0,
+     "BreakTime": 100.0
+    },
+    "cm": [
+     [
+      603,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      602,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      592,
+      0,
+      0,
+      0,
+      12
+     ],
+     [
+      0,
+      0,
+      0,
+      603,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      317,
+      0,
+      287
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0,
+      603,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      602
+     ]
+    ],
+    "top_confusions": [
+     [
+      287,
+      "Love",
+      "BreakTime"
+     ],
+     [
+      12,
+      "Dislike",
+      "BreakTime"
+     ]
+    ],
+    "per_take": [
+     {
+      "cls": "BreakTime",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "BreakTime",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "CrossHands",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "CrossHands",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "Dislike",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Dislike",
+      "take": 2,
+      "acc": 96.02649006622516
+     },
+     {
+      "cls": "Fist",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Fist",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "FlatHand",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "FlatHand",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "Like",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Like",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "Love",
+      "take": 1,
+      "acc": 4.966887417218543
+     },
+     {
+      "cls": "Love",
+      "take": 2,
+      "acc": 100.0
+     }
+    ]
+   }
+  },
+  "seed43": {
+   "User5": {
+    "n_frames": 4221,
+    "acc": 89.10210850509358,
+    "vote_acc": 89.24223602484473,
+    "recall": {
+     "Fist": 100.0,
+     "FlatHand": 63.78737541528239,
+     "Dislike": 94.70198675496688,
+     "Like": 99.66832504145937,
+     "Love": 65.56291390728477,
+     "CrossHands": 100.0,
+     "BreakTime": 100.0
+    },
+    "cm": [
+     [
+      603,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      218,
+      384,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      3,
+      572,
+      0,
+      0,
+      0,
+      29
+     ],
+     [
+      0,
+      0,
+      2,
+      601,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      396,
+      0,
+      208
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0,
+      603,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      602
+     ]
+    ],
+    "top_confusions": [
+     [
+      218,
+      "FlatHand",
+      "Fist"
+     ],
+     [
+      208,
+      "Love",
+      "BreakTime"
+     ],
+     [
+      29,
+      "Dislike",
+      "BreakTime"
+     ],
+     [
+      3,
+      "Dislike",
+      "FlatHand"
+     ],
+     [
+      2,
+      "Like",
+      "Dislike"
+     ]
+    ],
+    "per_take": [
+     {
+      "cls": "BreakTime",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "BreakTime",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "CrossHands",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "CrossHands",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "Dislike",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Dislike",
+      "take": 2,
+      "acc": 89.40397350993378
+     },
+     {
+      "cls": "Fist",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Fist",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "FlatHand",
+      "take": 1,
+      "acc": 90.03322259136213
+     },
+     {
+      "cls": "FlatHand",
+      "take": 2,
+      "acc": 37.54152823920266
+     },
+     {
+      "cls": "Like",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Like",
+      "take": 2,
+      "acc": 99.33554817275747
+     },
+     {
+      "cls": "Love",
+      "take": 1,
+      "acc": 31.125827814569533
+     },
+     {
+      "cls": "Love",
+      "take": 2,
+      "acc": 100.0
+     }
+    ]
+   }
+  },
+  "seed44": {
+   "User5": {
+    "n_frames": 4221,
+    "acc": 99.85785358919688,
+    "vote_acc": 100.0,
+    "recall": {
+     "Fist": 100.0,
+     "FlatHand": 100.0,
+     "Dislike": 99.83443708609272,
+     "Like": 100.0,
+     "Love": 100.0,
+     "CrossHands": 99.17081260364843,
+     "BreakTime": 100.0
+    },
+    "cm": [
+     [
+      603,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      602,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      603,
+      0,
+      0,
+      0,
+      1
+     ],
+     [
+      0,
+      0,
+      0,
+      603,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      604,
+      0,
+      0
+     ],
+     [
+      5,
+      0,
+      0,
+      0,
+      0,
+      598,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      602
+     ]
+    ],
+    "top_confusions": [
+     [
+      5,
+      "CrossHands",
+      "Fist"
+     ],
+     [
+      1,
+      "Dislike",
+      "BreakTime"
+     ]
+    ],
+    "per_take": [
+     {
+      "cls": "BreakTime",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "BreakTime",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "CrossHands",
+      "take": 1,
+      "acc": 98.34437086092716
+     },
+     {
+      "cls": "CrossHands",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "Dislike",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Dislike",
+      "take": 2,
+      "acc": 99.66887417218543
+     },
+     {
+      "cls": "Fist",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Fist",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "FlatHand",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "FlatHand",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "Like",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Like",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "Love",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Love",
+      "take": 2,
+      "acc": 100.0
+     }
+    ]
+   }
+  },
+  "seed45": {
+   "User5": {
+    "n_frames": 4221,
+    "acc": 98.60222696043591,
+    "vote_acc": 98.55900621118012,
+    "recall": {
+     "Fist": 100.0,
+     "FlatHand": 100.0,
+     "Dislike": 100.0,
+     "Like": 99.17081260364843,
+     "Love": 91.05960264900662,
+     "CrossHands": 100.0,
+     "BreakTime": 100.0
+    },
+    "cm": [
+     [
+      603,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      602,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      604,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      5,
+      598,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      550,
+      0,
+      54
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0,
+      603,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      602
+     ]
+    ],
+    "top_confusions": [
+     [
+      54,
+      "Love",
+      "BreakTime"
+     ],
+     [
+      5,
+      "Like",
+      "Dislike"
+     ]
+    ],
+    "per_take": [
+     {
+      "cls": "BreakTime",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "BreakTime",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "CrossHands",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "CrossHands",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "Dislike",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Dislike",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "Fist",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Fist",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "FlatHand",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "FlatHand",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "Like",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Like",
+      "take": 2,
+      "acc": 98.33887043189368
+     },
+     {
+      "cls": "Love",
+      "take": 1,
+      "acc": 82.11920529801324
+     },
+     {
+      "cls": "Love",
+      "take": 2,
+      "acc": 100.0
+     }
+    ]
+   }
+  },
+  "seed46": {
+   "User5": {
+    "n_frames": 4221,
+    "acc": 99.50248756218906,
+    "vote_acc": 99.75155279503105,
+    "recall": {
+     "Fist": 100.0,
+     "FlatHand": 96.67774086378738,
+     "Dislike": 99.83443708609272,
+     "Like": 100.0,
+     "Love": 100.0,
+     "CrossHands": 100.0,
+     "BreakTime": 100.0
+    },
+    "cm": [
+     [
+      603,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      20,
+      582,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      603,
+      0,
+      0,
+      0,
+      1
+     ],
+     [
+      0,
+      0,
+      0,
+      603,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      604,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0,
+      603,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      602
+     ]
+    ],
+    "top_confusions": [
+     [
+      20,
+      "FlatHand",
+      "Fist"
+     ],
+     [
+      1,
+      "Dislike",
+      "BreakTime"
+     ]
+    ],
+    "per_take": [
+     {
+      "cls": "BreakTime",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "BreakTime",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "CrossHands",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "CrossHands",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "Dislike",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Dislike",
+      "take": 2,
+      "acc": 99.66887417218543
+     },
+     {
+      "cls": "Fist",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Fist",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "FlatHand",
+      "take": 1,
+      "acc": 93.35548172757476
+     },
+     {
+      "cls": "FlatHand",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "Like",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Like",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "Love",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Love",
+      "take": 2,
+      "acc": 100.0
+     }
+    ]
+   }
+  },
+  "E5": {
+   "User5": {
+    "n_frames": 4221,
+    "acc": 98.72068230277186,
+    "vote_acc": 98.58385093167702,
+    "recall": {
+     "Fist": 100.0,
+     "FlatHand": 100.0,
+     "Dislike": 99.83443708609272,
+     "Like": 100.0,
+     "Love": 91.22516556291392,
+     "CrossHands": 100.0,
+     "BreakTime": 100.0
+    },
+    "cm": [
+     [
+      603,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      602,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      603,
+      0,
+      0,
+      0,
+      1
+     ],
+     [
+      0,
+      0,
+      0,
+      603,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      551,
+      0,
+      53
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0,
+      603,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      602
+     ]
+    ],
+    "top_confusions": [
+     [
+      53,
+      "Love",
+      "BreakTime"
+     ],
+     [
+      1,
+      "Dislike",
+      "BreakTime"
+     ]
+    ],
+    "per_take": [
+     {
+      "cls": "BreakTime",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "BreakTime",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "CrossHands",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "CrossHands",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "Dislike",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Dislike",
+      "take": 2,
+      "acc": 99.66887417218543
+     },
+     {
+      "cls": "Fist",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Fist",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "FlatHand",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "FlatHand",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "Like",
+      "take": 1,
+      "acc": 100.0
+     },
+     {
+      "cls": "Like",
+      "take": 2,
+      "acc": 100.0
+     },
+     {
+      "cls": "Love",
+      "take": 1,
+      "acc": 82.45033112582782
+     },
+     {
+      "cls": "Love",
+      "take": 2,
+      "acc": 100.0
+     }
+    ]
+   }
+  }
+ },
+ "users": [
+  "User5"
+ ],
+ "board": {
+  "User5": {
+   "n_frames": 4221,
+   "acc": 98.72068230277186,
+   "vote_acc": 98.58385093167702,
+   "recall": {
+    "Fist": 100.0,
+    "FlatHand": 100.0,
+    "Dislike": 99.83443708609272,
+    "Like": 100.0,
+    "Love": 91.22516556291392,
+    "CrossHands": 100.0,
+    "BreakTime": 100.0
+   },
+   "cm": [
+    [
+     603,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     602,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     603,
+     0,
+     0,
+     0,
+     1
+    ],
+    [
+     0,
+     0,
+     0,
+     603,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     551,
+     0,
+     53
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     603,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     602
+    ]
+   ],
+   "top_confusions": [
+    [
+     53,
+     "Love",
+     "BreakTime"
+    ],
+    [
+     1,
+     "Dislike",
+     "BreakTime"
+    ]
+   ],
+   "per_take": [
+    {
+     "cls": "BreakTime",
+     "take": 1,
+     "acc": 100.0
+    },
+    {
+     "cls": "BreakTime",
+     "take": 2,
+     "acc": 100.0
+    },
+    {
+     "cls": "CrossHands",
+     "take": 1,
+     "acc": 100.0
+    },
+    {
+     "cls": "CrossHands",
+     "take": 2,
+     "acc": 100.0
+    },
+    {
+     "cls": "Dislike",
+     "take": 1,
+     "acc": 100.0
+    },
+    {
+     "cls": "Dislike",
+     "take": 2,
+     "acc": 99.66887417218543
+    },
+    {
+     "cls": "Fist",
+     "take": 1,
+     "acc": 100.0
+    },
+    {
+     "cls": "Fist",
+     "take": 2,
+     "acc": 100.0
+    },
+    {
+     "cls": "FlatHand",
+     "take": 1,
+     "acc": 100.0
+    },
+    {
+     "cls": "FlatHand",
+     "take": 2,
+     "acc": 100.0
+    },
+    {
+     "cls": "Like",
+     "take": 1,
+     "acc": 100.0
+    },
+    {
+     "cls": "Like",
+     "take": 2,
+     "acc": 100.0
+    },
+    {
+     "cls": "Love",
+     "take": 1,
+     "acc": 82.45033112582782
+    },
+    {
+     "cls": "Love",
+     "take": 2,
+     "acc": 100.0
+    }
+   ]
+  }
+ },
+ "board_vs_pc": {
+  "compared": 4221,
+  "agree": 4221,
+  "gate_mismatch": 0,
+  "missing_rows": 0,
+  "max_abs_diff": 2.2437019348009457e-06,
+  "median_abs_diff": 3.5684002377092845e-07,
+  "first_mismatches": []
+ },
+ "timing": {
+  "n": 4221,
+  "sensor_us": {
+   "mean": 13255.09381663113,
+   "sd": 0.2948405521667821,
+   "median": 13255.0,
+   "p99": 13256.0,
+   "min": 13254.0,
+   "max": 13256.0
+  },
+  "preprocess_us": {
+   "mean": 124.95806680881307,
+   "sd": 3.102268617428614,
+   "median": 123.0,
+   "p99": 130.0,
+   "min": 122.0,
+   "max": 132.0
+  },
+  "inference_us": {
+   "mean": 15814.003079838902,
+   "sd": 21.002758563807653,
+   "median": 15814.0,
+   "p99": 15892.0,
+   "min": 15754.0,
+   "max": 15910.0
+  },
+  "decision_us": {
+   "mean": 2.053067993366501,
+   "sd": 0.31627001537766974,
+   "median": 2.0,
+   "p99": 3.0,
+   "min": 2.0,
+   "max": 9.0
+  },
+  "total_us": {
+   "mean": 29196.10803127221,
+   "sd": 20.83355806492303,
+   "median": 29195.0,
+   "p99": 29277.8,
+   "min": 29141.0,
+   "max": 29297.0
+  },
+  "over_budget": 0
+ },
+ "position": {
+  "User5|Fist": {
+   "phase56": [
+    4.208497185596422,
+    3.205027372966304
+   ],
+   "phase4": [
+    4.060214719153572,
+    2.610549245371091
+   ]
+  },
+  "User5|FlatHand": {
+   "phase56": [
+    3.3736442201728436,
+    3.2390232585116867
+   ],
+   "phase4": [
+    3.4482635585156993,
+    2.429174595623216
+   ]
+  },
+  "User5|Dislike": {
+   "phase56": [
+    3.130161081281244,
+    3.8405850768376233
+   ],
+   "phase4": [
+    3.944119427072827,
+    3.4828525317732493
+   ]
+  },
+  "User5|Like": {
+   "phase56": [
+    3.7397879025923015,
+    2.818931657501964
+   ],
+   "phase4": [
+    3.5485047410649164,
+    2.4194930707512765
+   ]
+  },
+  "User5|Love": {
+   "phase56": [
+    1.5254518416838252,
+    3.454815831617479
+   ],
+   "phase4": [
+    2.548760600130463,
+    3.490976299195477
+   ]
+  },
+  "User5|CrossHands": {
+   "phase56": [
+    3.3116888772754987,
+    3.4466945388032397
+   ],
+   "phase4": [
+    3.2772829988036687,
+    3.471841907040631
+   ]
+  },
+  "User5|BreakTime": {
+   "phase56": [
+    2.7231140694335685,
+    3.615635604280867
+   ],
+   "phase4": [
+    3.135915794627012,
+    3.566856373538951
+   ]
+  }
+ },
+ "checks": {
+  "B1 User5 Like recall, mean of 5 singles > 50 %": {
+   "value": 99.76782752902156,
+   "holds": true
+  },
+  "B4 User5 E5 - ST-only baseline >= 10 pp": {
+   "value": 27.007818052594175,
+   "holds": true
+  },
+  "B2 User5 E5 per-frame >= 85 %": {
+   "value": 98.72068230277186,
+   "holds": true
+  },
+  "B3 User5 E5 >= mean of 5 singles (96.0)": {
+   "value": 2.7244728737266115,
+   "holds": true
+  },
+  "B5 board vs PC class agreement = 100 %, gate mismatch 0": {
+   "value": "4221/4221, gate 0",
+   "holds": true
+  },
+  "B6 on-board accuracy == PC E5 accuracy": {
+   "value": "equal",
+   "holds": true
+  },
+  "B7 total mean 29.3±0.1 ms, max <= 30.0 ms, 0 frames > 33 ms": {
+   "value": "mean 29196 us, max 29297 us, >33ms 0",
+   "holds": false
+  }
+ },
+ "meta": {
+  "run_at": "20261026_220454",
+  "data_dir": "data\\phase56_stand",
+  "model_sha256_prefix": {
+   "baseline_ST_only": "639d5453d9ff9717",
+   "seed42": "615479eb85457523",
+   "seed43": "aa4e20feed40905d",
+   "seed44": "e3fa8084a967976e",
+   "seed45": "aa398e578839f578",
+   "seed46": "bd3c2c5ec72c5d8c",
+   "E5": "1a2268d3b5ab4fe7"
+  },
+  "n_takes": 14,
+  "n_frames": 4221
+ }
+}
