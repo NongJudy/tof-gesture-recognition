@@ -1,4 +1,9 @@
-"""live_demo.py — ทดสอบท่ามือสดๆ หน้าจอใหญ่ อ่านง่าย (ลองเองหรืออัดคลิป)  v2
+"""live_demo.py — ทดสอบท่ามือสดๆ หน้าจอใหญ่ อ่านง่าย (ลองเองหรืออัดคลิป)  v3
+
+v3 (26 ต.ค. 2026): เลือกได้ว่าใครเป็นคนทาย  --source
+  pc    (ค่าเริ่มต้น เหมือน v2) — PC ทายด้วยไฟล์ --model
+  board — ใช้ผลทายของ "บอร์ด" เอง (บรรทัด Y, เฟิร์มแวร์ MY_TOF_PRED_LINE = 1) PC แค่แสดงผล ไม่ต้องโหลด TensorFlow
+  both  — บอร์ดทาย (แสดงผลหลัก) + PC ทายคู่กันทุกเฟรม แล้วแสดงว่า "บอร์ดตรงกับ PC กี่เฟรม"
 
 ลำดับการทำงาน:
   1. ยังไม่มีมือ / มืออยู่นอกช่วง 220–320 มม.  → แสดง "PLACE YOUR HAND" หรือ "MOVE CLOSER / FARTHER" ไม่ทาย
@@ -10,6 +15,8 @@ preprocessing เหมือนตอนฝึกทุกขั้น (st_data
 
 วิธีรัน (ที่ root ของ repo, ปิด PuTTY ก่อน):
     python pc_tools\\live_demo.py --port COM3 --model results_phase55_final\\deploy\\E5.keras
+    python pc_tools\\live_demo.py --port COM3 --source board              (บอร์ดทายเอง)
+    python pc_tools\\live_demo.py --port COM3 --source both --model results_phase55_final\\deploy\\E5.keras
 ปิดโปรแกรม: กด q หรือปิดหน้าต่าง
 ตัวเลือก: --window-lo 220 --window-hi 320 --hold 1.0 --vote-window 15
 
@@ -32,9 +39,9 @@ SIG_MEAN, SIG_STD = 281.0, 452.0
 
 
 def parse_line(line: str):
-    """'F,12,...' / 'S,12,...' / 'G,12,...' → (ชนิด, เลขเฟรม, ค่า 64 ตัว) หรือ None"""
+    """'F,12,...' / 'S,12,...' / 'G,12,...' / 'Y,12,<ท่า>,<p0..p6>' → (ชนิด, เลขเฟรม, ค่า) หรือ None"""
     parts = line.strip().split(",")
-    if len(parts) < 2 or parts[0] not in ("F", "S", "G"):
+    if len(parts) < 2 or parts[0] not in ("F", "S", "G", "Y"):
         return None
     try:
         frame_no = int(parts[1])
@@ -62,8 +69,9 @@ def preprocess(dist: np.ndarray, status: np.ndarray, sig: np.ndarray):
 class FrameReader:
     """อ่าน serial แบบไม่ค้าง: ดึงทุกบรรทัดที่มี ประกอบ F/S/G ของเฟรมเดียวกัน คืนเฟรมที่ครบ"""
 
-    def __init__(self, ser):
+    def __init__(self, ser, need_y: bool = False):
         self.ser = ser
+        self.kinds = "FSGY" if need_y else "FSG"     # v3: โหมดบอร์ดต้องได้บรรทัด Y ของเฟรมเดียวกันด้วย
         self.buf = b""
         self.pending: dict[int, dict[str, list[float]]] = {}
         self.wrong_mode = False
@@ -79,14 +87,18 @@ class FrameReader:
             if p is None:
                 continue
             kind, fno, vals = p
-            if len(vals) == 16:
-                self.wrong_mode = True
-            if len(vals) != 64:
-                continue
+            if kind == "Y":
+                if "Y" not in self.kinds:
+                    continue
+            else:
+                if len(vals) == 16:
+                    self.wrong_mode = True
+                if len(vals) != 64:
+                    continue
             slot = self.pending.setdefault(fno, {})
             slot[kind] = vals
-            if all(k in slot for k in "FSG"):
-                out.append((fno, np.array(slot["F"]), np.array(slot["S"]), np.array(slot["G"])))
+            if all(k in slot for k in self.kinds):
+                out.append((fno, np.array(slot["F"]), np.array(slot["S"]), np.array(slot["G"]), slot.get("Y")))
                 del self.pending[fno]
             for k in [k for k in self.pending if fno - k > 30]:
                 del self.pending[k]
@@ -101,7 +113,9 @@ def main(argv=None, serial_factory=None, predictor=None, max_seconds=None, save_
     ap = argparse.ArgumentParser(description="Live hand-posture demo (big display)")
     ap.add_argument("--port", required=True)
     ap.add_argument("--baud", type=int, default=460800)
-    ap.add_argument("--model", required=True, type=Path)
+    ap.add_argument("--model", type=Path, default=Path("results_phase55_final/deploy/E5.keras"))
+    ap.add_argument("--source", choices=("pc", "board", "both"), default="pc",
+                    help="ใครทาย: pc = PC ทาย, board = บอร์ดทาย (บรรทัด Y), both = บอร์ดทาย + PC ทายเทียบ")
     ap.add_argument("--vote-window", type=int, default=15)
     ap.add_argument("--window-lo", type=float, default=220.0, help="ระยะมือใกล้สุดที่เริ่มทาย (มม.)")
     ap.add_argument("--window-hi", type=float, default=320.0, help="ระยะมือไกลสุดที่เริ่มทาย (มม.)")
@@ -115,7 +129,7 @@ def main(argv=None, serial_factory=None, predictor=None, max_seconds=None, save_
     import matplotlib.pyplot as plt
     from matplotlib.patches import FancyBboxPatch, Rectangle
 
-    if predictor is None:
+    if predictor is None and args.source != "board":
         import tensorflow as tf
         if not args.model.exists():
             raise SystemExit(f"ไม่พบไฟล์โมเดล: {args.model}")
@@ -131,7 +145,7 @@ def main(argv=None, serial_factory=None, predictor=None, max_seconds=None, save_
         import serial
         serial_factory = lambda: serial.Serial(args.port, args.baud, timeout=0)   # noqa: E731
     ser = serial_factory()
-    reader = FrameReader(ser)
+    reader = FrameReader(ser, need_y=args.source != "pc")
 
     # ---------------- หน้าจอ ----------------
     plt.rcParams.update({"toolbar": "None", "font.family": "DejaVu Sans", "text.color": FG,
@@ -142,8 +156,10 @@ def main(argv=None, serial_factory=None, predictor=None, max_seconds=None, save_
     except Exception:  # noqa: BLE001
         pass
     fig.text(0.03, 0.95, "ToF Hand Posture Recognition", fontsize=16, weight="bold", color=FG, va="center")
-    fig.text(0.03, 0.91, "VL53L8CA 8×8  ·  NUCLEO-F411RE  ·  model: " + args.model.name, fontsize=11,
-             color=MUTED, va="center")
+    who = {"pc": "inference on the PC (" + args.model.name + ")",
+           "board": "inference ON THE BOARD (E5, STM32F411RE)",
+           "both": "inference ON THE BOARD (E5)  ·  PC re-checks every frame"}[args.source]
+    fig.text(0.03, 0.91, "VL53L8CA 8×8  ·  NUCLEO-F411RE  ·  " + who, fontsize=11, color=MUTED, va="center")
 
     # กล่องผลลัพธ์หลัก
     ax_main = fig.add_axes([0.03, 0.40, 0.60, 0.46]); ax_main.axis("off")
@@ -194,12 +210,12 @@ def main(argv=None, serial_factory=None, predictor=None, max_seconds=None, save_
 
     hold_frames = max(1, round(args.hold * 15))          # 8×8 ≈ 15 เฟรม/วินาที
     votes: deque[int] = deque(maxlen=args.vote_window)
-    st = {"phase": "idle", "in_cnt": 0, "out_cnt": 0, "hand": None, "probs": np.zeros(7)}
+    st = {"phase": "idle", "in_cnt": 0, "out_cnt": 0, "hand": None, "probs": np.zeros(7), "cmp": 0, "agree": 0}
     last_draw, t0, last_frame_t = 0.0, time.time(), time.time()
     plt.show(block=False)
     print("Ready. Put your hand 22–32 cm above the sensor and hold still.  q = quit")
 
-    def step(dist, status_arr, sig):
+    def step(dist, status_arr, sig, yv=None):
         x, hand = preprocess(dist, status_arr, sig)
         st["hand"] = hand
         disp = np.where(np.isin(status_arr, VALID_STATUS), dist, 4000.0).reshape(8, 8)
@@ -221,17 +237,26 @@ def main(argv=None, serial_factory=None, predictor=None, max_seconds=None, save_
                 st["phase"] = "armed"
                 votes.clear()
             return
-        st["probs"] = np.asarray(predictor(x), dtype=float)
+        if args.source == "pc":
+            st["probs"] = np.asarray(predictor(x), dtype=float)
+        else:
+            # v3: ผลของบอร์ด — Y,<เฟรม>,<ท่า>,<p0..p6> ; -1 = บอร์ดไม่ทายเฟรมนี้ (ไม่ควรเกิดเมื่อมืออยู่ในช่วง)
+            if yv is None or len(yv) < 8 or yv[0] < 0:
+                return
+            st["probs"] = np.asarray(yv[1:8], dtype=float)
+            if args.source == "both":
+                st["cmp"] += 1
+                st["agree"] += int(int(np.argmax(predictor(x))) == int(yv[0]))
         votes.append(int(st["probs"].argmax()))
 
     while not quit_flag["q"]:
         if script is not None:                            # สำหรับทดสอบ: ป้อนเฟรมจำลอง
             frames = script(time.time() - t0)
         else:
-            frames = [(f, d, s, g) for f, d, s, g in reader.poll()]
-        for _, dist, status_arr, sig in frames:
+            frames = reader.poll()
+        for fr in frames:
             last_frame_t = time.time()
-            step(dist, status_arr, sig)
+            step(fr[1], fr[2], fr[3], fr[4] if len(fr) > 4 else None)
 
         now = time.time()
         if now - last_draw > 0.066:
@@ -242,7 +267,8 @@ def main(argv=None, serial_factory=None, predictor=None, max_seconds=None, save_
                 sub.set_text("board sends 4×4 — model needs 8×8")
             elif now - last_frame_t > 2.0:
                 status.set_text("NO SIGNAL"); big.set_text("NO DATA"); big.set_color(BAD)
-                sub.set_text("no frames from the board — check COM port, close PuTTY")
+                sub.set_text("no frames — check COM port, close PuTTY"
+                             + ("; board mode needs firmware MY_TOF_PRED_LINE = 1" if args.source != "pc" else ""))
             elif st["phase"] == "idle":
                 status.set_text("WAITING")
                 if hand is None or hand > 400:
@@ -266,7 +292,8 @@ def main(argv=None, serial_factory=None, predictor=None, max_seconds=None, save_
                     status.set_text("RESULT")
                     big.set_text(CLASSES[w]); big.set_color(OK if agree >= 0.8 else WAIT)
                     sub.set_text(f"{agree*100:.0f}% of last {len(votes)} frames agree"
-                                 + (f"  ·  hand at {hand:.0f} mm" if hand else ""))
+                                 + (f"  ·  hand at {hand:.0f} mm" if hand else "")
+                                 + (f"  ·  board = PC {st['agree']}/{st['cmp']}" if args.source == "both" else ""))
                     bar_fg.set_width(0.70 * agree); bar_fg.set_color(OK if agree >= 0.8 else WAIT); bar_fg.set_visible(True)
             marker.set_data([min(max(hand, 100), 450)] if hand else [], [0.82] if hand else [])
             probs = st["probs"]
@@ -298,4 +325,7 @@ if __name__ == "__main__":
 #  3. ค้างที่ PLACE HAND ทั้งที่มีมือ — status อาจถูก remap (ต้องเป็นค่าดิบ 5/9, MY_TOF_FAST_READ = 1)
 #  4. ผลขึ้นหลังมือนิ่งในช่วง 1 วิ + เก็บโหวตอีก ~0.2 วิ; เปลี่ยนท่า = เอามือออกแล้วเข้าใหม่
 #  5. หน้าต่างอาจอัปเดตช้ากว่าเซ็นเซอร์บนเครื่องช้า — การทายยังใช้ทุกเฟรม แค่ภาพวาดไม่ทุกเฟรม
+#  6. (v3) --source board ขึ้น NO DATA ทั้งที่บอร์ดส่งข้อมูล = เฟิร์มแวร์ไม่ได้พิมพ์บรรทัด Y (MY_TOF_PRED_LINE = 0)
+#  7. (v3) โหมด board: การโหวต/ช่วงระยะ 220–320/ถือ 1 วิ ทำบน PC เหมือนโหมด pc — ส่วนที่ย้ายไปบอร์ดคือ "การทาย" รายเฟรม
+#     (บอร์ดยังมีโหวตของตัวเองในบรรทัด P/VOTE ซึ่งไม่มีช่วง 220–320 และไม่ต้องถือนิ่ง)
 # ─────────────────────────────────────────────────────────────────────────

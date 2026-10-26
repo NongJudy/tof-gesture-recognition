@@ -82,6 +82,9 @@ ST_VL53L8CX_handposture_dataset เพื่อให้ train_st_cnn2d.py / st_
     ไม่แสดงผลทายระหว่างเก็บ (A2) — จอบอกแค่จำนวนบรรทัด Y/Q ที่บันทึกได้ (เช็คว่าบันทึกครบ)
     st_dataset.load_dataset() อ่านเฉพาะ *.npz จึงไม่สนใจไฟล์ .csv นี้
     ถ้าเฟิร์มแวร์ไม่ส่ง Y/Q (สวิตช์ปิด) จะเตือนตอนตรวจบอร์ด แล้วเก็บต่อได้ตามปกติ (ไฟล์เสริมว่าง)
+  - 26 ต.ค. 2026 (v6.1, A5 Love ขอบ/กลาง, PROJECT_FACTS §5.1q): เพิ่ม --classes (เก็บเฉพาะบางท่า เช่น Love)
+    และ --take-notes (ข้อความกำกับแต่ละรอบ เช่น centre,edge,... แสดงบนหัวข้อรอบให้ผู้ทดสอบเห็นว่ารอบนี้ต้องวางแบบไหน)
+    ค่าเริ่มต้นยังเป็น 7 ท่าและไม่มีข้อความกำกับ → ใช้แบบเดิมได้เหมือน v6 ทุกอย่าง
   - กฎ: ทิ้งได้ทั้ง "รอบ" ที่ระยะไม่ผ่าน แต่ห้ามคัดทิ้งทีละเฟรมทีหลัง — การกรองระดับเฟรม
     ใช้กฎ 100-400 มม. ของ ST ใน st_dataset.py เท่านั้น เพื่อให้เทียบกับ ST ได้ยุติธรรม
 
@@ -609,7 +612,17 @@ def main() -> None:
                     help="รอมือเข้าช่วงนานสุดกี่วินาที")
     ap.add_argument("--no-beep", action="store_true", help="ปิดเสียงบี๊ปตอนเริ่ม/จบการเก็บ")
     ap.add_argument("--no-color", action="store_true", help="ปิดสี (ถ้า console แสดงรหัสแปลกๆ)")
+    ap.add_argument("--classes", nargs="+", default=CLASSES, help="v6.1: เก็บเฉพาะท่าเหล่านี้ (ค่าเริ่มต้น ครบ 7 ท่า)")
+    ap.add_argument("--take-notes", default="",
+                    help="v6.1: ข้อความกำกับรอบ คั่นด้วยจุลภาค เช่น centre,edge,... (จำนวนต้องเท่า --takes)")
     args = ap.parse_args()
+    bad = [c for c in args.classes if c not in CLASSES]
+    if bad:
+        raise SystemExit(f"unknown class {bad} — choose from {CLASSES}")
+    classes = [c for c in CLASSES if c in args.classes]          # คงลำดับมาตรฐาน
+    notes = [n.strip() for n in args.take_notes.split(",")] if args.take_notes else []
+    if notes and len(notes) != args.takes:
+        raise SystemExit(f"--take-notes has {len(notes)} items but --takes is {args.takes}")
     if args.abort_frames < 1 or args.hold_s < 0 or args.tol_mm <= 0:
         raise SystemExit("--abort-frames must be >= 1, --hold-s >= 0, --tol-mm > 0")
     lo, hi = args.target_mm - args.tol_mm, args.target_mm + args.tol_mm
@@ -641,7 +654,7 @@ def main() -> None:
     print(paint("  Hand Posture Data Collection  ·  VL53L8CA 8×8  ·  NUCLEO-F411RE", "bold"))
     print(paint(rule(char="═"), "cyan"))
     print(kv("Subject", f"User {args.user}", prefix="  "))
-    print(kv("Postures", ", ".join(CLASSES), prefix="  "))
+    print(kv("Postures", ", ".join(classes), prefix="  "))
     print(kv("Distance window", f"{lo:.0f}–{hi:.0f} mm  ({args.target_mm:.0f} ± {args.tol_mm:.0f})", prefix="  "))
     print(kv("Hold before rec.", f"{args.hold_s:.1f} s continuous (resets if hand leaves window)", prefix="  "))
     print(kv("Recording time", f"{args.seconds:g} s per take", prefix="  "))
@@ -675,14 +688,16 @@ def main() -> None:
         ser.close()
         raise SystemExit("Stopped: fix the warning above before collecting data")
 
-    tally = {c: {"saved": 0, "aborted": 0, "skipped": 0} for c in CLASSES}
+    tally = {c: {"saved": 0, "aborted": 0, "skipped": 0} for c in classes}
     try:
-        for ci, cls in enumerate(CLASSES, start=1):
+        for ci, cls in enumerate(classes, start=1):
             for k in range(1, args.takes + 1):
                 attempt = 0
                 while True:                         # วนจนกว่าจะเก็บได้ หรือผู้คุมเลือกข้าม
                     attempt += 1
-                    title = f"Posture {ci}/{len(CLASSES)}  {cls}  ·  Take {k}/{args.takes}"
+                    title = f"Posture {ci}/{len(classes)}  {cls}  ·  Take {k}/{args.takes}"
+                    if notes:
+                        title += f"  ·  {notes[k - 1].upper()}"
                     if attempt > 1:
                         title += f"  ·  Attempt {attempt}"
                     print("\n" + paint(rule(title), "cyan"))

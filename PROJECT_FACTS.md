@@ -47,7 +47,7 @@ setup or a conversation the assistant cannot observe directly
 | **E5 converted with X-CUBE-AI (26 Oct 2026, step 2.3, §5.1m)** | X-CUBE-AI 10.2.1 / ST Edge AI Core v2.2.0, TFLite, compression none, optimisation balanced, network name `network`, target stm32f4. Params 22,556 (= 5 × 4,511 + 1 averaging constant), MACC 73,762 (= 5 × 14,744 + 42), weights 88.16 KiB, Flash total 111.89 KiB, RAM total 11.21 KiB (activations 1.70 KiB). Validate on desktop: random data 10/10 (all one class — weak); **real data `board_check_inputs_200.npy` vs `board_check_E5_probs_200.npy`: 200/200 same class, all 7 classes (28–29 each), rmse 1.4e-08**. Code generated 15:50 into `ai_conversion_project\tof_ai_conversion\X-CUBE-AI\App\` (8 files). **Not yet on the board** — no on-board timing, no board-vs-PC check |
 | **E5 deployed on the board (26 Oct 2026, step 2.4, §5.1n)** | All three §5.1l conditions met → **E5 is the deployed model**. Firmware build 0 errors / 0 warnings: Flash 247.4 KiB (48.3 %), RAM 26.6 KiB (20.8 %) by `arm-none-eabi-size`. Boot line `MY_AI: ... activations=1736 bytes` (= E5). **Per-frame work 29,306 ± 36 µs** (22 LAT windows × 30 = 660 inferences; inference 15,925 ± 35 µs; max window 29,324 ≤ 33,000). **Board vs PC 203/203** same class, 0 / 675 range-gate mismatches, max |prob diff| 1.1e-06 (`pc_tools\compare_board_pc.py`, live hand, all 7 postures). Firmware now has `MY_TOF_PRED_LINE = 1` (prints `Y,` lines) |
 | **Phase 5.6, User 5 (26 Oct 2026 18:41–18:55, §5.1p)** | `data\phase56` 14/14 takes, 4,219 frames, 0 missing (v6 logger, firmware with Y+Q lines). **E5 93.0 % per-frame (vote 92.7 %) — measured on the board itself, identical to the PC**; 5 singles 89.0 ± 3.3 %; ST-only 68.2 %. Weak: Dislike 69.6 % (take 1 39 %), Like 81.4 % (take 2 63 %). Board vs PC **4,219/4,219**; per-frame work max **29,295 µs** (mean 29,204 ± 18), 0 frames > 33 ms. **B1–B7 all hold.** Caveat: hand centroids moved vs 9 Oct (Like +0.95 row toward ST) — seating change and/or having seen live predictions; cannot be separated. n = 1 subject, descriptive |
-| **Next session (as of 26 Oct 2026, night)** | Commit Phase 5.6 (firmware Q switch, `collect_own_data.py` v6, `evaluate_phase56.py`, `results_phase56\`, `data\phase56` if data is tracked). Then: User 6 Phase 5.6 (same command with `--user 6`, he has not watched E5 predictions except a short live try on 26 Oct, §5.1m); A5 Love edge/centre live test; report/thesis writing |
+| **Next session (as of 26 Oct 2026, night)** | Phase 5.6 User 5 committed and pushed as **`9e5e7a4`** (37 files: firmware `MY_TOF_FRAME_TIMING`, `collect_own_data.py` v6, `evaluate_phase56.py`, `data\phase56\` 14 npz + 14 `_board.csv` + manifest, `results_phase56\eval_20261026_190627\`) `[ตรวจแล้ว: git push 19:20]`. Next: User 6 Phase 5.6 (same command with `--user 6`, he has not watched E5 predictions except a short live try on 26 Oct, §5.1m); A5 Love edge/centre live test; report/thesis writing |
 | Phase 5.5a (shift augmentation) | **negative**: −12.1 pp vs retrained baseline, paired over 3 seeds (§5.1g-R); not adopted |
 | Phase 4 data collection (`collect_own_data.py` **v5**) | ✅ **Done.** Chin (User 5) 42/42: main 14 (9 Oct) + extra 14 (9 Oct) + extra 14 (15 Oct, v5). Friend (User 6) 42/42: main 14 (14 Oct, v4) + extra 28 in one sitting (A10), file timestamps 18 Oct 2026 21:56–22:16 `[ตรวจแล้ว: xcopy listing 20 Oct]`; his first 14 extras (15 Oct) stay quarantined in `data\phase4_rejected` (A9, §9 #53). Manifest check of the 28 extras: missing frames 0, out-of-window 0, with warning 0 `[STUDENT]` (output pasted 20 Oct). `data\phase4_extra` holds 56 npz (28 + 28) + manifest = 57 files; `data\phase4` 28 npz + manifest = 29 files. Local backups on Chin's PC: `C:\Users\gaming\Documents\backup_phase4_20261020\phase4` (29) and `\phase4_extra` (57). Copy to Drive/USB: **not confirmed** |
 | Collection protocol | guided arming: hand must hold inside **220–320 mm for 3 s** before recording starts; take discarded if the hand leaves the window for **8 consecutive frames**; no frame-level filtering (§5.1e-A8) |
@@ -2249,8 +2249,58 @@ BreakTime 2.98|3.37 vs 3.14|3.57. Like moved **+0.95 row toward ST's range** (4.
 confounded and cannot be separated with these data:** (a) a different seating (board at arm's length, no leaning — adopted today after the
 head-in-view episode, §5.1n); (b) Chin had watched live E5 predictions earlier the same day (§5.1m) and knew about the Like/Dislike position
 problem. Like's improvement (23.1 % in LOSO → 81.4 % here) may therefore partly reflect hand placement, not only the model; Dislike's drop
-coincides with its column shift. **Thesis wording:** report 93.0 % with these two caveats, n = 1 subject, one session, two takes per
+coincides with its column shift. **Added 26 Oct 19:15 `[STUDENT]`: Chin collected all his `data\phase4` / `phase4_extra` takes STANDING, and `data\phase56` SITTING** — so explanation (a) is a real, documented protocol difference (arm/wrist angle), not just board distance. Whether the friend (User 6) stood or sat is `[ยังไม่ได้ตรวจ]`. The direction of its effect on accuracy is unknown (12 of 14 takes were already 100 %); "standing would score higher" is a hypothesis. A standing new-day session would be a **separate, pre-registered condition** (e.g. `data\phase56_stand`), never a replacement for this one. For the live demo, stand as in the training data. **Thesis wording:** report 93.0 % with these two caveats, n = 1 subject, one session, two takes per
 posture; it is "a known user on a new day", not a new user (LOSO 85.3 % stays the new-user figure).
+
+### 5.1q A5 Love edge/centre live test with E5 — setup and prediction (written 26 Oct 2026 19:26, before the first trial)
+
+Protocol as §5.1l / §5.1e-A5: two-hand heart Love, 5 trials with the heart's **edge** over the sensor centre and 5 with its **centre** over
+the sensor centre; order from `random.seed(55); random.shuffle(["edge"]*5 + ["centre"]*5)` (Python 3.11, computed 26 Oct):
+**centre, edge, centre, centre, edge, centre, centre, edge, edge, edge**. Reading rule §5.1e-R (label stable ≈ 1 s and agreement ≥ 70–80 %,
+else "unstable" if not settled in ~8–10 s). Tool (changed 19:35 at Chin's request, still before the first trial): **`pc_tools\live_demo.py` v3 `--source both`** — the
+**board** predicts (its Y lines drive the display and the vote) and the PC re-runs `E5.keras` on every frame and shows "board = PC a/b".
+Vote/arming (220–320 mm, hold 1 s, 15-frame vote) is done by the PC script from the board's per-frame classes. Chin **stands** (as in the training data, §5.1p note). n = 1 subject, descriptive.
+Reference (old deployed model, 24–25 Sep): edge correct, centre unstable/wrong (→ BreakTime, §5.1e-E).
+**Prediction (Claude):** centre **5/5 Love** (E5 trained on Chin's natural centre-position Love; phase56 Love recall 100 %), edge **≥ 4/5 Love**
+(ST data, where the old model learned the edge position, is still in E5's training pool).
+**Informal first round (after 19:35, not counted) `[STUDENT]`:** using live_demo v3 `--source both`, Chin reported Love was predicted
+correctly "almost 100 % of the time, at every position, centre or edge". No log was kept and nobody else read the screen, so it is
+anecdotal and is **not** the A5 result.
+**Amendment A12 — recorded A5 (pre-registered 26 Oct 19:58, before any recorded trial; requested by Chin):** the 10 trials are recorded
+instead of read off the screen, so the scoring is automatic and auditable.
+- Tool: `pc_tools\collect_own_data.py` **v6.1** (adds `--classes` and `--take-notes` only; v6 behaviour otherwise unchanged) with
+  `--classes Love --takes 10 --seconds 10 --take-notes centre,edge,centre,centre,edge,centre,centre,edge,edge,edge --out-dir data\a5_love`;
+  the take header shows CENTRE/EDGE so the order cannot be mixed up. Arming as in collection (220–320 mm window, **3 s** hold — the collector default; "1 s" first written here was wrong, corrected 20:15 before any analysis), then 10 s
+  recorded; F/S/G plus the board's own Y/Q lines per frame (`*_board.csv`). Chin **stands**, board at arm's length.
+- Scoring (`pc_tools\a5_eval.py`): per take, over in-range frames, the **board's** most frequent per-frame class is the take's result;
+  result = **Love** if that class is Love with **≥ 80 %** of frames; **unstable** if the top class has < 80 %; otherwise the other class.
+  Report centre x/5 and edge y/5 (Love only), Love share per take, 15-frame-vote Love share, hand centroid (row, col) per take and per
+  position (mean ± SD) as a check that edge and centre placements really differ, compared with Chin's phase4 Love centroid and ST's
+  Love rows 4.29–4.96. Also board vs PC (`E5.keras`) on every frame and per-frame timing.
+- A discarded/retaken take keeps its take number (and therefore its position). Prediction unchanged: centre 5/5, edge ≥ 4/5.
+- The recorded `data\a5_love` set is a test set: never used for training or model selection (§5.1l).
+- Limits: n = 1 subject, 5 takes per position, frames correlated → descriptive only. The centre/edge contrast in the recording is only
+  as large as Chin's placement — the centroid check reports how large it actually was.
+
+### 5.1r A5 result — Love edge/centre, predicted on the board (26 Oct 2026, 20:07–20:14 collection, 20:16 analysis) `[MEASURED]`
+
+Data `data\a5_love` (10 takes, 150–151 frames each, 0 missing, 0 out-of-window, median distance 261–279 mm; Y and Q lines on every
+frame). Analysis `pc_tools\a5_eval.py` → `results_a5\eval_20261026_201630\`. Chin stood; firmware `pred_line=1, frame_timing=1`, E5.
+- **Centre: Love 5/5. Edge: Love 5/5.** Every take had **100 %** of its frames predicted Love by the board (1,501/1,501 frames);
+  15-frame-vote Love share 100 % in every take. Prediction (centre 5/5, edge ≥ 4/5): **both met**.
+- **Board = PC: 1,501/1,501** frames, gate mismatches 0, max |Δp| 7.35e-07. Per-frame work 29,188 ± 19 µs (mean ± SD), max 29,283 µs,
+  0 frames over 33 ms.
+- **Placement check (hand centroid, per take):** the two placements differed **vertically (row), not horizontally**: centre row
+  2.58 ± 0.83 (takes 2.65, 2.49, 2.10, 3.93, 1.75), edge row 3.78 ± 0.36 (4.36, 3.90, 3.55, 3.53, 3.57); columns 3.43 vs 3.45.
+  Edge − centre = +1.20 rows (mean), +1.08 (median). Mann-Whitney U = 4, exact two-sided p = 0.095, rank-biserial r = 0.68 (n = 5 + 5).
+  Centre take 6 (row 3.93) sits **inside the edge range** — that take was effectively an edge placement. Centre placements match
+  Chin's training Love (phase4 centroid row 2.55, col 3.49). Edge placements reach ST's Love rows (4.29–4.96) only in take 2 (4.36).
+- **Interpretation:** E5 recognised Love at Chin's natural position and when shifted ≈ 1.2 rows (≈ 1 zone) toward ST's position.
+  The old model's centre failure (24–25 Sep) did **not** recur. Caveats: n = 1 subject, 5 takes per position; the placement contrast
+  was smaller than intended and not separated statistically (p = 0.095), so this shows robustness over about one zone of vertical shift,
+  not over the full range; the old-model reference was an informal screen reading on another day, not a controlled comparison; Love
+  was already the easiest posture (phase56 recall 100 %). Position sensitivity of the other postures (Like/Dislike) is untested live —
+  that is the proposed **A6** (all 7 postures × defined shifts, to be pre-registered in a new chat before any data).
 
 ## 5.2 Dynamic-gesture datasets — what exists
 
@@ -3197,3 +3247,5 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *2026-10-26 ≈18:35 addendum: §5.1o (Phase 5.6 amendment A11, board-side logging) pre-registered before any phase56 data.*
 
 *Last updated: 2026-10-26 (night) · **Phase 5.6 User 5 done** (§5.1o amendment, §5.1p): E5 93.0 % per-frame on the new-day set, measured on the board itself (= PC, 4,219/4,219); ST-only 68.2 %, singles 89.0 ± 3.3 %; per-frame work max 29.3 ms; B1–B7 hold; 5.5c not triggered; hand-position shift caveat recorded. Next: commit, User 6 Phase 5.6, A5.*
+*2026-10-26 19:20 addendum: Phase 5.6 User 5 commit `9e5e7a4` pushed.*
+*2026-10-26 20:20 addendum: **A5 done** (§5.1q A12, §5.1r): Love centre 5/5, edge 5/5 on the board, board = PC 1,501/1,501; collector v6.1 + `a5_eval.py`. Next: commit, then A6 (all-posture position test) pre-registered in a new chat.*
