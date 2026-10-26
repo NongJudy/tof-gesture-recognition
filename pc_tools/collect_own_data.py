@@ -85,6 +85,11 @@ ST_VL53L8CX_handposture_dataset เพื่อให้ train_st_cnn2d.py / st_
   - 26 ต.ค. 2026 (v6.1, A5 Love ขอบ/กลาง, PROJECT_FACTS §5.1q): เพิ่ม --classes (เก็บเฉพาะบางท่า เช่น Love)
     และ --take-notes (ข้อความกำกับแต่ละรอบ เช่น centre,edge,... แสดงบนหัวข้อรอบให้ผู้ทดสอบเห็นว่ารอบนี้ต้องวางแบบไหน)
     ค่าเริ่มต้นยังเป็น 7 ท่าและไม่มีข้อความกำกับ → ใช้แบบเดิมได้เหมือน v6 ทุกอย่าง
+  - 26 ต.ค. 2026 (v6.2, A6 การเลื่อนมือ, PROJECT_FACTS §5.1s): เพิ่ม --plan (ไฟล์แผนจาก a6_plan.py) = ตัวช่วยเล็งตำแหน่ง
+    แต่ละรอบมีเป้า (แถว, คอลัมน์) ของจุดศูนย์กลางมือ; จอแสดงตำแหน่งมือสด (เฉลี่ย --pos-smooth เฟรม) เทียบเป้า
+    การนับค้าง hold เริ่มเมื่อ "ระยะอยู่ในช่วง และ ตำแหน่งห่างเป้าไม่เกิน --pos-tol ทั้งแถวและคอลัมน์"
+    ระหว่างบันทึก แค่แสดงตำแหน่ง ไม่ทิ้งรอบเพราะตำแหน่ง (ตำแหน่งจริงคำนวณจากข้อมูลตอนวิเคราะห์)
+    ไม่แสดงผลทายของบอร์ดเด็ดขาด (กันผู้ทดสอบปรับมือตามคำตอบ); ไม่มี --plan → ทำงานเหมือน v6.1 ทุกอย่าง
   - กฎ: ทิ้งได้ทั้ง "รอบ" ที่ระยะไม่ผ่าน แต่ห้ามคัดทิ้งทีละเฟรมทีหลัง — การกรองระดับเฟรม
     ใช้กฎ 100-400 มม. ของ ST ใน st_dataset.py เท่านั้น เพื่อให้เทียบกับ ST ได้ยุติธรรม
 
@@ -105,6 +110,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import os
 import re
 import sys
@@ -300,6 +306,32 @@ def nearest_mm(dist: np.ndarray, status: np.ndarray) -> float:
     return float(dist[valid].min())
 
 
+def hand_centroid(dist: np.ndarray, status: np.ndarray, lo_mm: float = 100.0, hi_mm: float = 400.0,
+                  background_mm: float = 120.0) -> tuple[float, float] | None:
+    """v6.2: จุดศูนย์กลางมือของเฟรมนี้ (แถว, คอลัมน์) — สูตรเดียวกับ st_dataset/§5.1j:
+    โซน status 5/9, มือ = โซนใกล้สุดในช่วง 100–400 มม., ตัดโซนที่ไกลกว่ามือเกิน 120 มม. (ฉากหลัง)
+    โซน z → แถว z // 8, คอลัมน์ z % 8 ; คืน None ถ้าไม่มีมือในช่วง"""
+    valid = np.isin(status, VALID_STATUS)
+    if not valid.any():
+        return None
+    dmin = float(dist[valid].min())
+    if not lo_mm <= dmin <= hi_mm:
+        return None
+    hand = valid & (dist <= dmin + background_mm)
+    idx = np.nonzero(hand)[0]
+    return float((idx // 8).mean()), float((idx % 8).mean())
+
+
+def position_text(pos: tuple[float, float] | None, target: tuple[float, float], tol: float) -> tuple[str, bool]:
+    """ข้อความตำแหน่งมือเทียบเป้า + ตรงเป้าไหม (ห่างไม่เกิน tol ทั้งแถวและคอลัมน์)"""
+    if pos is None:
+        return "Pos ----", False
+    dr, dc = pos[0] - target[0], pos[1] - target[1]
+    ok = abs(dr) <= tol and abs(dc) <= tol
+    tag = paint("[ON TARGET]", "green") if ok else paint("[MOVE]", "yellow")
+    return f"Row {pos[0]:4.2f} ({dr:+.2f})  Col {pos[1]:4.2f} ({dc:+.2f}) {tag}", ok
+
+
 def in_window(mm: float, lo: float, hi: float) -> bool:
     """ระยะอยู่ในช่วงที่ต้องการไหม (nan = ไม่เจอมือ = ไม่อยู่)"""
     return (not np.isnan(mm)) and lo <= mm <= hi
@@ -416,13 +448,27 @@ def kv(label: str, value: str, width: int = 19, prefix: str = "  │ ") -> str:
 def arm_and_record(stream, seconds: float, lo: float, hi: float, hold_s: float,
                    abort_frames: int, arm_timeout_s: float,
                    display: Callable[[str], None] = show_live,
-                   sound: bool = True) -> tuple[Take | None, str, int]:
+                   sound: bool = True, target: tuple[float, float] | None = None,
+                   pos_tol: float = 0.35, pos_smooth: int = 5) -> tuple[Take | None, str, int]:
     """ขั้น A (รอมือ): แสดงระยะสด รอจนมืออยู่ในช่วง [lo, hi] ต่อเนื่อง hold_s วินาที
          ถ้าหลุดช่วงระหว่างนับ → นับใหม่จาก 0 ; รอเกิน arm_timeout_s → คืน 'timeout'
        ขั้น B (เก็บ): เก็บต่อเนื่อง `seconds` วินาทีจาก stream เดิม (ไม่ล้าง buffer → ไม่มีช่องว่าง)
          มือหลุดช่วงติดกัน >= abort_frames เฟรม → ทิ้งทั้งรอบ คืน 'aborted'
          หลุดสั้นกว่านั้น → ไม่ทิ้งเฟรม (ไม่คัดทีละเฟรม) แต่นับรวมไว้ใน out_frames
+       v6.2: ถ้ามี target → ขั้น A ต้องตรงเป้าตำแหน่งด้วย (ค่าเฉลี่ย pos_smooth เฟรมล่าสุด ห่าง ≤ pos_tol)
        คืน (take หรือ None, สถานะ 'ok'/'aborted'/'timeout', out_frames)"""
+    recent: list[tuple[float, float]] = []
+
+    def smoothed(d: np.ndarray, s: np.ndarray) -> tuple[float, float] | None:
+        """ตำแหน่งมือเฉลี่ยของ pos_smooth เฟรมล่าสุด (ล้างเมื่อมือหาย)"""
+        c = hand_centroid(d, s)
+        if c is None:
+            recent.clear()
+            return None
+        recent.append(c)
+        del recent[:-pos_smooth]
+        return float(np.mean([r for r, _ in recent])), float(np.mean([q for _, q in recent]))
+
     # ---- ขั้น A: รอมือเข้าช่วงและค้างครบ hold_s ----
     t0 = time.monotonic()
     hold_start: float | None = None
@@ -436,15 +482,21 @@ def arm_and_record(stream, seconds: float, lo: float, hi: float, hold_s: float,
             continue
         _, d, s, _ = item
         mm = nearest_mm(d, s)
-        if in_window(mm, lo, hi):
+        pos_txt, pos_ok = "", True
+        if target is not None:
+            pos_txt, pos_ok = position_text(smoothed(d, s), target, pos_tol)
+        if in_window(mm, lo, hi) and pos_ok:
             hold_start = hold_start if hold_start is not None else now
         else:
             hold_start = None
         held = (now - hold_start) if hold_start is not None else 0.0
         mm_txt = "----" if np.isnan(mm) else f"{mm:4.0f}"
         frac = held / hold_s if hold_s > 0 else 1.0
-        display(f"  Distance {paint(mm_txt, 'bold')} mm  {distance_tag(mm, lo, hi)}  "
-                f"Hold {progress_bar(frac)} {min(held, hold_s):3.1f}/{hold_s:.1f} s")
+        if target is not None:   # v6.2: บรรทัดสั้นลง ให้มีที่แสดงตำแหน่ง
+            display(f"  {mm_txt} mm  {pos_txt}  Hold {min(held, hold_s):3.1f}/{hold_s:.1f}s")
+        else:
+            display(f"  Distance {paint(mm_txt, 'bold')} mm  {distance_tag(mm, lo, hi)}  "
+                    f"Hold {progress_bar(frac)} {min(held, hold_s):3.1f}/{hold_s:.1f} s")
         if held >= hold_s:
             break
     print()
@@ -477,9 +529,13 @@ def arm_and_record(stream, seconds: float, lo: float, hi: float, hold_s: float,
                 return None, "aborted", out_frames
         mm_txt = "----" if np.isnan(mm) else f"{mm:4.0f}"
         el = now - t1
-        display(f"  {paint('● REC', 'red')}  Distance {paint(mm_txt, 'bold')} mm  "
-                f"{distance_tag(mm, lo, hi)} {progress_bar(el / seconds)} "
-                f"{el:4.1f}/{seconds:.0f} s  Out {out_frames}")
+        if target is not None:
+            pos_txt, _ = position_text(smoothed(d, s), target, pos_tol)
+            display(f"  {paint('● REC', 'red')} {mm_txt} mm  {pos_txt}  {el:4.1f}/{seconds:.0f}s")
+        else:
+            display(f"  {paint('● REC', 'red')}  Distance {paint(mm_txt, 'bold')} mm  "
+                    f"{distance_tag(mm, lo, hi)} {progress_bar(el / seconds)} "
+                    f"{el:4.1f}/{seconds:.0f} s  Out {out_frames}")
     take.t_end = time.time()
     print()
     beep(sound)
@@ -615,7 +671,23 @@ def main() -> None:
     ap.add_argument("--classes", nargs="+", default=CLASSES, help="v6.1: เก็บเฉพาะท่าเหล่านี้ (ค่าเริ่มต้น ครบ 7 ท่า)")
     ap.add_argument("--take-notes", default="",
                     help="v6.1: ข้อความกำกับรอบ คั่นด้วยจุลภาค เช่น centre,edge,... (จำนวนต้องเท่า --takes)")
+    ap.add_argument("--plan", type=Path, default=None,
+                    help="v6.2: ไฟล์แผน A6 จาก a6_plan.py (กำหนดท่า, จำนวนรอบ, ตำแหน่งเป้าต่อรอบ)")
+    ap.add_argument("--pos-tol", type=float, default=0.35, help="v6.2: ห่างเป้าได้ไม่เกินกี่โซน (แถวและคอลัมน์)")
+    ap.add_argument("--pos-smooth", type=int, default=5, help="v6.2: เฉลี่ยตำแหน่งกี่เฟรมล่าสุด")
     args = ap.parse_args()
+    plan = None
+    if args.plan is not None:
+        plan = json.loads(args.plan.read_text(encoding="utf-8"))
+        if int(plan["user"]) != args.user:
+            raise SystemExit(f"plan is for User {plan['user']} but --user is {args.user}")
+        n_takes = {len(p["takes"]) for p in plan["classes"].values()}
+        if len(n_takes) != 1:
+            raise SystemExit("plan has a different number of takes per posture")
+        args.takes = n_takes.pop()
+        args.classes = [c for c in args.classes if c in plan["classes"]]
+        if args.take_notes:
+            raise SystemExit("--take-notes cannot be combined with --plan (the plan names each take)")
     bad = [c for c in args.classes if c not in CLASSES]
     if bad:
         raise SystemExit(f"unknown class {bad} — choose from {CLASSES}")
@@ -660,6 +732,9 @@ def main() -> None:
     print(kv("Recording time", f"{args.seconds:g} s per take", prefix="  "))
     print(kv("Discard rule", f"{args.abort_frames} consecutive out-of-window frames (~{args.abort_frames / 15:.1f} s)",
              prefix="  "))
+    if plan is not None:
+        print(kv("Position plan", f"{args.plan.name}  ·  tolerance ±{args.pos_tol:g} zone  ·  "
+                 f"smoothing {args.pos_smooth} frames", prefix="  "))
     print(paint(rule(char="═"), "cyan"))
 
     # ---- ตรวจบอร์ด: ยื่นมือก่อน แล้วกด Enter (dry run 3: ยื่นไม่ทันเมื่อเริ่มอ่านทันที) ----
@@ -696,6 +771,11 @@ def main() -> None:
                 while True:                         # วนจนกว่าจะเก็บได้ หรือผู้คุมเลือกข้าม
                     attempt += 1
                     title = f"Posture {ci}/{len(classes)}  {cls}  ·  Take {k}/{args.takes}"
+                    target = None
+                    if plan is not None:
+                        tk = plan["classes"][cls]["takes"][k - 1]
+                        target = (tk["target_row"], tk["target_col"])
+                        title += f"  ·  {tk['position'].upper()}"
                     if notes:
                         title += f"  ·  {notes[k - 1].upper()}"
                     if attempt > 1:
@@ -703,6 +783,11 @@ def main() -> None:
                     print("\n" + paint(rule(title), "cyan"))
                     print(paint(f"  Form the posture → move into {lo:.0f}–{hi:.0f} mm → hold {args.hold_s:g} s "
                                 f"→ auto-record {args.seconds:g} s", "dim"))
+                    if target is not None:
+                        nat = plan["classes"][cls]
+                        print(f"  Target  row {target[0]:.2f}, col {target[1]:.2f}   "
+                              + paint(f"(natural {nat['natural_row']:.2f}, {nat['natural_col']:.2f})", "dim")
+                              + "   → move until " + paint("[ON TARGET]", "green"))
                     ans = input("  Press Enter to start  (s = skip this take) ")
                     if parse_action(ans, allow_save=False) == "skip":
                         print("  " + paint("[SKIPPED]", "yellow") + " not saved")
@@ -713,7 +798,8 @@ def main() -> None:
                     readline.clear()                # v6: ล้างบรรทัด Y/Q เก่า
                     take, state, out_frames = arm_and_record(
                         frame_stream(readline), args.seconds, lo, hi, args.hold_s,
-                        args.abort_frames, args.arm_timeout_s, sound=not args.no_beep)
+                        args.abort_frames, args.arm_timeout_s, sound=not args.no_beep,
+                        target=target, pos_tol=args.pos_tol, pos_smooth=args.pos_smooth)
                     if state == "aborted":
                         print("  " + paint("[DISCARDED]", "red") +
                               f" hand left the window for {args.abort_frames} consecutive frames "

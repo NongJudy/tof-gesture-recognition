@@ -2300,7 +2300,44 @@ frame). Analysis `pc_tools\a5_eval.py` → `results_a5\eval_20261026_201630\`. C
   was smaller than intended and not separated statistically (p = 0.095), so this shows robustness over about one zone of vertical shift,
   not over the full range; the old-model reference was an informal screen reading on another day, not a controlled comparison; Love
   was already the easiest posture (phase56 recall 100 %). Position sensitivity of the other postures (Like/Dislike) is untested live —
-  that is the proposed **A6** (all 7 postures × defined shifts, to be pre-registered in a new chat before any data).
+  that is **A6** (§5.1s).
+
+### 5.1s A6 — 1-zone hand shift, all 7 postures, on the board: PRE-REGISTRATION (written 26 Oct 2026 20:33, before any A6 data)
+
+**Why (Rule 6 chain):** §5.1j's best-supported error cause is hand position; A5 only covered Love. A6 measures, live on the board, how
+each posture tolerates a controlled 1-zone shift. Its recorded frames become a **fixed position-shift test set**: a later 5.5c model
+(re-centring) can be run on the *same* frames on the PC (`a6_eval.py --extra-model`) for a paired before/after — **report only**;
+model selection stays with LOSO (§5.1l). Chin asked for "the best, surest, most detailed" option and for Claude to decide on merit,
+not to please him (20:27) `[STUDENT]`; Claude chose 5 positions × 2 takes.
+**Design.** Subject User 5 (Chin), standing, board at arm's length, E5 firmware `pred_line=1, frame_timing=1`.
+- Positions per posture: **natural, row+1, row−1, col+1, col−1**. Natural = Chin's mean hand centroid for that posture in `data\phase4`
+  (§5.1j method); a shift = **1 zone** (≈ 2.8 cm at 270 mm: 2·270·tan 22.5° / 8 = 28 mm, from FoV 45° §2). Directions are named by
+  grid row/column, not up/down, because "row 0 = physically up" is still unverified (§5.1j).
+- 2 takes per position → 10 per posture, 70 in all; order within each posture shuffled with `random.Random(66 + posture index)`;
+  postures in the standard order. Plan file made **once** by `pc_tools\a6_plan.py --user 5` → `data\a6_shift\a6_plan_User5.json`,
+  committed before collection (its sha256 is printed in every A6 report).
+- Collection: `collect_own_data.py` **v6.2** `--plan` (position guide): the live line shows the hand centroid (mean of last 5 frames)
+  against the take's target; the 3 s hold starts only when distance is 220–320 mm **and** the centroid is within **±0.35 zone** of the
+  target on both axes; then 10 s recorded. The board's predictions are **never shown** during A6. A take that cannot be armed after
+  two 60 s timeouts may be skipped; skips are reported as missing, not retried later. Tolerance is not changed during A6.
+- Sessions: two blocks with a 10–15 min rest — block 1 Fist, FlatHand, Dislike, Like; block 2 Love, CrossHands, BreakTime
+  (`--classes`), same out-dir. A short practice with the guide in `data\a6_practice` (not analysed) may precede block 1 so Chin learns
+  which hand movement raises row/column; he reports that mapping `[STUDENT]` — this also answers §5.1j's "is row 0 up?".
+- Scoring (`pc_tools\a6_eval.py`): A5's rule per take (board's top class over in-range frames, ≥ 80 % → that class, else unstable);
+  correct = equals the performed posture. Report posture × position (x/2), per position (x/14), per posture (x/10), natural vs shifted
+  (takes and mean correct-frame share), achieved shift (Δrow, Δcol from natural, mean per position; worst miss from target), every
+  wrong take with its frame counts, board vs PC on every frame, per-frame timing.
+- `data\a6_shift` is a test set: never used for training or model selection.
+**Predictions (Claude, before data; confidence in brackets):**
+- P1 natural ≥ 12/14 correct (70 %). P2 shifted mean correct-frame share < natural's (75 %).
+- P3 **row−1** (further toward row 0, away from ST's range — the failure direction of §5.1j) is the worst position, ≤ 11/14 (60 %).
+- P4 row+1 (toward ST) ≥ natural − 1 take (55 %). P5 each col shift ≥ 12/14 (55 %).
+- P6 most wrong takes are Like or Dislike (60 %). P7 Love 10/10 (65 %, A5 tolerated +1.2 rows).
+**Decision rule (deliverable):** if any position scores ≤ 10/14 **or** shifted correct-frame share is ≥ 10 pp below natural, 5.5c
+re-centring is pre-registered next (selection by 6-subject LOSO; A6 then re-scored with `--extra-model` as report-only before/after).
+Otherwise 5.5c stays optional and the thesis reports E5 as tolerant to 1-zone shifts for this subject.
+**Limits:** n = 1 subject (a known user), 2 takes per cell, frames correlated → descriptive only; the guide makes placement more
+controlled than real use, so A6 measures sensitivity to a known shift, not everyday accuracy.
 
 ## 5.2 Dynamic-gesture datasets — what exists
 
@@ -3248,4 +3285,6 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 
 *Last updated: 2026-10-26 (night) · **Phase 5.6 User 5 done** (§5.1o amendment, §5.1p): E5 93.0 % per-frame on the new-day set, measured on the board itself (= PC, 4,219/4,219); ST-only 68.2 %, singles 89.0 ± 3.3 %; per-frame work max 29.3 ms; B1–B7 hold; 5.5c not triggered; hand-position shift caveat recorded. Next: commit, User 6 Phase 5.6, A5.*
 *2026-10-26 19:20 addendum: Phase 5.6 User 5 commit `9e5e7a4` pushed.*
-*2026-10-26 20:20 addendum: **A5 done** (§5.1q A12, §5.1r): Love centre 5/5, edge 5/5 on the board, board = PC 1,501/1,501; collector v6.1 + `a5_eval.py`. Next: commit, then A6 (all-posture position test) pre-registered in a new chat.*
+*2026-10-26 20:20 addendum: **A5 done** (§5.1q A12, §5.1r): Love centre 5/5, edge 5/5 on the board, board = PC 1,501/1,501; collector v6.1 + `a5_eval.py`. Next: commit, then A6 (all-posture position test, §5.1s).*
+*2026-10-26 20:23 addendum: A5 commit `441c67a` (28 files: data\a5_love, results_a5, a5_eval.py, collector v6.1, live_demo v3, FACTS). The repo copy of this file predates this line — save the Project copy before the next commit.*
+*2026-10-26 20:33 addendum: **A6 pre-registered** (§5.1s) — tools `collect_own_data.py` v6.2 (`--plan` position guide), `a6_plan.py`, `a6_eval.py`, tested on simulated data. Plan file + tools + this file to be committed before any A6 data.*

@@ -1,0 +1,493 @@
+{
+  "generated": "2026-10-26T21:15:46",
+  "user": 5,
+  "ref_dir": "data\\phase4",
+  "seed": 66,
+  "repeats": 2,
+  "positions": {
+    "natural": [
+      0.0,
+      0.0
+    ],
+    "row+1": [
+      1.0,
+      0.0
+    ],
+    "row-1": [
+      -1.0,
+      0.0
+    ],
+    "col+1": [
+      0.0,
+      1.0
+    ],
+    "col-1": [
+      0.0,
+      -1.0
+    ]
+  },
+  "classes": {
+    "Fist": {
+      "natural_row": 4.06,
+      "natural_col": 2.61,
+      "takes": [
+        {
+          "take": 1,
+          "position": "col+1",
+          "target_row": 4.06,
+          "target_col": 3.61
+        },
+        {
+          "take": 2,
+          "position": "natural",
+          "target_row": 4.06,
+          "target_col": 2.61
+        },
+        {
+          "take": 3,
+          "position": "row-1",
+          "target_row": 3.06,
+          "target_col": 2.61
+        },
+        {
+          "take": 4,
+          "position": "col-1",
+          "target_row": 4.06,
+          "target_col": 1.61
+        },
+        {
+          "take": 5,
+          "position": "row+1",
+          "target_row": 5.06,
+          "target_col": 2.61
+        },
+        {
+          "take": 6,
+          "position": "row+1",
+          "target_row": 5.06,
+          "target_col": 2.61
+        },
+        {
+          "take": 7,
+          "position": "col-1",
+          "target_row": 4.06,
+          "target_col": 1.61
+        },
+        {
+          "take": 8,
+          "position": "col+1",
+          "target_row": 4.06,
+          "target_col": 3.61
+        },
+        {
+          "take": 9,
+          "position": "row-1",
+          "target_row": 3.06,
+          "target_col": 2.61
+        },
+        {
+          "take": 10,
+          "position": "natural",
+          "target_row": 4.06,
+          "target_col": 2.61
+        }
+      ]
+    },
+    "FlatHand": {
+      "natural_row": 3.45,
+      "natural_col": 2.43,
+      "takes": [
+        {
+          "take": 1,
+          "position": "natural",
+          "target_row": 3.45,
+          "target_col": 2.43
+        },
+        {
+          "take": 2,
+          "position": "row-1",
+          "target_row": 2.45,
+          "target_col": 2.43
+        },
+        {
+          "take": 3,
+          "position": "col-1",
+          "target_row": 3.45,
+          "target_col": 1.43
+        },
+        {
+          "take": 4,
+          "position": "row-1",
+          "target_row": 2.45,
+          "target_col": 2.43
+        },
+        {
+          "take": 5,
+          "position": "row+1",
+          "target_row": 4.45,
+          "target_col": 2.43
+        },
+        {
+          "take": 6,
+          "position": "col+1",
+          "target_row": 3.45,
+          "target_col": 3.43
+        },
+        {
+          "take": 7,
+          "position": "row+1",
+          "target_row": 4.45,
+          "target_col": 2.43
+        },
+        {
+          "take": 8,
+          "position": "col+1",
+          "target_row": 3.45,
+          "target_col": 3.43
+        },
+        {
+          "take": 9,
+          "position": "col-1",
+          "target_row": 3.45,
+          "target_col": 1.43
+        },
+        {
+          "take": 10,
+          "position": "natural",
+          "target_row": 3.45,
+          "target_col": 2.43
+        }
+      ]
+    },
+    "Dislike": {
+      "natural_row": 3.94,
+      "natural_col": 3.48,
+      "takes": [
+        {
+          "take": 1,
+          "position": "natural",
+          "target_row": 3.94,
+          "target_col": 3.48
+        },
+        {
+          "take": 2,
+          "position": "row+1",
+          "target_row": 4.94,
+          "target_col": 3.48
+        },
+        {
+          "take": 3,
+          "position": "row-1",
+          "target_row": 2.94,
+          "target_col": 3.48
+        },
+        {
+          "take": 4,
+          "position": "row+1",
+          "target_row": 4.94,
+          "target_col": 3.48
+        },
+        {
+          "take": 5,
+          "position": "col-1",
+          "target_row": 3.94,
+          "target_col": 2.48
+        },
+        {
+          "take": 6,
+          "position": "col+1",
+          "target_row": 3.94,
+          "target_col": 4.48
+        },
+        {
+          "take": 7,
+          "position": "row-1",
+          "target_row": 2.94,
+          "target_col": 3.48
+        },
+        {
+          "take": 8,
+          "position": "natural",
+          "target_row": 3.94,
+          "target_col": 3.48
+        },
+        {
+          "take": 9,
+          "position": "col-1",
+          "target_row": 3.94,
+          "target_col": 2.48
+        },
+        {
+          "take": 10,
+          "position": "col+1",
+          "target_row": 3.94,
+          "target_col": 4.48
+        }
+      ]
+    },
+    "Like": {
+      "natural_row": 3.55,
+      "natural_col": 2.42,
+      "takes": [
+        {
+          "take": 1,
+          "position": "col+1",
+          "target_row": 3.55,
+          "target_col": 3.42
+        },
+        {
+          "take": 2,
+          "position": "col-1",
+          "target_row": 3.55,
+          "target_col": 1.42
+        },
+        {
+          "take": 3,
+          "position": "row+1",
+          "target_row": 4.55,
+          "target_col": 2.42
+        },
+        {
+          "take": 4,
+          "position": "row-1",
+          "target_row": 2.55,
+          "target_col": 2.42
+        },
+        {
+          "take": 5,
+          "position": "col+1",
+          "target_row": 3.55,
+          "target_col": 3.42
+        },
+        {
+          "take": 6,
+          "position": "row-1",
+          "target_row": 2.55,
+          "target_col": 2.42
+        },
+        {
+          "take": 7,
+          "position": "col-1",
+          "target_row": 3.55,
+          "target_col": 1.42
+        },
+        {
+          "take": 8,
+          "position": "row+1",
+          "target_row": 4.55,
+          "target_col": 2.42
+        },
+        {
+          "take": 9,
+          "position": "natural",
+          "target_row": 3.55,
+          "target_col": 2.42
+        },
+        {
+          "take": 10,
+          "position": "natural",
+          "target_row": 3.55,
+          "target_col": 2.42
+        }
+      ]
+    },
+    "Love": {
+      "natural_row": 2.55,
+      "natural_col": 3.49,
+      "takes": [
+        {
+          "take": 1,
+          "position": "row-1",
+          "target_row": 1.55,
+          "target_col": 3.49
+        },
+        {
+          "take": 2,
+          "position": "col-1",
+          "target_row": 2.55,
+          "target_col": 2.49
+        },
+        {
+          "take": 3,
+          "position": "col+1",
+          "target_row": 2.55,
+          "target_col": 4.49
+        },
+        {
+          "take": 4,
+          "position": "natural",
+          "target_row": 2.55,
+          "target_col": 3.49
+        },
+        {
+          "take": 5,
+          "position": "row+1",
+          "target_row": 3.55,
+          "target_col": 3.49
+        },
+        {
+          "take": 6,
+          "position": "col-1",
+          "target_row": 2.55,
+          "target_col": 2.49
+        },
+        {
+          "take": 7,
+          "position": "row+1",
+          "target_row": 3.55,
+          "target_col": 3.49
+        },
+        {
+          "take": 8,
+          "position": "col+1",
+          "target_row": 2.55,
+          "target_col": 4.49
+        },
+        {
+          "take": 9,
+          "position": "row-1",
+          "target_row": 1.55,
+          "target_col": 3.49
+        },
+        {
+          "take": 10,
+          "position": "natural",
+          "target_row": 2.55,
+          "target_col": 3.49
+        }
+      ]
+    },
+    "CrossHands": {
+      "natural_row": 3.28,
+      "natural_col": 3.47,
+      "takes": [
+        {
+          "take": 1,
+          "position": "row-1",
+          "target_row": 2.28,
+          "target_col": 3.47
+        },
+        {
+          "take": 2,
+          "position": "row+1",
+          "target_row": 4.28,
+          "target_col": 3.47
+        },
+        {
+          "take": 3,
+          "position": "col+1",
+          "target_row": 3.28,
+          "target_col": 4.47
+        },
+        {
+          "take": 4,
+          "position": "col+1",
+          "target_row": 3.28,
+          "target_col": 4.47
+        },
+        {
+          "take": 5,
+          "position": "col-1",
+          "target_row": 3.28,
+          "target_col": 2.47
+        },
+        {
+          "take": 6,
+          "position": "natural",
+          "target_row": 3.28,
+          "target_col": 3.47
+        },
+        {
+          "take": 7,
+          "position": "row+1",
+          "target_row": 4.28,
+          "target_col": 3.47
+        },
+        {
+          "take": 8,
+          "position": "natural",
+          "target_row": 3.28,
+          "target_col": 3.47
+        },
+        {
+          "take": 9,
+          "position": "col-1",
+          "target_row": 3.28,
+          "target_col": 2.47
+        },
+        {
+          "take": 10,
+          "position": "row-1",
+          "target_row": 2.28,
+          "target_col": 3.47
+        }
+      ]
+    },
+    "BreakTime": {
+      "natural_row": 3.14,
+      "natural_col": 3.57,
+      "takes": [
+        {
+          "take": 1,
+          "position": "row+1",
+          "target_row": 4.14,
+          "target_col": 3.57
+        },
+        {
+          "take": 2,
+          "position": "natural",
+          "target_row": 3.14,
+          "target_col": 3.57
+        },
+        {
+          "take": 3,
+          "position": "col-1",
+          "target_row": 3.14,
+          "target_col": 2.57
+        },
+        {
+          "take": 4,
+          "position": "col-1",
+          "target_row": 3.14,
+          "target_col": 2.57
+        },
+        {
+          "take": 5,
+          "position": "col+1",
+          "target_row": 3.14,
+          "target_col": 4.57
+        },
+        {
+          "take": 6,
+          "position": "row-1",
+          "target_row": 2.14,
+          "target_col": 3.57
+        },
+        {
+          "take": 7,
+          "position": "col+1",
+          "target_row": 3.14,
+          "target_col": 4.57
+        },
+        {
+          "take": 8,
+          "position": "row-1",
+          "target_row": 2.14,
+          "target_col": 3.57
+        },
+        {
+          "take": 9,
+          "position": "row+1",
+          "target_row": 4.14,
+          "target_col": 3.57
+        },
+        {
+          "take": 10,
+          "position": "natural",
+          "target_row": 3.14,
+          "target_col": 3.57
+        }
+      ]
+    }
+  }
+}
