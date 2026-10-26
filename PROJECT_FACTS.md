@@ -2339,6 +2339,42 @@ Otherwise 5.5c stays optional and the thesis reports E5 as tolerant to 1-zone sh
 **Limits:** n = 1 subject (a known user), 2 takes per cell, frames correlated → descriptive only; the guide makes placement more
 controlled than real use, so A6 measures sensitivity to a known shift, not everyday accuracy.
 
+### 5.1t Amendments A13 + A14 (26 Oct 2026 21:50, before any A6 or standing data)
+
+**A13 — live A6 with the on-screen guide is abandoned; replaced by a simulated shift (A6-sim).** Practice 21:20–21:44
+(`data\a6_practice`, 1 three-second Fist take, **not analysed**): Chin could not reach targets — the guide showed only numbers, the
+physical direction of row/col is unknown, and his natural Fist today sat at col ≈ 3.4–3.7 vs 2.61 on 9 Oct (a ~1-zone day-to-day
+placement change on its own) `[STUDENT + screen text]`. Claude's own design error: aiming at numbers is hard and makes the posture
+unnatural, which would confound "position" with "posture distortion". `a6_plan_User5.json` (commit `343c8c2`) and the v6.2 `--plan`
+guide stay in the repo, **unused**; no A6 take was ever recorded.
+**A6-sim design.** Take recorded new-day frames, shift the **raw** 8×8 zone arrays (distance, status, signal) by whole zones — vacated
+zones set to an invalid status so `st_dataset._preprocess_session` treats them as empty, zones pushed off the grid are lost — then
+preprocess with the training function and predict on the PC. Shifts: **none, row±1, col±1** (primary); **row±2, col±2** (secondary).
+Rationale: after preprocessing only hand zones carry values (background removed), so a whole-zone shift of the raw frame closely
+mimics moving the hand; board = PC is established (§5.1n–r, > 9,000 frames), so PC results stand for the board.
+Datasets: `data\phase56` (sitting), `data\phase56_stand` (A14, standing), `data\a5_love` (Love only). Never `data\phase4` (E5 trained
+on it). Models: E5 (primary), the 5 singles (mean ± SD), ST-only baseline. Report per posture × shift: per-frame accuracy, 15-frame
+vote accuracy, paired frame flips vs unshifted (correct→wrong / wrong→correct), share of hand zones lost off-grid.
+Statistics: frames within a take are correlated → descriptive; no frame-level p-values.
+Predictions (Claude): Q1 E5's mean accuracy over the four ±1 shifts is ≥ 5 pp below unshifted on each dataset (60 %).
+Q2 **row−1** (toward row 0, the §5.1j failure direction) is the worst ±1 shift (60 %). Q3 Like or Dislike has the largest ±1 drop (60 %).
+Q4 Love on `a5_love` stays ≥ 90 % at row±1 (65 %, A5). Q5 ±2 shifts are worse than ±1 for every model (80 %). Q6 E5's drop under
+shift is ≤ the singles' mean drop (65 %).
+Decision rule (unchanged from §5.1s): any ±1 shift that lowers E5 per-frame accuracy by ≥ 10 pp on either dataset → 5.5c re-centring is
+pre-registered next (selected by LOSO; A6-sim and the A6-sim script re-run on it as report-only before/after).
+Limits: a simulated shift ignores perspective change and the weaker illumination near the edge of the field (FoI 43.4° < FoV 45°, §2);
+n = 1 subject. Optional later physical spot-check: move the **board** 3 cm with a ruler (hand stays at its natural place), Like and
+Dislike only, separately pre-registered.
+
+**A14 — standing new-day set `data\phase56_stand` (the separate condition foreseen in §5.1p).** Chin offered to re-collect standing
+"to be sure" (21:46) `[STUDENT]`. Same protocol as `data\phase56` except posture of the body: `collect_own_data.py` (v6.2, no
+`--plan`), default 7 postures × 2 takes × 20 s, hold 3 s, 220–320 mm, Chin **standing** as in `data\phase4`, board at arm's length,
+no live predictions shown. Evaluated with `evaluate_phase56.py --data-dir data\phase56_stand` (same models and rules). It **adds to**,
+never replaces, the sitting result (93.0 %). Test set only (§5.1l).
+Predictions: Chin — standing scores higher than sitting `[STUDENT, 19:15]`. Claude — S1 E5 per-frame ≥ 90 % (70 %); S2 |standing −
+sitting| ≤ 5 pp (60 %); S3 Like's centroid row is closer to its phase4 value (3.55) than phase56's 4.50 was (60 %); S4 board = PC on
+every frame (95 %). Caveat carried over: Chin has watched many live predictions today (§5.1p).
+
 ## 5.2 Dynamic-gesture datasets — what exists
 
 | Source | Gestures | Sensor | Data available? |
@@ -3288,3 +3324,5 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *2026-10-26 20:20 addendum: **A5 done** (§5.1q A12, §5.1r): Love centre 5/5, edge 5/5 on the board, board = PC 1,501/1,501; collector v6.1 + `a5_eval.py`. Next: commit, then A6 (all-posture position test, §5.1s).*
 *2026-10-26 20:23 addendum: A5 commit `441c67a` (28 files: data\a5_love, results_a5, a5_eval.py, collector v6.1, live_demo v3, FACTS). The repo copy of this file predates this line — save the Project copy before the next commit.*
 *2026-10-26 20:33 addendum: **A6 pre-registered** (§5.1s) — tools `collect_own_data.py` v6.2 (`--plan` position guide), `a6_plan.py`, `a6_eval.py`, tested on simulated data. Plan file + tools + this file to be committed before any A6 data.*
+*2026-10-26 21:18 addendum: A6 pre-registration commit `343c8c2` pushed (plan `data\a6_shift\a6_plan_User5.json`; natural centroids identical to the phase4 values in §5.1p). No A6 data existed at that time.*
+*2026-10-26 21:50 addendum: **A13** — live A6 guide abandoned before any data (practice only), replaced by simulated shift A6-sim; **A14** — standing new-day set `data\phase56_stand` pre-registered (§5.1t).*
