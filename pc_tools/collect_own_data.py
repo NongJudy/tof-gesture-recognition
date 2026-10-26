@@ -27,6 +27,7 @@ ST_VL53L8CX_handposture_dataset เพื่อให้ train_st_cnn2d.py / st_
 
 ผลลัพธ์:
     <out-dir>/<ชื่อคลาส>/log__<เวลา>__User<N>__take<k>/npz/<...>.npz
+    <out-dir>/<ชื่อคลาส>/log__<เวลา>__User<N>__take<k>/npz/<...>_board.csv   (v6: ผลทาย+เวลาของบอร์ดต่อเฟรม)
     <out-dir>/manifest_collect.csv   (บันทึกทุกรอบ: ผู้ทดลอง ท่า เฟรม เฟรมหาย เฟรมค้างที่ทิ้ง ระยะ ฯลฯ)
 
 หมายเหตุรูปแบบ npz:
@@ -73,6 +74,14 @@ ST_VL53L8CX_handposture_dataset เพื่อให้ train_st_cnn2d.py / st_
     "Posture correct the whole time? y/r/s" — เดิมรอบที่ไม่มี WARNING บันทึกอัตโนมัติ
     คนคุมจึงไม่มีจังหวะปฏิเสธรอบที่ทำท่าผิด (เกิดจริงกับ User6 extra day1 → ย้ายออกทั้งชุด)
     คนคุมต้องดูท่าตลอด 20 วิ ; ตรรกะการเก็บ/ระยะ/manifest ไม่เปลี่ยน
+  - 26 ต.ค. 2026 (v6, Phase 5.6 แบบละเอียด, PROJECT_FACTS §5.1o): บันทึกบรรทัด Y (ผลทายของบอร์ดต่อเฟรม,
+    เฟิร์มแวร์ MY_TOF_PRED_LINE=1) และ Q (เวลาต่อเฟรม, MY_TOF_FRAME_TIMING=1) ของเฟรมที่อยู่ในรอบ
+    ลงไฟล์เสริม <ชื่อรอบ>_board.csv ข้างไฟล์ .npz — ใช้วัดความแม่นยำบนบอร์ดตรงๆ, เทียบบอร์ดกับ PC
+    ทุกเฟรม และกระจายของเวลาต่อเฟรม
+    ไม่เปลี่ยน: ไฟล์ .npz, manifest_collect.csv, ช่วงระยะ/การถือ/การทิ้งรอบ, ข้อความบนจอ, คำถาม y/r/s
+    ไม่แสดงผลทายระหว่างเก็บ (A2) — จอบอกแค่จำนวนบรรทัด Y/Q ที่บันทึกได้ (เช็คว่าบันทึกครบ)
+    st_dataset.load_dataset() อ่านเฉพาะ *.npz จึงไม่สนใจไฟล์ .csv นี้
+    ถ้าเฟิร์มแวร์ไม่ส่ง Y/Q (สวิตช์ปิด) จะเตือนตอนตรวจบอร์ด แล้วเก็บต่อได้ตามปกติ (ไฟล์เสริมว่าง)
   - กฎ: ทิ้งได้ทั้ง "รอบ" ที่ระยะไม่ผ่าน แต่ห้ามคัดทิ้งทีละเฟรมทีหลัง — การกรองระดับเฟรม
     ใช้กฎ 100-400 มม. ของ ST ใน st_dataset.py เท่านั้น เพื่อให้เทียบกับ ST ได้ยุติธรรม
 
@@ -159,6 +168,57 @@ def parse_line(line: str) -> tuple[str, int, list[float]] | None:
         return parts[0], int(parts[1]), [float(v) for v in parts[2:]]
     except ValueError:
         return None
+
+
+class BoardTap:
+    """v6: ห่อ readline — ส่งทุกบรรทัดต่อให้ผู้เรียกเหมือนเดิม แต่จดบรรทัด Y/Q (ผลทาย/เวลาของบอร์ด)
+    เก็บไว้ตามเลขเฟรมด้วย ฟังก์ชันอ่านเดิม (parse_line, frame_stream) ข้ามบรรทัด Y/Q อยู่แล้วจึงไม่กระทบ"""
+
+    def __init__(self, readline: Callable[[], str]) -> None:
+        self._readline = readline
+        self.y: dict[int, list[str]] = {}
+        self.q: dict[int, list[str]] = {}
+
+    def __call__(self) -> str:
+        raw = self._readline()
+        if raw and raw[:2] in ("Y,", "Q,"):
+            parts = raw.strip().split(",")
+            try:
+                frame_no = int(parts[1])
+            except (IndexError, ValueError):
+                return raw
+            (self.y if parts[0] == "Y" else self.q)[frame_no] = parts[2:]
+        return raw
+
+    def clear(self) -> None:
+        """ล้างของเก่า (เรียกหลัง drain ก่อนเริ่มแต่ละรอบ)"""
+        self.y.clear()
+        self.q.clear()
+
+
+BOARD_COLS = (["frame", "board_class"] + [f"board_p{i}" for i in range(len(CLASSES))]
+              + ["sensor_us", "preprocess_us", "inference_us", "decision_us", "total_us"])
+
+
+def write_board_log(npz_path: Path, frame_nos: list[int], tap: BoardTap) -> tuple[Path, int, int]:
+    """v6: เขียน <ชื่อรอบ>_board.csv 1 แถวต่อเฟรมของรอบ (ลำดับเดียวกับใน .npz)
+    board_class: 0..6 = ท่าที่บอร์ดทาย, -1 = บอร์ดไม่ทาย (มือนอก 100–400 มม.), ว่าง = ไม่ได้รับบรรทัด Y
+    คืน (path, จำนวนเฟรมที่มี Y, จำนวนเฟรมที่มี Q)"""
+    path = npz_path.with_name(npz_path.stem + "_board.csv")
+    n_y = n_q = 0
+    with path.open("w", newline="", encoding="utf-8") as fh:
+        w = csv.writer(fh)
+        w.writerow(BOARD_COLS)
+        for f in frame_nos:
+            y = tap.y.get(f)
+            q = tap.q.get(f)
+            cls = y[0] if y else ""
+            probs = y[1:1 + len(CLASSES)] if y and len(y) >= 1 + len(CLASSES) else [""] * len(CLASSES)
+            times = q[:5] if q and len(q) >= 5 else [""] * 5
+            n_y += y is not None
+            n_q += q is not None
+            w.writerow([f, cls] + probs + times)
+    return path, n_y, n_q
 
 
 def drain(readline: Callable[[], str], seconds: float) -> int:
@@ -564,7 +624,8 @@ def main() -> None:
         raise SystemExit("pyserial is required: pip install pyserial")
 
     ser = serial.Serial(args.port, args.baud, timeout=1)
-    readline = lambda: ser.readline().decode("utf-8", errors="ignore")  # noqa: E731
+    # v6: ห่อด้วย BoardTap เพื่อจดบรรทัด Y/Q ของบอร์ด (ส่วนอื่นอ่านเหมือนเดิมทุกอย่าง)
+    readline = BoardTap(lambda: ser.readline().decode("utf-8", errors="ignore"))
     args.out_dir.mkdir(parents=True, exist_ok=True)
     manifest = args.out_dir / "manifest_collect.csv"
     if manifest.exists():
@@ -603,6 +664,13 @@ def main() -> None:
     print(f"  Board check   {n_pre} frames / {dur:.1f} s = {hz:.1f} Hz   {verdict}")
     for w in warns:
         print("  " + paint("[WARNING]", "yellow") + f" {w}")
+    # v6: เช็คว่าเฟิร์มแวร์ส่งบรรทัด Y/Q มาไหม (ไม่ใช่เงื่อนไขหยุด — แค่เตือนว่าไฟล์เสริมจะว่าง)
+    n_y_pre = sum(f in readline.y for f in pre.frame_nos)
+    n_q_pre = sum(f in readline.q for f in pre.frame_nos)
+    print(f"  Board log     Y lines {n_y_pre}/{n_pre} frames, Q lines {n_q_pre}/{n_pre} frames")
+    if n_pre and n_y_pre == 0:
+        print("  " + paint("[WARNING]", "yellow") + " no Y lines — firmware MY_TOF_PRED_LINE is 0? "
+              "the _board.csv files will be empty")
     if hard:
         ser.close()
         raise SystemExit("Stopped: fix the warning above before collecting data")
@@ -627,6 +695,7 @@ def main() -> None:
                         break
                     ser.reset_input_buffer()
                     drain(readline, DRAIN_S)        # เทข้อมูลเก่าที่ค้างระหว่างรอ Enter ทิ้ง
+                    readline.clear()                # v6: ล้างบรรทัด Y/Q เก่า
                     take, state, out_frames = arm_and_record(
                         frame_stream(readline), args.seconds, lo, hi, args.hold_s,
                         args.abort_frames, args.arm_timeout_s, sound=not args.no_beep)
@@ -670,6 +739,7 @@ def main() -> None:
                         tally[cls]["skipped"] += 1
                         break
                     path = save_take(take, args.out_dir, cls, args.user, k)
+                    blog, n_y, n_q = write_board_log(path, take.frame_nos, readline)   # v6
                     append_manifest(manifest, {
                         "saved_at": datetime.now().isoformat(timespec="seconds"), "user": args.user,
                         "class": cls, "take": k, "attempt": attempt, **info,
@@ -683,6 +753,7 @@ def main() -> None:
                     except ValueError:
                         shown = path
                     print("  └ " + paint("[SAVED]", "green") + f" {shown.name}")
+                    print(paint(f"    board log: Y {n_y}/{n}, Q {n_q}/{n} frames → {blog.name}", "dim"))
                     break
     except KeyboardInterrupt:
         print("\n\n  " + paint("[STOPPED]", "yellow") + " takes already saved are kept")

@@ -6,6 +6,9 @@
  *   = พิมพ์บรรทัด Y ทุกเฟรม (ผลทายของบอร์ด + ความน่าจะเป็น 7 ค่า) เพื่อให้ PC
  *     เทียบกับ E5 บนคอมพิวเตอร์ทีละเฟรม (pc_tools/compare_board_pc.py)
  *   ส่วนอื่นของไฟล์ไม่เปลี่ยน
+ * แก้ไข 26 ต.ค. 2026 (Phase 5.6 แบบละเอียด): เพิ่มสวิตช์ MY_TOF_FRAME_TIMING
+ *   = พิมพ์เวลาของ "ทุกเฟรมที่ทาย" เป็นบรรทัด Q (เดิมมีแค่ค่าเฉลี่ยทีละ 30 เฟรมในบรรทัด LAT)
+ *     เพื่อหาค่าสูงสุดจริงและการกระจายของเวลาต่อเฟรม — การคำนวณและบรรทัดอื่นไม่เปลี่ยน
  */
 
 #include "my_tof.h"
@@ -45,6 +48,17 @@ extern void *VL53L8A1_RANGING_SENSOR_CompObj[];
 
 #if MY_TOF_PRED_LINE && MY_TOF_TIMING_MODE
   #error "MY_TOF_PRED_LINE ต้องใช้กับ MY_TOF_TIMING_MODE = 0 (โหมดส่งข้อมูล F/S/G)"
+#endif
+
+/* ===== สวิตช์พิมพ์เวลาทุกเฟรม (เพิ่ม 26 ต.ค. 2026) =====
+   1 = ทุกเฟรมที่ทายสำเร็จพิมพ์  Q,<เฟรม>,<sensor_us>,<preprocess_us>,<inference_us>,<decision_us>,<total_us>
+       (ตัวเลขชุดเดียวกับที่สะสมเข้าบรรทัด LAT แต่ไม่เฉลี่ย — ได้ค่าสูงสุดจริงของแต่ละเฟรม)
+   0 = ไม่พิมพ์
+   พิมพ์หลังจุดวัดเวลา t3 จึงไม่ทำให้ตัวเลขเวลาเปลี่ยน */
+#define MY_TOF_FRAME_TIMING  1
+
+#if MY_TOF_FRAME_TIMING && MY_TOF_TIMING_MODE
+  #error "MY_TOF_FRAME_TIMING ต้องใช้กับ MY_TOF_TIMING_MODE = 0"
 #endif
 
 #if MY_TOF_USE_4X4
@@ -404,10 +418,11 @@ uint8_t my_ai_init(void)
     }
 
     printf("MY_AI: network ready (in=%d floats, out=%d classes, "
-           "activations=%d bytes, vote_window=%d, lat_window=%d, pred_line=%d)\r\n",
+           "activations=%d bytes, vote_window=%d, lat_window=%d, pred_line=%d, "
+           "frame_timing=%d)\r\n",
            AI_NETWORK_IN_1_SIZE, AI_NETWORK_OUT_1_SIZE,
            AI_NETWORK_DATA_ACTIVATIONS_SIZE, MY_AI_VOTE_WINDOW, MY_LAT_WINDOW,
-           MY_TOF_PRED_LINE);
+           MY_TOF_PRED_LINE, MY_TOF_FRAME_TIMING);
     return 0;
 }
 
@@ -502,10 +517,13 @@ void my_tof_infer(void)
                 t3 = my_platform_cycles();   /* จบ decision (argmax) */
 
                 /* เก็บสถิติ latency เฉพาะตอน inference สำเร็จจริง */
+                uint32_t pre_us = my_platform_cycles_to_us(t1 - t0);
+                uint32_t inf_us = my_platform_cycles_to_us(t2 - t1);
+                uint32_t dec_us = my_platform_cycles_to_us(t3 - t2);
                 g_lat_sum_sensor_us += m_rd_us;
-                g_lat_sum_pre_us    += my_platform_cycles_to_us(t1 - t0);
-                g_lat_sum_inf_us    += my_platform_cycles_to_us(t2 - t1);
-                g_lat_sum_dec_us    += my_platform_cycles_to_us(t3 - t2);
+                g_lat_sum_pre_us    += pre_us;
+                g_lat_sum_inf_us    += inf_us;
+                g_lat_sum_dec_us    += dec_us;
                 g_lat_count++;
 
                 if (g_lat_count >= MY_LAT_WINDOW)
@@ -540,6 +558,14 @@ void my_tof_infer(void)
                     printf(",%.6f", (double)g_ai_out[i]);
                 }
                 printf("\r\n");
+#endif
+
+#if MY_TOF_FRAME_TIMING
+                /* เวลาของเฟรมนี้เฟรมเดียว (ไม่เฉลี่ย) — ตัวเลขชุดเดียวกับที่บวกเข้า LAT ข้างบน */
+                printf("Q,%lu,%lu,%lu,%lu,%lu,%lu\r\n", (unsigned long)g_frame_count,
+                       (unsigned long)m_rd_us, (unsigned long)pre_us, (unsigned long)inf_us,
+                       (unsigned long)dec_us,
+                       (unsigned long)(m_rd_us + pre_us + inf_us + dec_us));
 #endif
             }
         }

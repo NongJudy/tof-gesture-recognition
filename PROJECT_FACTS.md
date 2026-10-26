@@ -46,7 +46,8 @@ setup or a conversation the assistant cannot observe directly
 | **E5 built (20 Oct 2026 22:14, `pc_tools\build_ensemble.py`, commit `3fb36f0`)** | E5 = 22,555 params; E5 == mean of the 5 models (max |diff| 6.0e-08 over 8,448 frames); `E5.tflite` 100.9 KiB and fallback `seed42.tflite` 21.1 KiB, both via `from_keras_model`, same class as `.keras` on 2,000/2,000 frames (batch 1, max |diff| ≤ 3.0e-07); 200-frame board-check set + PC outputs saved in `results_phase55_final\deploy\`. No accuracy computed (check data is training data) |
 | **E5 converted with X-CUBE-AI (26 Oct 2026, step 2.3, §5.1m)** | X-CUBE-AI 10.2.1 / ST Edge AI Core v2.2.0, TFLite, compression none, optimisation balanced, network name `network`, target stm32f4. Params 22,556 (= 5 × 4,511 + 1 averaging constant), MACC 73,762 (= 5 × 14,744 + 42), weights 88.16 KiB, Flash total 111.89 KiB, RAM total 11.21 KiB (activations 1.70 KiB). Validate on desktop: random data 10/10 (all one class — weak); **real data `board_check_inputs_200.npy` vs `board_check_E5_probs_200.npy`: 200/200 same class, all 7 classes (28–29 each), rmse 1.4e-08**. Code generated 15:50 into `ai_conversion_project\tof_ai_conversion\X-CUBE-AI\App\` (8 files). **Not yet on the board** — no on-board timing, no board-vs-PC check |
 | **E5 deployed on the board (26 Oct 2026, step 2.4, §5.1n)** | All three §5.1l conditions met → **E5 is the deployed model**. Firmware build 0 errors / 0 warnings: Flash 247.4 KiB (48.3 %), RAM 26.6 KiB (20.8 %) by `arm-none-eabi-size`. Boot line `MY_AI: ... activations=1736 bytes` (= E5). **Per-frame work 29,306 ± 36 µs** (22 LAT windows × 30 = 660 inferences; inference 15,925 ± 35 µs; max window 29,324 ≤ 33,000). **Board vs PC 203/203** same class, 0 / 675 range-gate mismatches, max |prob diff| 1.1e-06 (`pc_tools\compare_board_pc.py`, live hand, all 7 postures). Firmware now has `MY_TOF_PRED_LINE = 1` (prints `Y,` lines) |
-| **Next session (as of 26 Oct 2026, evening)** | Commit step 2.4 (firmware `X-CUBE-AI\App` + `my_tof.c`, `pc_tools\compare_board_pc.py`, `results_phase55_final\board_check_live\`, this file). Then: **A5 Love edge/centre live test** (§5.1l, 5 + 5 trials, order `random.seed(55)`), and **Phase 5.6** `data\phase56` collection — first check that `collect_own_data.py` ignores the new `Y,` lines or set `MY_TOF_PRED_LINE = 0` `[ยังไม่ได้ตรวจ]`; no live predictions shown during collection (§5.1m caveat) |
+| **Phase 5.6, User 5 (26 Oct 2026 18:41–18:55, §5.1p)** | `data\phase56` 14/14 takes, 4,219 frames, 0 missing (v6 logger, firmware with Y+Q lines). **E5 93.0 % per-frame (vote 92.7 %) — measured on the board itself, identical to the PC**; 5 singles 89.0 ± 3.3 %; ST-only 68.2 %. Weak: Dislike 69.6 % (take 1 39 %), Like 81.4 % (take 2 63 %). Board vs PC **4,219/4,219**; per-frame work max **29,295 µs** (mean 29,204 ± 18), 0 frames > 33 ms. **B1–B7 all hold.** Caveat: hand centroids moved vs 9 Oct (Like +0.95 row toward ST) — seating change and/or having seen live predictions; cannot be separated. n = 1 subject, descriptive |
+| **Next session (as of 26 Oct 2026, night)** | Commit Phase 5.6 (firmware Q switch, `collect_own_data.py` v6, `evaluate_phase56.py`, `results_phase56\`, `data\phase56` if data is tracked). Then: User 6 Phase 5.6 (same command with `--user 6`, he has not watched E5 predictions except a short live try on 26 Oct, §5.1m); A5 Love edge/centre live test; report/thesis writing |
 | Phase 5.5a (shift augmentation) | **negative**: −12.1 pp vs retrained baseline, paired over 3 seeds (§5.1g-R); not adopted |
 | Phase 4 data collection (`collect_own_data.py` **v5**) | ✅ **Done.** Chin (User 5) 42/42: main 14 (9 Oct) + extra 14 (9 Oct) + extra 14 (15 Oct, v5). Friend (User 6) 42/42: main 14 (14 Oct, v4) + extra 28 in one sitting (A10), file timestamps 18 Oct 2026 21:56–22:16 `[ตรวจแล้ว: xcopy listing 20 Oct]`; his first 14 extras (15 Oct) stay quarantined in `data\phase4_rejected` (A9, §9 #53). Manifest check of the 28 extras: missing frames 0, out-of-window 0, with warning 0 `[STUDENT]` (output pasted 20 Oct). `data\phase4_extra` holds 56 npz (28 + 28) + manifest = 57 files; `data\phase4` 28 npz + manifest = 29 files. Local backups on Chin's PC: `C:\Users\gaming\Documents\backup_phase4_20261020\phase4` (29) and `\phase4_extra` (57). Copy to Drive/USB: **not confirmed** |
 | Collection protocol | guided arming: hand must hold inside **220–320 mm for 3 s** before recording starts; take discarded if the hand leaves the window for **8 consecutive frames**; no frame-level filtering (§5.1e-A8) |
@@ -2174,9 +2175,82 @@ this is an agreement check, **not accuracy**. The board-predicted class per prom
 Love 21, CrossHands 13, BreakTime 29) came from frames with no hold window, a known user, and a subject who had seen live predictions —
 **must not be reported as accuracy**; `data\phase56` is the place for that.
 
+**Commit:** `84bfea1` (pushed 26 Oct 2026 17:58, `3fb36f0..84bfea1`). `.gitignore` now ignores `*_SMOKE_TEST/`; an unrelated `dog_vs_cat.docx` was moved out of the repo to `C:\Users\gaming\Documents\`.
+
 **Decision (§5.1l rule, applied as written):** conversion and build ✅ · total per-frame work ≤ 33 ms ✅ (29.3 ms) · board vs PC 200/200 ✅
 (203/203) → **E5 deployed**. `seed42.tflite` not needed.
 
+
+### 5.1o Phase 5.6 amendment A11 — board-side logging during collection (written 26 Oct 2026 ≈ 18:35, BEFORE any `data\phase56` data exists)
+
+**Why.** Chin asked for "the best, surest, most detailed" Phase 5.6 (18:18–18:24). §5.1l measures accuracy on the PC only and relies on
+§5.1n's 203/203 to speak for the board. With the board already predicting and timing every frame during collection, logging those outputs
+gives on-board accuracy directly, board-vs-PC agreement on every collected frame, and the full per-frame timing distribution — at no change
+to what the subject does or sees.
+
+**What changes (logging only):**
+- Firmware: new switch `MY_TOF_FRAME_TIMING = 1` in `my_tof.c` → every predicted frame prints
+  `Q,<frame>,<sensor_us>,<preprocess_us>,<inference_us>,<decision_us>,<total_us>` (same numbers that feed LAT, not averaged; printed after t3);
+  boot line adds `frame_timing=1`. `MY_TOF_PRED_LINE = 1` stays (Y lines).
+- `pc_tools\collect_own_data.py` **v6**: a `BoardTap` wrapper records Y/Q lines; each saved take gets `<take>_board.csv` (one row per frame of
+  the take: board class / 7 probabilities / 5 timings) next to its `.npz`. Board check prints how many frames had Y/Q lines.
+- **Unchanged:** `.npz` content and layout, `manifest_collect.csv` columns, window 220–320 mm, hold 3 s, 20 s takes, discard after 8
+  out-of-window frames, the y/r/s confirmation, natural positioning, **no predictions shown** (the screen shows only Y/Q line counts).
+  Tested on a simulated board 26 Oct (14/14 takes, row counts match the `.npz` frame counts, manifest header identical to v5).
+
+**Added analyses (on top of §5.1l, which is unchanged):**
+1. On-board E5 accuracy per subject: per-frame (board class vs posture label) and 15-frame vote computed from the board's own per-frame classes
+   (same rule as `my_tof_send_prediction`: majority over the last 15 frames, "none" counts as a vote).
+2. Board vs PC (E5.keras on the same raw frame, `st_dataset` preprocessing): class and range-gate agreement on **every** collected frame.
+3. Per-frame on-board timing over all predicted frames: mean, SD, median, p99, **max**, count > 33,000 µs.
+
+**Predictions (Claude, before any data):**
+- **B5:** board vs PC class agreement = **100 %** of frames where both predict; range-gate mismatches = 0. Any mismatch → stop and diagnose
+  before reporting accuracy.
+- **B6:** on-board E5 per-frame accuracy equals the PC E5 accuracy (follows from B5).
+- **B7:** per-frame total work: mean 29.3 ± 0.1 ms, **max ≤ 30.0 ms**, **0 frames > 33 ms** (LAT window spread was ±36 µs, §5.1n).
+- Statistics as §5.1l: n = 1–2 subjects, descriptive; timing numbers are per-frame counts (no inference beyond this session).
+
+### 5.1p Phase 5.6 result — User 5, new day (26 Oct 2026) `[MEASURED]`
+
+**Collection** (`collect_own_data.py` v6, `--fw-note "84bfea1+frame_timing (uncommitted), E5, v6 logger; phase56 day1; poweron ~14:30 est"`,
+`--minutes-since-poweron 247`): 14/14 takes saved 18:41–18:55, **0 discarded**, 301–303 frames per take (15.1 Hz), 0 missing, 0 out-of-window,
+medians 267–272 mm; board log Y and Q present for every frame of every take (the board predicted every frame). The 3-s board check showed
+Q 0/45 only because no hand was held during it. Love take 1 was confirmed with a Thai-keyboard `ัy` (accepted). Firmware boot line before
+collection: `pred_line=1, frame_timing=1` (screenshot 18:33). Data never used for anything but this evaluation (§5.1l).
+
+**Evaluation** `pc_tools\evaluate_phase56.py` → `results_phase56\eval_20261026_190627\` (report.txt, summary.json, per_frame.csv,
+confusion_E5_User5.png). n = 4,219 frames, all inside 100–400 mm.
+
+| Model (User 5) | per-frame % | 15-frame vote % |
+|---|---|---|
+| ST-only baseline (`results_phase2_fixed\production_model.keras`) | 68.2 | 68.1 |
+| 5 single arm-B models | 89.0 ± 3.3 (84.2–92.1) | 89.1 ± 3.4 |
+| **E5 on the PC** | **93.0** | **92.7** |
+| **E5 on the board** (its own Y lines) | **93.0** | **92.7** |
+
+Recall % (Fist / FlatHand / Dislike / Like / Love / CrossHands / BreakTime): ST-only 76.2 / 11.1 / 8.1 / 85.4 / 97.7 / 100 / 99.0 ·
+E5 100 / 100 / **69.6** / **81.4** / 100 / 100 / 100 · singles mean 97.2 / 100 / 51.4 / 74.6 / 100 / 100 / 100.
+E5 top confusions: Dislike→FlatHand 124, Like→Dislike 112, Dislike→Fist 46, Dislike→Like 13. **Errors sit in two takes:** Dislike take 1
+39 % (take 2 100 %), Like take 2 63 % (take 1 100 %); the other 12 takes are 100 %. Voting does not help (92.7 vs 93.0) — errors come in runs.
+
+**Board.** Board vs PC: **4,219 / 4,219** same class, 0 gate mismatches, max |prob diff| 7.4e-07. Per-frame work over all 4,219 frames:
+sensor 13,255.1 ± 0.3 µs, preprocess 125.2 ± 3.1, inference 15,822.0 ± 18.2 (max 15,911), decision 2.1, **total 29,204 ± 18 µs, p99 29,274,
+max 29,295, 0 frames > 33,000** → closes the "single-frame worst case" item (§5.1n). Inference with a hand present is ~100 µs (0.7 %) shorter
+than in the §5.1n LAT run (head in view) — content-dependent, as noted there; cause still unknown.
+
+**Pre-registered predictions:** B1 (singles' mean Like > 50 %) 74.6 ✅ · B2 (E5 ≥ 85 %) 93.0 ✅ · B3 (E5 ≥ singles) +4.0 pp ✅ ·
+B4 (E5 − ST-only ≥ 10 pp) +24.8 ✅ · B5 (board = PC 100 %) ✅ · B6 (board accuracy = PC) ✅ · B7 (mean 29.3 ± 0.1 ms, max ≤ 30.0, none
+> 33) ✅ (mean 29.20 ms — inside the band by 4 µs). Decision rule: Like ≥ 30 % → **5.5c is not triggered**.
+
+**Hand position (centroid row | col, phase56 vs phase4 main set 9 Oct):** Fist 4.35|2.77 vs 4.06|2.61 · FlatHand 3.52|2.57 vs 3.45|2.43 ·
+Dislike 4.07|2.43 vs 3.94|**3.48** · **Like 4.50|2.71 vs 3.55|2.42** · Love 2.59|3.42 vs 2.55|3.49 · CrossHands 3.67|3.36 vs 3.28|3.47 ·
+BreakTime 2.98|3.37 vs 3.14|3.57. Like moved **+0.95 row toward ST's range** (4.64–5.29); Dislike moved −1.05 column. **Two explanations are
+confounded and cannot be separated with these data:** (a) a different seating (board at arm's length, no leaning — adopted today after the
+head-in-view episode, §5.1n); (b) Chin had watched live E5 predictions earlier the same day (§5.1m) and knew about the Like/Dislike position
+problem. Like's improvement (23.1 % in LOSO → 81.4 % here) may therefore partly reflect hand placement, not only the model; Dislike's drop
+coincides with its column shift. **Thesis wording:** report 93.0 % with these two caveats, n = 1 subject, one session, two takes per
+posture; it is "a known user on a new day", not a new user (LOSO 85.3 % stays the new-user figure).
 
 ## 5.2 Dynamic-gesture datasets — what exists
 
@@ -2515,7 +2589,7 @@ extracting and re-running the analysis).
 |---|---|
 | Final training: arm B on all 6 subjects × 5 seeds, **models saved** | ✅ 20 Oct 2026, `results_phase55_final\`, commits `e1f08ee`/`b0bcc01` |
 | 5.5b pre-registration: rule for choosing 1 of 5 final models, or a seed ensemble | ✅ written §5.1l (E5 if it fits the board, else seed 42) |
-| Phase 5.6 new-day test set `data\phase56` (never for training) | ⬜ not collected |
+| Phase 5.6 new-day test set `data\phase56` (never for training) | ✅ User 5 (§5.1p, E5 93.0 %); ⬜ User 6 |
 | X-CUBE-AI conversion + on-board timing of the final model; compare a `padding="valid"` variant (D2) | ✅ E5 deployed 26 Oct (§5.1n: 29.3 ms per frame, 203/203 board vs PC); D2 `padding="valid"` / `-O2` comparison ⬜ |
 | A5 Love edge/centre live test with the new model | ⬜ |
 | 5.5c (round 2) pre-registration: re-centring / metric-size normalisation, `padding="valid"`, recomputed constants — each needs firmware parity | ⬜ candidates only |
@@ -2528,7 +2602,7 @@ extracting and re-running the analysis).
 | Flash 111.89 KiB (analyze report) vs 112.61 KiB (CubeMX panel) for E5 | ⬜ unexplained, 0.72 KiB; settle from the build size in step 2.4 |
 | Stray `53L8A1_SimpleRanging\Inc\my_tof.c` (not compiled) — compare with `STM32CubeIDE\Application\User\my_tof.c`, then delete | ⬜ |
 | `collect_own_data.py` with `Y,` lines present (`MY_TOF_PRED_LINE = 1`) — check before `data\phase56`, or build with 0 | ⬜ `[ยังไม่ได้ตรวจ]` |
-| Single-frame worst-case per-frame work (LAT lines are 30-frame means) | ⬜ optional; margin 3.7 ms vs ±35 µs spread |
+| Single-frame worst-case per-frame work | ✅ 26 Oct: max 29,295 µs over 4,219 frames (§5.1p) |
 | **Reminder (Chin's explicit request, 20 Oct 2026):** when the project ends — or when thesis/defence wrap-up starts — remind Chin, even if he forgets, to build a **reusable skill** capturing every good working method of this project, from §9, the project memory's learnings and preferences | ⬜ at project end |
 
 
@@ -3119,3 +3193,7 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *Last updated: 2026-10-26 · **Step 2.3 done** (§5.1m): E5 converted with X-CUBE-AI 10.2.1 — 22,556 params, 73,762 MACC, Flash 111.89 KiB, RAM 11.21 KiB; desktop validation on 200 real board-check frames 200/200, rmse 1.4e-08; code generated. Timing prediction for step 2.4 on record (≈ 29–30 ms total). Live PC demo with E5 by both subjects (anecdotal) and the Phase 5.6 contamination caveat recorded. Progress report 3 finished. Correction log now 60 entries (#59–#60). Next: step 2.4 on the board.*
 
 *Last updated: 2026-10-26 (evening) · **Step 2.4 done — E5 deployed** (§5.1n): firmware 247.4 KiB Flash / 26.6 KiB RAM; per-frame work 29.3 ± 0.04 ms (inference 15.9 ms ≈ 5 × Phase 3, 216 ns/MACC); board vs PC 203/203 with the new `MY_TOF_PRED_LINE` firmware switch and `pc_tools\compare_board_pc.py` (preprocessing via `st_dataset`). Head-in-FoV episode and `-O0` build recorded. Correction log now 62 entries (#61–#62). Next: commit, A5 Love edge/centre, Phase 5.6.*
+*2026-10-26 18:00 addendum: step 2.4 commit `84bfea1` pushed.*
+*2026-10-26 ≈18:35 addendum: §5.1o (Phase 5.6 amendment A11, board-side logging) pre-registered before any phase56 data.*
+
+*Last updated: 2026-10-26 (night) · **Phase 5.6 User 5 done** (§5.1o amendment, §5.1p): E5 93.0 % per-frame on the new-day set, measured on the board itself (= PC, 4,219/4,219); ST-only 68.2 %, singles 89.0 ± 3.3 %; per-frame work max 29.3 ms; B1–B7 hold; 5.5c not triggered; hand-position shift caveat recorded. Next: commit, User 6 Phase 5.6, A5.*
