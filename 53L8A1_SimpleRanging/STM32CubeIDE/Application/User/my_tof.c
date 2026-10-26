@@ -1,6 +1,11 @@
 /**
  * my_tof.c
  * อ่านข้อมูลจากเซ็นเซอร์ ToF (VL53L8CX) เข้าหน่วยความจำ MCU แล้วส่งออก UART
+ *
+ * แก้ไข 26 ต.ค. 2026 (Phase 5.5b ขั้น 2.4 ข้อ 7): เพิ่มสวิตช์ MY_TOF_PRED_LINE
+ *   = พิมพ์บรรทัด Y ทุกเฟรม (ผลทายของบอร์ด + ความน่าจะเป็น 7 ค่า) เพื่อให้ PC
+ *     เทียบกับ E5 บนคอมพิวเตอร์ทีละเฟรม (pc_tools/compare_board_pc.py)
+ *   ส่วนอื่นของไฟล์ไม่เปลี่ยน
  */
 
 #include "my_tof.h"
@@ -28,6 +33,19 @@ extern void *VL53L8A1_RANGING_SENSOR_CompObj[];
 #define MY_TOF_TIMING_MODE    0
 #define MY_TOF_FAST_READ     1
 #define MY_TOF_DELAY_US      0
+
+/* ===== สวิตช์พิมพ์ผลทายทุกเฟรม (เพิ่ม 26 ต.ค. 2026) =====
+   1 = ทุกเฟรมพิมพ์  Y,<เฟรม>,<ท่า>,<p0>,...,<p6>   (ท่า = 0..6 ตามลำดับ g_class_names)
+       เฟรมที่ไม่ได้ทาย (มืออยู่นอก 100–400 มม.) พิมพ์  Y,<เฟรม>,-1
+       เฟรมที่ ai_network_run ล้มเหลว               พิมพ์  Y,<เฟรม>,-2
+   0 = ไม่พิมพ์ (ทำงานเหมือนเฟิร์มแวร์ก่อนหน้าทุกอย่าง)
+   ใช้คู่กับ MY_TOF_TIMING_MODE = 0 เท่านั้น (ต้องมีบรรทัด F/S/G ของเฟรมเดียวกันให้ PC เทียบ)
+   บรรทัด Y พิมพ์ "หลัง" จุดวัดเวลา t3 จึงไม่ทำให้ตัวเลข LAT เปลี่ยน */
+#define MY_TOF_PRED_LINE     1
+
+#if MY_TOF_PRED_LINE && MY_TOF_TIMING_MODE
+  #error "MY_TOF_PRED_LINE ต้องใช้กับ MY_TOF_TIMING_MODE = 0 (โหมดส่งข้อมูล F/S/G)"
+#endif
 
 #if MY_TOF_USE_4X4
   #define MY_TOF_STREAM_STEP   1U
@@ -386,9 +404,10 @@ uint8_t my_ai_init(void)
     }
 
     printf("MY_AI: network ready (in=%d floats, out=%d classes, "
-           "activations=%d bytes, vote_window=%d, lat_window=%d)\r\n",
+           "activations=%d bytes, vote_window=%d, lat_window=%d, pred_line=%d)\r\n",
            AI_NETWORK_IN_1_SIZE, AI_NETWORK_OUT_1_SIZE,
-           AI_NETWORK_DATA_ACTIVATIONS_SIZE, MY_AI_VOTE_WINDOW, MY_LAT_WINDOW);
+           AI_NETWORK_DATA_ACTIVATIONS_SIZE, MY_AI_VOTE_WINDOW, MY_LAT_WINDOW,
+           MY_TOF_PRED_LINE);
     return 0;
 }
 
@@ -417,6 +436,10 @@ void my_tof_infer(void)
     {
         g_pred_class = -1;
         g_pred_conf  = 0.0f;
+#if MY_TOF_PRED_LINE
+        /* ไม่ได้ทาย: ให้ PC ตรวจว่า Python ก็ตัดสินว่า "นอกช่วง" ตรงกัน */
+        printf("Y,%lu,-1\r\n", (unsigned long)g_frame_count);
+#endif
     }
     else
     {
@@ -457,6 +480,9 @@ void my_tof_infer(void)
                        (int)err.type, (int)err.code);
                 g_pred_class = -1;
                 g_pred_conf  = 0.0f;
+#if MY_TOF_PRED_LINE
+                printf("Y,%lu,-2\r\n", (unsigned long)g_frame_count);
+#endif
             }
             else
             {
@@ -503,6 +529,18 @@ void my_tof_infer(void)
                     g_lat_sum_inf_us    = 0;
                     g_lat_sum_dec_us    = 0;
                 }
+
+#if MY_TOF_PRED_LINE
+                /* ผลทายของเฟรมนี้ ใช้เลขเฟรมเดียวกับบรรทัด F/S/G ที่ my_tof_send_frame()
+                   เพิ่งพิมพ์ (main.c: read_frame -> send_frame -> infer)
+                   %.6f พิมพ์ได้เพราะลิงก์ด้วย -u _printf_float (เปิดไว้ตั้งแต่ Phase 3) */
+                printf("Y,%lu,%d", (unsigned long)g_frame_count, (int)best_idx);
+                for (i = 0; i < AI_NETWORK_OUT_1_SIZE; i++)
+                {
+                    printf(",%.6f", (double)g_ai_out[i]);
+                }
+                printf("\r\n");
+#endif
             }
         }
     }

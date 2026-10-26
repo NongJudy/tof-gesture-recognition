@@ -31,7 +31,7 @@ setup or a conversation the assistant cannot observe directly
 
 ---
 
-## QUICK STATUS — as of 20 Oct 2026 (night)
+## QUICK STATUS — as of 26 Oct 2026
 
 | Item | State |
 |---|---|
@@ -43,14 +43,17 @@ setup or a conversation the assistant cannot observe directly
 | **Phase 5.5 result (20 Oct 2026, 90 models, commit `5c724d9`)** | Selection rule picks **arm B** (subject-balanced weights): ST-fold mean **B 85.61** vs A 84.17 vs C 81.05 %; B − A over 6 subjects +1.35 pp, Wilcoxon W = 5, p = 0.31 → **B not shown better than A**, chosen by the pre-registered rule. Arm B on our subjects: User 5 **82.8 ± 5.2 %**, User 6 **86.6 ± 6.0 %** (5 seeds). Q1 Q2 Q4 Q5 hold (Q5 by 0.11 pp), **Q3 fails** (arm A User 5 Like 3.2 %; arm B 23.1 %). Full record §5.1i-R |
 | Error analysis of H8 (20 Oct) | hand position (vertical offset toward row 0, both subjects) is the best-supported cause of take-level failures, ρ = −0.58 over 28 takes, descriptive (§5.1j; full text `claude/ERROR_ANALYSIS_H8_2026-10-20.md`) |
 | **Phase 5.5 final models (20 Oct 2026 21:18–21:32)** | arm B, all 6 subjects (36,409 frames), seeds 42–46 → `results_phase55_final\` (5 `.keras`, `manifest.json` with sha256), commits `e1f08ee` + `b0bcc01`. No accuracy (no held-out subject). Deployment rule + new-day test pre-registered §5.1l |
-| **Next session (as of 20 Oct 2026 22:05)** | (1) Build E5 (mean of 5 softmax outputs) → `.tflite` → X-CUBE-AI → board; measure total per-frame work (≤ 33 ms?), Flash/RAM, 200-sample board-vs-PC agreement; fall back to seed 42 per §5.1l → (2) collect `data\phase56` on a new day (User 5 first) → (3) evaluate per §5.1l → (4) Love edge/centre live check → (5) decide on 5.5c. Progress report 3 in planning. Open list §8.6 |
+| **E5 built (20 Oct 2026 22:14, `pc_tools\build_ensemble.py`, commit `3fb36f0`)** | E5 = 22,555 params; E5 == mean of the 5 models (max |diff| 6.0e-08 over 8,448 frames); `E5.tflite` 100.9 KiB and fallback `seed42.tflite` 21.1 KiB, both via `from_keras_model`, same class as `.keras` on 2,000/2,000 frames (batch 1, max |diff| ≤ 3.0e-07); 200-frame board-check set + PC outputs saved in `results_phase55_final\deploy\`. No accuracy computed (check data is training data) |
+| **E5 converted with X-CUBE-AI (26 Oct 2026, step 2.3, §5.1m)** | X-CUBE-AI 10.2.1 / ST Edge AI Core v2.2.0, TFLite, compression none, optimisation balanced, network name `network`, target stm32f4. Params 22,556 (= 5 × 4,511 + 1 averaging constant), MACC 73,762 (= 5 × 14,744 + 42), weights 88.16 KiB, Flash total 111.89 KiB, RAM total 11.21 KiB (activations 1.70 KiB). Validate on desktop: random data 10/10 (all one class — weak); **real data `board_check_inputs_200.npy` vs `board_check_E5_probs_200.npy`: 200/200 same class, all 7 classes (28–29 each), rmse 1.4e-08**. Code generated 15:50 into `ai_conversion_project\tof_ai_conversion\X-CUBE-AI\App\` (8 files). **Not yet on the board** — no on-board timing, no board-vs-PC check |
+| **E5 deployed on the board (26 Oct 2026, step 2.4, §5.1n)** | All three §5.1l conditions met → **E5 is the deployed model**. Firmware build 0 errors / 0 warnings: Flash 247.4 KiB (48.3 %), RAM 26.6 KiB (20.8 %) by `arm-none-eabi-size`. Boot line `MY_AI: ... activations=1736 bytes` (= E5). **Per-frame work 29,306 ± 36 µs** (22 LAT windows × 30 = 660 inferences; inference 15,925 ± 35 µs; max window 29,324 ≤ 33,000). **Board vs PC 203/203** same class, 0 / 675 range-gate mismatches, max |prob diff| 1.1e-06 (`pc_tools\compare_board_pc.py`, live hand, all 7 postures). Firmware now has `MY_TOF_PRED_LINE = 1` (prints `Y,` lines) |
+| **Next session (as of 26 Oct 2026, evening)** | Commit step 2.4 (firmware `X-CUBE-AI\App` + `my_tof.c`, `pc_tools\compare_board_pc.py`, `results_phase55_final\board_check_live\`, this file). Then: **A5 Love edge/centre live test** (§5.1l, 5 + 5 trials, order `random.seed(55)`), and **Phase 5.6** `data\phase56` collection — first check that `collect_own_data.py` ignores the new `Y,` lines or set `MY_TOF_PRED_LINE = 0` `[ยังไม่ได้ตรวจ]`; no live predictions shown during collection (§5.1m caveat) |
 | Phase 5.5a (shift augmentation) | **negative**: −12.1 pp vs retrained baseline, paired over 3 seeds (§5.1g-R); not adopted |
 | Phase 4 data collection (`collect_own_data.py` **v5**) | ✅ **Done.** Chin (User 5) 42/42: main 14 (9 Oct) + extra 14 (9 Oct) + extra 14 (15 Oct, v5). Friend (User 6) 42/42: main 14 (14 Oct, v4) + extra 28 in one sitting (A10), file timestamps 18 Oct 2026 21:56–22:16 `[ตรวจแล้ว: xcopy listing 20 Oct]`; his first 14 extras (15 Oct) stay quarantined in `data\phase4_rejected` (A9, §9 #53). Manifest check of the 28 extras: missing frames 0, out-of-window 0, with warning 0 `[STUDENT]` (output pasted 20 Oct). `data\phase4_extra` holds 56 npz (28 + 28) + manifest = 57 files; `data\phase4` 28 npz + manifest = 29 files. Local backups on Chin's PC: `C:\Users\gaming\Documents\backup_phase4_20261020\phase4` (29) and `\phase4_extra` (57). Copy to Drive/USB: **not confirmed** |
 | Collection protocol | guided arming: hand must hold inside **220–320 mm for 3 s** before recording starts; take discarded if the hand leaves the window for **8 consecutive frames**; no frame-level filtering (§5.1e-A8) |
 | Pre-registration commit | Phase 5.5 pre-registration (§5.1i) written 14 Oct 22:55 **before** any friend extra data existed. Chin said "push แล้ว" on 15 Oct 00:31 `[STUDENT]` after being told to commit `PROJECT_FACTS.md`, `pc_tools\train_phase55.py`, `collect_own_data.py` (v5) and `quarantine_takes.py` and to leave out `results_phase55_SMOKE_TEST` and all `User6` data; the assistant did not check the remote (not needed, Rule 12). Friend's **main** set (collected 14 Oct, before the push) was first evaluated on 20 Oct 2026 (§5.1e-F) |
 | Collection volume | 2 takes/posture/subject in `data\phase4` (H8 test set, as registered) **+ 4 extra takes/posture** in `data\phase4_extra` for Phase 5.5 training only. Chin's extras: **2 + 2 over two different days** (9 and 15 Oct, §5.1e-A7). Friend's extras: **one sitting** (Chin's decision 16 Oct, §5.1e-A10) — both subjects end with 3 × 14 = 42 takes |
 | Subject pool | **hard limit n = 2 (Chin + 1 friend)**, stated by Chin 24 Sep 2026 — Phase 5 as originally planned (4–6 people) cannot happen (§8) |
-| Deployed model file | `results_phase2_final\production_model.keras` (§5.1d-F) |
+| Deployed model file | **E5** (`results_phase55_final\deploy\E5.tflite` → X-CUBE-AI → board, since 26 Oct 2026, §5.1n); PC copy `E5.keras` sha256 `1a2268d3b5ab4fe7…`. Before 26 Oct: `results_phase2_final\production_model.keras` (§5.1d-F), files backed up in `C:\Users\gaming\Documents\backup_App_phase3_20261026\` |
 | Logic-analyser probes | **still attached** as of 28 Sep 2026 `[STUDENT]` — not removed (§8, corrects the 11 Sep note) |
 | Advisor message 28 Sep (ADC + logic analyser example) | **FYI only, not a task** — advisor's own reply 29 Sep 2026 (§7) |
 
@@ -2038,6 +2041,143 @@ Descriptive (n = 1 subject).
 agreement, the new-day accuracy table, and the Love live check. If B1 fails badly (Like < 30 %), round 2 (5.5c, re-centring) is the
 next pre-registration, evaluated by the same 6-subject LOSO and then on `data\phase56`.
 
+### 5.1m Step 2.3 result — X-CUBE-AI conversion of E5 (26 Oct 2026, 15:12–15:54) `[MEASURED]`
+
+**Tool:** STM32CubeMX with X-CUBE-AI **10.2.1** (runtime lib v10.2.0, `NetworkRuntime1020_CM4_GCC.a`), which calls
+**ST Edge AI Core v2.2.0** (`stedgeai.exe`). Project: the separate conversion project
+`C:\Users\gaming\Documents\GitHub\tof-gesture-recognition\ai_conversion_project\tof_ai_conversion\tof_ai_conversion.ioc`
+(STM32F411RETx / NUCLEO-F411RE; located with `dir C:\Users\gaming\*.ioc /s /b`). No migration dialog appeared. A
+"Non optimal boards parameters … automatically fix?" dialog was answered **No** (this project is never flashed; change one thing only).
+Model file: `results_phase55_final\deploy\E5.tflite`. Settings left exactly as found from Phase 3: name `network`, TFLite,
+STM32Cube.AI MCU runtime, compression **None**, optimisation **Balanced**. The model previously in the project was the Phase 3
+`production_model.tflite` — `.ai\network_production_model.tflite_c_info.json` dated 21 Sep 2026 `[ตรวจแล้ว: dir 26 Oct]`; its
+CubeMX summary: RAM 1.48 KiB, Flash 32.39 KiB, 14,744 MACC `[ตรวจแล้ว: screenshot]`.
+
+**Analyze** (42.1 s; `network_analyze_report.txt`, console text pasted by Chin) `[ตรวจแล้ว]`:
+
+| Item | Value | Note |
+|---|---|---|
+| model hash | `0xb3193840e74ed083a5f621d5790b9e6a` | identifies the converted file |
+| params | **22,556** | = 5 × 4,511 + 1 (the ÷5 constant of the averaging layer); Keras counts 22,555 |
+| input / output | f32(1×8×8×2) 512 B / f32(1×7) 28 B, both inside activations | |
+| MACC | **73,762** | each branch 14,744 (conv 9,224 + relu 512 + pool 512 + dense 4,128 + 32 + dense 231 + softmax 105) = the Phase 3 model's 14,744 exactly; + 4 adds 28 + scale 14 |
+| weights (ro) | 90,276 B = **88.16 KiB** | +52 B (+0.1 %) vs the float model |
+| activations (rw) | 1,736 B = 1.70 KiB | |
+| runtime library | Flash 24,300 B (23.73 KiB), RAM 9,740 B (9.51 KiB) | |
+| **total** | **Flash 114,576 B = 111.89 KiB** of 512 KiB · **RAM 11,476 B = 11.21 KiB** of 128 KiB | CubeMX's panel shows 112.61 KiB Flash — 0.72 KiB gap **not explained** `[ยังไม่ได้ตรวจ]`; the build's own size output (step 2.4) is authoritative |
+| compute split | Conv ≈ 69 % of MACC (5 × 10,248 ops), Dense ≈ 28 % | where to cut if speed is ever needed |
+
+Prediction written before Analyze (Claude): Flash 88–100 KiB. Weights matched (88.16); **total missed** (111.89) because the
+runtime library was left out of the estimate. Conclusion unchanged: fits easily.
+
+**Validate on desktop** (the C model compiled for the PC and compared with the reference; not the board):
+
+| Run | Inputs | Reference | n | acc | rmse | Class coverage |
+|---|---|---|---|---|---|---|
+| 1 | random, seed 42, range (0, 1) | the `.tflite` itself | 10 | 100 % | 6e-09 | **all 10 in class 1 (FlatHand)** — weak test |
+| **2** | `board_check_inputs_200.npy` (200, 8, 8, 2) f32, range −0.62…18.90 | `board_check_E5_probs_200.npy` (PC/tflite outputs, §5.1l build) | **200** | **100 %** | **1.4e-08** (C vs our file) · 6e-09 (tflite vs our file) · 1.5e-08 (C vs tflite) | 28 / 29 / 29 / 28 / 29 / 29 / 28 — all 7 classes |
+
+Run 2 shows the C code reproduces the PC model on real frames of every class. **It is agreement, not accuracy** — the 200 frames
+come from `data\phase4`, which is training data, and the reference is the model's own output. The 0.061–0.075 ms "duration" in these
+logs is the **PC's** CPU time (AMD), never to be quoted as board latency (Rule 5).
+
+**Generate** (15:50): success dialog; `.ioc` saved. New files, all dated 26 Oct 2026 15:50, in
+`ai_conversion_project\tof_ai_conversion\X-CUBE-AI\App\`: `network.c` 64,485 B · `network.h` 9,347 · `network_config.h` 1,553 ·
+`network_data.c` 3,516 · `network_data.h` 2,331 · `network_data_params.c` 246,738 · `network_data_params.h` 1,765 ·
+`network_generate_report.txt` 60,174. `.ai\network_E5.tflite_c_info.json` 80,863 B (Phase 3's: 18,404 B). Runtime library
+`Middlewares\ST\AI\Lib\NetworkRuntime1020_CM4_GCC.a` unchanged (20 Sep 2026).
+
+**Prediction for step 2.4, written before any on-board measurement (Claude, 26 Oct 2026):** E5 is the Phase 3 network run five times,
+so inference ≈ 5 × 3.197 ≈ **16 ms**; total per-frame work ≈ 16.58 − 3.20 + 16 ≈ **29–30 ms**, i.e. **≤ 33 ms → E5 deployable, with
+little margin**. Caveats: 3.197 ms was measured on `production_model` at HSE (§3.1, §9 #40) — same per-branch architecture, so the
+5× scaling is reasonable but not exact (layer kernels, cache, call overhead). If the measured total exceeds 33 ms, §5.1l already says:
+deploy `seed42.tflite` instead — no new decision.
+
+**Live demo observation, 26 Oct 2026 (PC only, before conversion) `[STUDENT]`:** Chin (User 5) and the friend (User 6) each tried
+`pc_tools\live_demo.py` with `E5.keras` and report that every posture was predicted correctly, including User 5's Like, Dislike and Love.
+Not counted (no n, no per-posture tally) → anecdotal, not a result. Both are **known users** (in E5's training data), so this does not
+contradict the LOSO Like 23.1 % (§5.1i-R, model had not seen User 5). Useful only as: same users, a different day, a new hand placement.
+**Caveat for Phase 5.6:** both subjects have now watched live E5 predictions before `data\phase56` exists; A2's reason (no auto-correcting
+toward the model) is weakened for both. Mitigation: no live predictions during collection; compare phase56 hand centroids with
+phase4's (§5.1j method) to see whether hand placement moved; disclose in the thesis.
+
+**Screenshots taken during step 2.3 (Chin's Win+PrtScn, default names `Screenshot (n).png`, to be zipped at report time):**
+CubeMX opened on `tof_ai_conversion.ioc`; X-CUBE-AI panel with the old model (14,744 MACC) + the "Non optimal" dialog; same panel after
+"No"; `network` tab settings (old path); `network` tab with `E5.tflite`; Analyze in progress (20 %, shows the `stedgeai` command);
+**Analyze result (100 %, ⭐)**; validation inputs/outputs set to the board-check files; Generate success. The three console texts
+(Analyze, Validate random, **Validate real ⭐**) were pasted as `.txt` and are the stronger evidence.
+
+
+### 5.1n Step 2.4 result — E5 on the board (26 Oct 2026, 16:05–17:46) `[MEASURED]`
+
+**Files.** In the main firmware the model code lives in `53L8A1_SimpleRanging\STM32CubeIDE\X-CUBE-AI\App\` (8 files, Phase 3 versions
+dated 21 Sep 00:06) `[ตรวจแล้ว: dir]`; `STM32CubeIDE\Debug\X-CUBE-AI\App\` holds build objects only. Library: `.cproject` line 68 and
+`Debug\objects.mk` line 8 link `NetworkRuntime1020_CM4_GCC` from `../Middlewares/ST/AI/Lib` (same 10.2.0 runtime as the generated code;
+the file is `lib…`-prefixed, so `dir NetworkRuntime*` does not find it). Old 8 files backed up to
+`C:\Users\gaming\Documents\backup_App_phase3_20261026\`; **all 8** new files copied over (including the generate report, so the folder
+never shows an old report next to new code — §5.1m said 7). The compiled `my_tof.c` is
+`STM32CubeIDE\Application\User\my_tof.c` (`Debug\Application\User\my_tof.d` line 1); **`53L8A1_SimpleRanging\Inc\my_tof.c` is a stray copy
+that is not compiled** — compare and delete later (same family as §2.4's duplicate `live_predict.py`). `main.c` loop:
+`my_tof_read_frame → my_tof_send_frame → my_tof_infer → my_tof_send_prediction` (lines 146–150); `app_tof.c`'s ST demo loop is disabled
+(`main.c` lines 92, 141). `my_tof.c` needed **no change** for E5: buffers use `AI_NETWORK_*` macros, weights `NULL` (§9 #37), class order
+correct (§9 #38), preprocessing = ST rules.
+
+**Build** (Clean + Build, 16:26, 0 errors, 0 warnings): `text 243,340 · data 9,964 · bss 17,252` → **Flash 247.4 KiB (48.3 %)**,
+**RAM 26.6 KiB (20.8 %)** (Phase 3: 166.2 / 18.9 KiB). Prediction 230–250 / 24–30 KiB held. Whether the stack/heap reservation is inside
+these numbers is `[ยังไม่ได้ตรวจ]`; same method as Phase 3, so the comparison holds. **All files are compiled with `-O0`** (Debug
+configuration) — a D2 candidate (§8.5), not changed now (one variable at a time). Device macro still `STM32F401xE` (§9 #36 note).
+
+**On-board check.** Boot: `MY_TOF: init OK (8x8 @ 15 Hz, budget 30 ms, INT/async, … read=direct, status=raw(5=valid), clk=HSE)`,
+`CLK,84000000`, `MY_AI: network ready (in=128 floats, out=7 classes, activations=1736 bytes, …)` — 1,736 B = E5's activations, so the
+board runs E5 `[ตรวจแล้ว: PuTTY screenshot 16:35]`.
+
+**Per-frame timing** (`LAT` lines, DWT, E5, F411RE @ 84 MHz HSE, X-CUBE-AI 10.2.1, `-O0`; log `C:\Users\gaming\Documents\e5_lat_20261026.log`;
+n = 22 windows × 30 inferences):
+
+| Stage | mean ± SD (µs) | min–max of window means | Phase 3 (production_model) |
+|---|---|---|---|
+| sensor read | 13,254 ± 0 | 13,254 | 13,254 |
+| preprocess | 124 ± 2 | 123–128 | 126 |
+| **inference** | **15,925 ± 35** | 15,823–15,940 | 3,197 |
+| decision | 3 ± 1 | 2–6 | 2 |
+| **total** | **29,306 ± 36** | 29,202–**29,324** | 16,580 |
+
+Total ≤ 33,000 µs → condition met, margin 3.7 ms; 44 % of the 66.17 ms frame period. Inference is 4.98 × Phase 3 for 5.00 × the MACC:
+**≈ 216 ns per MACC for both models** → E5 runs exactly as 5 copies of the Phase 3 network. The prediction on record (§5.1m: ≈ 16 ms,
+≈ 29–30 ms) held. AI is now 54 % of per-frame work (sensor 45 %); in Phase 3 it was 19 % (sensor 80 %). Limits: each LAT line is a
+30-frame mean, so the single-frame maximum is not known `[ยังไม่ได้ตรวจ]` (spread ±35 µs vs 3,676 µs margin); in the last windows the
+frame gap grew (47, 106 frames per 30 inferences) and inference fell by ~115 µs — inference time depends slightly (< 1 %) on the input,
+cause unknown `[ยังไม่ได้ตรวจ]`.
+
+**Field-of-view episode.** During the timing run 3 corner zones read 240–280 mm with no hand: Chin's own **head** (board face-up in front
+of him, he leaned over it) `[STUDENT]`. It made the board infer continuously (harmless for timing — cost is content-independent) but would
+corrupt hand input. With the board at arm's length and no leaning, 13 frames read 1,469–2,001 mm in every zone. Protocol for demos/tests:
+board at arm's length, do not lean over it. *Hypothesis only:* body/head position relative to the board may relate to the shared row-0
+offset of both subjects (§5.1j "setup geometry") — not tested.
+
+**Board-vs-PC agreement (the §5.1l 200/200 condition) — method B.** The pre-planned `board_check_inputs_200.npy` route (method A) would feed
+already-preprocessed frames to the board and so would **not** test the firmware's preprocessing, the riskiest part. Method B: new firmware
+switch **`MY_TOF_PRED_LINE`** in `my_tof.c` (1 = every frame prints `Y,<frame>,<class 0–6>,<p0..p6 %.6f>`, or `Y,<frame>,-1` when the hand is
+outside 100–400 mm, `Y,<frame>,-2` on a run error; printed after t3 so LAT is unchanged; `#error` if combined with `MY_TOF_TIMING_MODE = 1`;
+boot line shows `pred_line=1`). Old file backed up as `backup_App_phase3_20261026\my_tof_before_predline.c`. New script
+**`pc_tools\compare_board_pc.py`**: pairs `F/S/G/Y` by frame number, re-preprocesses the raw frame with **`st_dataset._preprocess_session`**
+(the training function itself), predicts with `E5.keras`, compares frame by frame; guided 7 postures × 29 predicted frames. Pass rule fixed
+before the run: ≥ 200 compared, 0 class mismatches, 0 range-gate mismatches, 0 run errors. Tested beforehand on a simulated board (PASS;
+6 injected mismatches all caught; `pred_line=0` stops the run).
+
+**Result, run `results_phase55_final\board_check_live\run_20261026_174016\`** (report.txt, frames.csv, raw_serial.log), `E5.keras` sha256
+`1a2268d3b5ab4fe7…`: frames logged 675 (18 incomplete dropped); **compared 203, class agree 203/203; range-gate mismatch 0 of 675; run
+errors 0; max |prob diff| 1.10e-06, median 4.17e-07** (≈ the 6-decimal print resolution) → **PASS**. Prediction (203/203, 0 gate
+mismatches, ≤ 1e-5) held. Boot lines were not captured in this run (RESET pressed after the 20 s window); firmware identity rests on the
+16:35 / 17:15 PuTTY screenshots (`activations=1736`, `pred_line=1`). Chin = operator, one session, frames correlated within a posture —
+this is an agreement check, **not accuracy**. The board-predicted class per prompted posture (Fist 26/29, FlatHand 28, Dislike 28, Like 23,
+Love 21, CrossHands 13, BreakTime 29) came from frames with no hold window, a known user, and a subject who had seen live predictions —
+**must not be reported as accuracy**; `data\phase56` is the place for that.
+
+**Decision (§5.1l rule, applied as written):** conversion and build ✅ · total per-frame work ≤ 33 ms ✅ (29.3 ms) · board vs PC 200/200 ✅
+(203/203) → **E5 deployed**. `seed42.tflite` not needed.
+
+
 ## 5.2 Dynamic-gesture datasets — what exists
 
 | Source | Gestures | Sensor | Data available? |
@@ -2376,7 +2516,7 @@ extracting and re-running the analysis).
 | Final training: arm B on all 6 subjects × 5 seeds, **models saved** | ✅ 20 Oct 2026, `results_phase55_final\`, commits `e1f08ee`/`b0bcc01` |
 | 5.5b pre-registration: rule for choosing 1 of 5 final models, or a seed ensemble | ✅ written §5.1l (E5 if it fits the board, else seed 42) |
 | Phase 5.6 new-day test set `data\phase56` (never for training) | ⬜ not collected |
-| X-CUBE-AI conversion + on-board timing of the final model; compare a `padding="valid"` variant (D2) | ⬜ |
+| X-CUBE-AI conversion + on-board timing of the final model; compare a `padding="valid"` variant (D2) | ✅ E5 deployed 26 Oct (§5.1n: 29.3 ms per frame, 203/203 board vs PC); D2 `padding="valid"` / `-O2` comparison ⬜ |
 | A5 Love edge/centre live test with the new model | ⬜ |
 | 5.5c (round 2) pre-registration: re-centring / metric-size normalisation, `padding="valid"`, recomputed constants — each needs firmware parity | ⬜ candidates only |
 | Split-fixed ST-only model on User 6, several seeds (clean baseline for §5.1i-R's User 6 comparison) | ⬜ |
@@ -2384,7 +2524,11 @@ extracting and re-running the analysis).
 | Is row 0 physically "up" on our mount? | ⬜ `[ยังไม่ได้ตรวจ]` |
 | Disclose the quarantined friend takes (A9) in the thesis | ⬜ writing |
 | Copy `backup_phase4_20261020` to Drive/USB | ⬜ not confirmed; `phase4_for_claude.zip` (Documents) may be deleted |
-| Progress report 3 (sections from 7): due date unknown; check whether report 2 contains "79.73" (now superseded by 85.28) | ⬜ |
+| Progress report 3 (sections 7–12) | ✅ finished by 25 Oct 2026 `[STUDENT]` (Word; Thai line-breaking fixed; 2-take sets called ชุดหลัก/ชุดเพิ่มเติม, §9 #60) |
+| Flash 111.89 KiB (analyze report) vs 112.61 KiB (CubeMX panel) for E5 | ⬜ unexplained, 0.72 KiB; settle from the build size in step 2.4 |
+| Stray `53L8A1_SimpleRanging\Inc\my_tof.c` (not compiled) — compare with `STM32CubeIDE\Application\User\my_tof.c`, then delete | ⬜ |
+| `collect_own_data.py` with `Y,` lines present (`MY_TOF_PRED_LINE = 1`) — check before `data\phase56`, or build with 0 | ⬜ `[ยังไม่ได้ตรวจ]` |
+| Single-frame worst-case per-frame work (LAT lines are 30-frame means) | ⬜ optional; margin 3.7 ms vs ±35 µs spread |
 | **Reminder (Chin's explicit request, 20 Oct 2026):** when the project ends — or when thesis/defence wrap-up starts — remind Chin, even if he forgets, to build a **reusable skill** capturing every good working method of this project, from §9, the project memory's learnings and preferences | ⬜ at project end |
 
 
@@ -2689,6 +2833,10 @@ are not logged in this file — it lives in the repo.
 | 56 | Told Chin (20 Oct) "the model has 2,752 parameters" as if it were ours | 2,752 is ST's published 8-class model (§5.1). Our `build_model` (`padding="same"`) has **4,511** parameters for 7 classes `[คำนวณ จากโค้ด]`; 2,752 matches `padding="valid"` (152 + 2,336 + 264). So "exact same architecture as ST" (§5.1, `train_st_cnn2d.py` docstring) is unverified; ST's padding was never recorded. Noticed while explaining "parameters" to Chin from the code. Whether it explains 3.197 vs 1.46 ms (D2): untested | Quoted a number from §5.1 for the wrong model (same family as #40) and the architecture note carried no padding / parameter-count check |
 | 57 | Gave `cd /d C:\...` (20 Oct) as "the" command after saying "open cmd" | Chin opened **PowerShell**, where `/d` is rejected; the following `git add/commit/push` ran outside the repo and did nothing (no harm). Fix: `cd "C:\..."` works in both shells | Wrote a shell-specific command without checking which shell the student would use — give commands valid in both cmd and PowerShell |
 | 58 | Estimated 8–30 h for the 90-model run before any model had finished | Measured: started 17:12 (TensorFlow log timestamp), report pasted 20:38 → at most ≈ 3 h 26 min on Chin's CPU; the script's own running estimate was of that order | Gave a duration without a measurement — label guesses as `[ประมาณ]` and replace them with the first measured rate |
+| 59 | Told Chin (25 Oct) that his Like would "still fail" with E5, quoting the 23.1 % Like recall | 23.1 % is the LOSO fold in which the model had **never seen User 5** (§5.1i-R); E5 is trained on User 5's own 12,664 frames, so that number says nothing about E5 on Chin. Chin's live test on 26 Oct (anecdotal) was all correct | Quoted a figure without the condition it was measured under — same family as #40 and #56 (Rule 5: a number belongs to a model **and** a test condition) |
+| 60 | Draft progress report 3 called the 2-take sets "ชุดทดสอบ (ใช้ทดสอบเท่านั้น)" | Both `data\phase4` sets are in the Phase 5.5 final training data (§5.1e-A4, §5.1l); only `data\phase56` is test-only. Renamed ชุดหลัก/ชุดเพิ่มเติม and sections 7.3, 9.1, 11.1 rewritten before submission | Kept the registration-time role of a data set after its role changed — check each data set's **current** use before naming it |
+| 61 | Wrote (26 Oct) "the main loop is in `app_tof.c` `[ตรวจแล้ว: build log]`" | The build log shows only that `app_tof.c` is **compiled**; `app_tof.c` is ST's disabled demo and the loop is in `main.c` lines 137–151 | Tagged a conclusion `[ตรวจแล้ว]` when the evidence supported only a weaker statement — the tag must cover the claim, not just the file that was looked at |
+| 62 | Told Chin (26 Oct) "the script `compare_board_pc.py` has been sent" and walked him through saving it, before the file was actually sent | He could not find the file card; sent afterwards | Described an action as done before doing it — send the file first, then write the instructions that refer to it |
 
 **Real finding behind #36 (not an assistant mistake — a genuine project fact):**
 The `53L8A1_SimpleRanging` project's `.ioc` has always been configured for **STM32F401RETx / NUCLEO-F401RE**, while the physical board (confirmed by a photo of the chip marking) is **STM32F411RET6**. Confirmed via the linker script header: *"Linker script for NUCLEO-F401RE Board embedding STM32F401RETx Device... 96KBytes RAM"*. This has been true since the project was first created and was never the assistant's error to log — it predates this conversation.
@@ -2964,3 +3112,10 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *Last updated: 2026-10-20 22:05 · Final arm-B models trained and pushed (`results_phase55_final\`, `e1f08ee`, `b0bcc01`).
 §5.1l pre-registers the deployed model (5-model ensemble E5 if it fits the board, else seed 42) and the Phase 5.6 new-day test set
 `data\phase56` (never for training), with predictions B1–B4 and the Love edge/centre live check. Next: build E5 and convert.*
+
+*Last updated: 2026-10-21 · E5 ensemble built and verified (`3fb36f0`); X-CUBE-AI conversion project located; next = step 2.3 (§5.1l).*
+
+
+*Last updated: 2026-10-26 · **Step 2.3 done** (§5.1m): E5 converted with X-CUBE-AI 10.2.1 — 22,556 params, 73,762 MACC, Flash 111.89 KiB, RAM 11.21 KiB; desktop validation on 200 real board-check frames 200/200, rmse 1.4e-08; code generated. Timing prediction for step 2.4 on record (≈ 29–30 ms total). Live PC demo with E5 by both subjects (anecdotal) and the Phase 5.6 contamination caveat recorded. Progress report 3 finished. Correction log now 60 entries (#59–#60). Next: step 2.4 on the board.*
+
+*Last updated: 2026-10-26 (evening) · **Step 2.4 done — E5 deployed** (§5.1n): firmware 247.4 KiB Flash / 26.6 KiB RAM; per-frame work 29.3 ± 0.04 ms (inference 15.9 ms ≈ 5 × Phase 3, 216 ns/MACC); board vs PC 203/203 with the new `MY_TOF_PRED_LINE` firmware switch and `pc_tools\compare_board_pc.py` (preprocessing via `st_dataset`). Head-in-FoV episode and `-O0` build recorded. Correction log now 62 entries (#61–#62). Next: commit, A5 Love edge/centre, Phase 5.6.*

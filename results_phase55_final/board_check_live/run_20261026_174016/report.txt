@@ -1,0 +1,25 @@
+==================================================================
+  Board vs PC agreement (Phase 5.5b step 2.4 item 7, rule §5.1l)
+==================================================================
+  run at          20261026_174016
+  model           results_phase55_final\deploy\E5.keras  sha256 1a2268d3b5ab4fe7...
+  boot lines      NOT SEEN (board not reset?)
+  frames logged   675  (incomplete frames dropped: 18)
+  compared        203  (both board and PC predicted)
+  class agree     203 / 203
+  gate mismatch   0  (board vs PC disagree on 'hand in 100-400 mm')
+  board run error 0
+  prob |diff|     max 1.10e-06   median 4.17e-07   (board prints 6 decimals)
+
+  Board-predicted class per prompted posture (NOT accuracy — agreement test only):
+    Fist        n= 29  {'Fist': 26, 'FlatHand': 3}
+    FlatHand    n= 29  {'Fist': 1, 'FlatHand': 28}
+    Dislike     n= 29  {'FlatHand': 1, 'Dislike': 28}
+    Like        n= 29  {'FlatHand': 1, 'Dislike': 5, 'Like': 23}
+    Love        n= 29  {'Fist': 3, 'FlatHand': 3, 'Dislike': 2, 'Love': 21}
+    CrossHands  n= 29  {'FlatHand': 11, 'Dislike': 4, 'Love': 1, 'CrossHands': 13}
+    BreakTime   n= 29  {'BreakTime': 29}
+
+  RESULT: PASS  (need >= 200 compared, 0 class / gate / run errors)
+  output: results_phase55_final\board_check_live\run_20261026_174016
+==================================================================

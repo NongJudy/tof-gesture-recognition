@@ -58,3 +58,5 @@ Release/
 ai_conversion_project/ 
 pc_tools/__pycache__/ 
 !53L8A1_SimpleRanging/STM32CubeIDE/Middlewares/ST/AI/Lib/*.a 
+
+*_SMOKE_TEST/
