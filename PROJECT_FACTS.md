@@ -2583,6 +2583,7 @@ different jobs.
    the thesis reports both (R better for new people by LOSO; E5 kept by the known-user check).
 4. **No per-posture guard** — each posture has 2 takes here, so one take moves a class recall by ≈ 50 pp; a class rule would be decided by
    noise. Per-posture recall, per-take accuracy and E5's failure takes are **reported**, Like and Dislike highlighted.
+1b. **Bug-guard follow-up (added 27 Oct 12:47, before `a15_decide.py` was ever run) `[STUDENT: "เอาทางที่ดีที่สุด"]`:** if rule 1 triggers — (a) a bug in the **evaluation code** (e.g. input not re-centred, class order) → fix the code and re-score the **same** E5R file (sha256 must match `f43e0b4`); (b) a bug in **training** → retraining makes a new model, which needs its own pre-registration first; (c) **no bug found** while self-checks A–C all pass → the result is taken as real: **E5R fails, E5 stays**, reported as measured. No open-ended searching for a better number.
 5. **After the decision:** score the deployed model (and, report-only, the other one) on `phase56_stand` — that is the final known-user
    figure. `a5_love` and A6-sim: report only (A6-sim is whole-zone-shift invariant for R by construction, §5.1v).
 6. **No new collection is required by this rule.** A new set is needed only if `phase56_stand` gets used for any choice (then it is no
@@ -3607,3 +3608,4 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *2026-10-27 11:20 addendum: **A15 pre-registered** (§5.1y) before any E5R model exists — choose on `phase56` (sitting): E5R ≥ E5 − 3 pp + 80 % bug guard; `phase56_stand` kept untouched for the final known-user number; no new collection needed (Chin: no more subjects). An 11:15 draft that required a fresh Phase 5.7 set was replaced before commit.*
 *2026-10-27 11:30 addendum: §5.1y — blind live side-by-side look (board E5 vs PC E5R on the same frames, A/B hidden, logged + replay viewer) added; after the decision, anecdotal only.*
 *2026-10-27 12:40 addendum: §5.1z — E5R trained (5 arm-R models) and built (22,555 params, 100.9 KiB tflite, all checks PASS); §9 #67 (centred 99.57 %, not 100 %); replay feasibility confirmed from firmware source; `a15_decide.py` ready — commit before running it.*
+*2026-10-27 12:47 addendum: §5.1y rule 1b (what happens if the bug guard triggers) added before `a15_decide.py` was run; committed on its own so its timestamp precedes the decision.*
