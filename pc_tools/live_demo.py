@@ -1,331 +1,448 @@
-"""live_demo.py — ทดสอบท่ามือสดๆ หน้าจอใหญ่ อ่านง่าย (ลองเองหรืออัดคลิป)  v3
+"""live_demo.py — หน้าจอเดโมทายท่ามือสด สำหรับดูเอง/อัดคลิปให้อาจารย์ (โมเดล E5R บนบอร์ด)
 
-v3 (26 ต.ค. 2026): เลือกได้ว่าใครเป็นคนทาย  --source
-  pc    (ค่าเริ่มต้น เหมือน v2) — PC ทายด้วยไฟล์ --model
-  board — ใช้ผลทายของ "บอร์ด" เอง (บรรทัด Y, เฟิร์มแวร์ MY_TOF_PRED_LINE = 1) PC แค่แสดงผล ไม่ต้องโหลด TensorFlow
-  both  — บอร์ดทาย (แสดงผลหลัก) + PC ทายคู่กันทุกเฟรม แล้วแสดงว่า "บอร์ดตรงกับ PC กี่เฟรม"
+หลักสำคัญ: "บอร์ดเป็นคนทาย" — STM32 อ่านเซ็นเซอร์ เตรียมข้อมูล เลื่อนภาพ (re-centring) รันโมเดล แล้วส่งคำตอบมาทาง USB
+สคริปต์นี้แค่ "วาดสิ่งที่บอร์ดส่งมา" ไม่โหลดโมเดล ไม่ต้องมี TensorFlow ไม่ได้คิดคำตอบเอง
+  - ภาพซ้าย  : สิ่งที่เซ็นเซอร์เห็น (ระยะ 8×8 จากบรรทัด F/S) ใกล้ = สว่าง
+  - ตัวใหญ่   : คำตอบนิ่งของบอร์ด (บรรทัด P = โหวต 15 เฟรมล่าสุด ≈ 1 วินาที ในเฟิร์มแวร์)
+  - แถบ 7 ท่า : ความน่าจะเป็นของเฟรมล่าสุด (บรรทัด Y ของบอร์ด)
+  - แถบล่าง   : ระยะมือ, เฟรมเรต, เวลาที่บอร์ดใช้ต่อเฟรม (บรรทัด Q), ชื่อโมเดลบนบอร์ด (บรรทัดบูต — กด RESET)
 
-ลำดับการทำงาน:
-  1. ยังไม่มีมือ / มืออยู่นอกช่วง 220–320 มม.  → แสดง "PLACE YOUR HAND" หรือ "MOVE CLOSER / FARTHER" ไม่ทาย
-  2. มือเข้าช่วงแล้ว → ต้องถือนิ่งอยู่ในช่วงต่อเนื่อง 1 วินาที (มีแถบนับ) ถ้าหลุดช่วงนับใหม่
-  3. ครบ 1 วินาที → เริ่มทาย ผลมาจากการโหวตเฟรมหลังจากนั้น (สูงสุด 15 เฟรมล่าสุด)
-  4. มือออกนอกช่วงติดกัน 8 เฟรม (~0.5 วิ) → กลับไปข้อ 1 (เอามือออกแล้วเปลี่ยนท่าได้เลย)
-
-preprocessing เหมือนตอนฝึกทุกขั้น (st_dataset.py): status 5/9, ตัดฉากหลัง 120 มม., normalize 295/196, 281/452
+เฟิร์มแวร์ที่ใช้ได้: MY_TOF_REPLAY = 0, MY_TOF_PRED_LINE = 1 (ค่าปัจจุบัน commit fbca5e4: E5R, RECENTRE 1)
 
 วิธีรัน (ที่ root ของ repo, ปิด PuTTY ก่อน):
-    python pc_tools\\live_demo.py --port COM3 --model results_phase55_final\\deploy\\E5.keras
-    python pc_tools\\live_demo.py --port COM3 --source board              (บอร์ดทายเอง)
-    python pc_tools\\live_demo.py --port COM3 --source both --model results_phase55_final\\deploy\\E5.keras
-ปิดโปรแกรม: กด q หรือปิดหน้าต่าง
-ตัวเลือก: --window-lo 220 --window-hi 320 --hold 1.0 --vote-window 15
-
-ข้อควรรู้: ผลที่เห็นเป็นการลองดู ไม่ใช่ผลการทดลอง (มือผู้จัดทำอยู่ในข้อมูลที่ใช้ฝึก E5)
+    python pc_tools\\live_demo.py --port COM3
+  ถ้าภาพซ้ายกลับซ้าย-ขวา (ขยับมือไปขวาแต่ภาพไปซ้าย) ให้เติม --flip-lr
+  ลองหน้าจอโดยไม่ต่อบอร์ด (เล่นไฟล์บรรทัดที่ live_check บันทึกไว้):
+    python pc_tools\\live_demo.py --from-log results_live\\<โฟลเดอร์>\\board_lines.txt
+  ในหน้าต่าง: กด F = เต็มจอ, Q = ปิด
 """
 from __future__ import annotations
 
 import argparse
+import threading
 import time
-from collections import Counter, deque
+from collections import deque
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Callable, Iterable
 
 import numpy as np
 
-CLASSES = ["Fist", "FlatHand", "Dislike", "Like", "Love", "CrossHands", "BreakTime"]  # ลำดับของ train_st_cnn2d.py
-VALID_STATUS = (5, 9)
-MIN_D, MAX_D, BG_D = 100.0, 400.0, 120.0
-DIST_MEAN, DIST_STD = 295.0, 196.0
-SIG_MEAN, SIG_STD = 281.0, 452.0
+CLASSES = ["Fist", "FlatHand", "Dislike", "Like", "Love", "CrossHands", "BreakTime"]
+NICE = {"Fist": "Fist", "FlatHand": "Flat Hand", "Dislike": "Dislike", "Like": "Like",
+        "Love": "Love", "CrossHands": "Cross Hands", "BreakTime": "Break Time"}
+COLORS = {"Fist": "#ff6b6b", "FlatHand": "#4dabf7", "Dislike": "#f59f00", "Like": "#51cf66",
+          "Love": "#f06595", "CrossHands": "#9775fa", "BreakTime": "#22b8cf"}
+VALID_STATUS = (5, 9)               # เหมือนเฟิร์มแวร์ MY_AI_VALID_STATUS_1/2
+FW_MIN_MM, FW_MAX_MM = 100, 400     # เฟิร์มแวร์ทายเมื่อมือ (โซนใกล้สุด) อยู่ในช่วงนี้
+BEST_LO_MM, BEST_HI_MM = 220, 320   # ช่วงที่ใช้เก็บข้อมูลเทรน (collector 270 ± 50)
+VOTE_WINDOW = 15                    # เหมือนเฟิร์มแวร์ MY_AI_VOTE_WINDOW
+BUDGET_MS = 33.0
+STALE_S = 1.0                       # ไม่มีบรรทัดเกินนี้ = บอร์ดไม่ส่งข้อมูล
+
+BG, PANEL, TEXT, DIM, GOOD, WARN, BAD = "#0f1216", "#181d24", "#e8eaed", "#9aa0a6", "#51cf66", "#fcc419", "#ff6b6b"
 
 
-def parse_line(line: str):
-    """'F,12,...' / 'S,12,...' / 'G,12,...' / 'Y,12,<ท่า>,<p0..p6>' → (ชนิด, เลขเฟรม, ค่า) หรือ None"""
-    parts = line.strip().split(",")
-    if len(parts) < 2 or parts[0] not in ("F", "S", "G", "Y"):
-        return None
-    try:
-        frame_no = int(parts[1])
-        values = [float(v) for v in parts[2:]]
-    except ValueError:
-        return None
-    return parts[0], frame_no, values
+@dataclass
+class BoardState:
+    """สิ่งที่บอร์ดส่งมาล่าสุด (เธรดอ่าน serial เขียน, หน้าจออ่าน — ใช้ lock)"""
+    lock: threading.Lock = field(default_factory=threading.Lock)
+    dist: np.ndarray | None = None          # 64 ค่า mm ของเฟรมล่าสุดที่มีทั้ง F และ S
+    status: np.ndarray | None = None
+    frame: int = -1
+    y_cls: int | None = None                # คำตอบเฟรมล่าสุด (-1 นอกช่วง, -2 รันพลาด, -3 โมเดลไม่เข้าคู่)
+    y_probs: np.ndarray | None = None
+    vote_buf: deque = field(default_factory=lambda: deque(maxlen=VOTE_WINDOW))
+    p_label: str | None = None              # คำตอบนิ่งจากบรรทัด P ของบอร์ด (None = บอร์ดบอกว่าไม่มีมือ)
+    p_seen: bool = False                    # เคยได้บรรทัด P แล้วหรือยัง
+    q_ms: deque = field(default_factory=lambda: deque(maxlen=45))
+    frame_times: deque = field(default_factory=lambda: deque(maxlen=60))
+    model: str | None = None                # จากบรรทัดบูต MY_AI: model=… check=…
+    check: str | None = None
+    warning: str | None = None
+    last_line_t: float = 0.0
+    n_lines: int = 0
+    _pend: dict = field(default_factory=dict)
 
 
-def preprocess(dist: np.ndarray, status: np.ndarray, sig: np.ndarray):
-    """คืน (x[8,8,2], ระยะมือ มม.) หรือ (None, ระยะมือ/None) ถ้าไม่มีมือในช่วง 100–400 มม."""
-    valid = np.isin(status, VALID_STATUS)
-    if not valid.any():
-        return None, None
-    hand = float(dist[valid].min())
-    if not (MIN_D <= hand <= MAX_D):
-        return None, hand
-    keep = valid & (dist <= hand + BG_D)
-    d = np.where(keep, dist, 4000.0)
-    s = np.where(keep, sig, 0.0)
-    x = np.stack([((d - DIST_MEAN) / DIST_STD).reshape(8, 8), ((s - SIG_MEAN) / SIG_STD).reshape(8, 8)], axis=-1)
-    return x.astype(np.float32), hand
+def firmware_vote(buf: Iterable[int]) -> int:
+    """กติกาเดียวกับ my_tof_send_prediction(): ต้องชนะ 'ไม่มีมือ' แบบมากกว่าจริง เสมอกันให้ท่าเลขน้อยกว่า"""
+    b = list(buf)
+    if len(b) < VOTE_WINDOW:
+        return -9                           # ยังไม่ครบหน้าต่าง (เฟิร์มแวร์ยังไม่ตัดสิน)
+    none = sum(c < 0 for c in b)
+    best, best_n = -1, none
+    for k in range(7):
+        n = sum(c == k for c in b)
+        if n > best_n:
+            best, best_n = k, n
+    return best
 
 
-class FrameReader:
-    """อ่าน serial แบบไม่ค้าง: ดึงทุกบรรทัดที่มี ประกอบ F/S/G ของเฟรมเดียวกัน คืนเฟรมที่ครบ"""
+def parse_line(line: str, st: BoardState, now: float) -> None:
+    """อัปเดต state จากบรรทัดเดียวของบอร์ด (ฟังก์ชันล้วน ทดสอบได้โดยไม่ต้องมีบอร์ด)"""
+    line = line.strip()
+    if not line:
+        return
+    with st.lock:
+        st.last_line_t = now
+        st.n_lines += 1
+        head = line.split(",", 1)[0]
+        try:
+            if head in ("F", "S"):
+                parts = line.split(",")
+                n = int(parts[1])
+                vals = np.array([int(v) for v in parts[2:]], dtype=np.int64)
+                if vals.size != 64:
+                    st.warning = "board sends 4x4 data — the model needs 8x8"
+                    return
+                slot = st._pend.setdefault(n, {})
+                slot[head] = vals
+                if "F" in slot and "S" in slot:
+                    st.dist, st.status, st.frame = slot["F"], slot["S"], n
+                    st.frame_times.append(now)
+                    for k in [k for k in st._pend if k <= n]:
+                        del st._pend[k]
+                for k in [k for k in st._pend if n - k > 30]:
+                    del st._pend[k]
+            elif head == "Y":
+                parts = line.split(",")
+                c = int(parts[2])
+                st.y_cls = c
+                st.vote_buf.append(c if c >= 0 else -1)
+                if c >= 0 and len(parts) >= 10:
+                    st.y_probs = np.array([float(v) for v in parts[3:10]])
+                else:
+                    st.y_probs = None
+                if c == -3:
+                    st.warning = "MODEL CHECK FAILED — switch/model mismatch, board will not predict"
+            elif head == "Q":
+                parts = line.split(",")
+                st.q_ms.append(int(parts[6]) / 1000.0)
+            elif head == "P":
+                name = line.split(",", 2)[2].strip()
+                st.p_label = name if name in CLASSES else None
+                st.p_seen = True
+            elif line.startswith("MY_AI: model="):
+                kv = dict(p.split("=", 1) for p in line[len("MY_AI: "):].split() if "=" in p)
+                st.model, st.check = kv.get("model"), kv.get("check")
+                if st.check != "OK":
+                    st.warning = f"MODEL CHECK = {st.check} — board will not predict"
+                elif st.warning and "MODEL" in st.warning:
+                    st.warning = None
+            elif line.startswith("MY_TOF: REPLAY mode"):
+                st.warning = "REPLAY build on the board — flash MY_TOF_REPLAY = 0"
+            elif line.startswith("ERROR"):
+                st.warning = line[:70]
+        except (ValueError, IndexError):
+            pass                            # บรรทัดขาด/เพี้ยน (เช่นตอนเพิ่งเปิดพอร์ต) — ข้าม
 
-    def __init__(self, ser, need_y: bool = False):
-        self.ser = ser
-        self.kinds = "FSGY" if need_y else "FSG"     # v3: โหมดบอร์ดต้องได้บรรทัด Y ของเฟรมเดียวกันด้วย
-        self.buf = b""
-        self.pending: dict[int, dict[str, list[float]]] = {}
-        self.wrong_mode = False
 
-    def poll(self) -> list[tuple[int, np.ndarray, np.ndarray, np.ndarray]]:
-        n = self.ser.in_waiting
-        if n:
-            self.buf += self.ser.read(n)
-        out = []
-        *lines, self.buf = self.buf.split(b"\n")
-        for raw in lines:
-            p = parse_line(raw.decode("utf-8", errors="ignore"))
-            if p is None:
+def snapshot(st: BoardState, now: float) -> dict:
+    """คัดค่าที่หน้าจอต้องใช้ออกมาภายใต้ lock แล้วคำนวณค่าที่แสดง"""
+    with st.lock:
+        d = None if st.dist is None else st.dist.copy()
+        s = None if st.status is None else st.status.copy()
+        ft = [t for t in st.frame_times if now - t <= 2.0]
+        snap = {"dist": d, "status": s, "frame": st.frame, "y_cls": st.y_cls,
+                "y_probs": None if st.y_probs is None else st.y_probs.copy(),
+                "vote": firmware_vote(st.vote_buf), "votes": list(st.vote_buf), "p_label": st.p_label, "p_seen": st.p_seen,
+                "q_last": st.q_ms[-1] if st.q_ms else None, "q_mean": float(np.mean(st.q_ms)) if st.q_ms else None,
+                "q_max": float(np.max(st.q_ms)) if st.q_ms else None,
+                "hz": (len(ft) - 1) / (ft[-1] - ft[0]) if len(ft) > 2 and ft[-1] > ft[0] else None,
+                "model": st.model, "check": st.check, "warning": st.warning,
+                "stale": (now - st.last_line_t) > STALE_S, "n_lines": st.n_lines}
+    hand = None
+    if d is not None and s is not None:
+        ok = np.isin(s, VALID_STATUS)
+        if ok.any():
+            hand = int(d[ok].min())
+    snap["hand_mm"] = hand
+    # คำตอบนิ่ง: ใช้บรรทัด P ของบอร์ดเป็นหลัก (บอร์ดพิมพ์ P เฉพาะตอนคำตอบเปลี่ยน) ; ก่อนเห็น P แรก
+    # (เพิ่งเปิดหน้าจอ) ใช้กติกาโหวตเดียวกับเฟิร์มแวร์จากบรรทัด Y ของบอร์ดเอง
+    if snap["p_seen"]:
+        stable = snap["p_label"]
+    else:
+        stable = CLASSES[snap["vote"]] if snap["vote"] >= 0 else None
+    snap["stable"] = stable
+    snap["agree"] = sum(1 for c in snap["votes"] if stable is not None and c == CLASSES.index(stable)) if stable else 0
+    return snap
+
+
+class SerialReader(threading.Thread):
+    """อ่านบรรทัดจากบอร์ด (หรือจากไฟล์ log ตามจังหวะ 15 Hz) แล้วส่งเข้า parse_line"""
+
+    def __init__(self, st: BoardState, readline: Callable[[], str], pace_s: float = 0.0) -> None:
+        super().__init__(daemon=True)
+        self.st, self.readline, self.pace_s = st, readline, pace_s
+        self.stop_evt = threading.Event()
+
+    def run(self) -> None:
+        while not self.stop_evt.is_set():
+            try:
+                line = self.readline()
+            except Exception as exc:  # noqa: BLE001 — พอร์ตหลุด (ถอดสาย) ให้ขึ้นบนจอแทนการพังเงียบ
+                with self.st.lock:
+                    self.st.warning = f"serial error: {exc}"[:70]
+                time.sleep(0.5)
                 continue
-            kind, fno, vals = p
-            if kind == "Y":
-                if "Y" not in self.kinds:
-                    continue
-            else:
-                if len(vals) == 16:
-                    self.wrong_mode = True
-                if len(vals) != 64:
-                    continue
-            slot = self.pending.setdefault(fno, {})
-            slot[kind] = vals
-            if all(k in slot for k in self.kinds):
-                out.append((fno, np.array(slot["F"]), np.array(slot["S"]), np.array(slot["G"]), slot.get("Y")))
-                del self.pending[fno]
-            for k in [k for k in self.pending if fno - k > 30]:
-                del self.pending[k]
-        return out
+            if line is None:                # ไฟล์ log หมด
+                break
+            parse_line(line, self.st, time.monotonic())
+            if self.pace_s and line.startswith("F,"):
+                time.sleep(self.pace_s)
 
 
-BG, PANEL, FG, MUTED = "#101418", "#1A2027", "#F2F4F7", "#8A96A3"
-OK, WAIT, BAD = "#4FC3F7", "#FFB74D", "#EF5350"
+def log_readline(path: Path, loop: bool) -> Callable[[], str | None]:
+    """อ่านไฟล์ board_lines.txt ทีละบรรทัด (วนซ้ำได้) สำหรับลองหน้าจอโดยไม่ต่อบอร์ด"""
+    lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    if not lines:
+        raise SystemExit(f"{path} is empty")
+    it = {"i": 0}
+
+    def rd() -> str | None:
+        if it["i"] >= len(lines):
+            if not loop:
+                return None
+            it["i"] = 0
+        it["i"] += 1
+        return lines[it["i"] - 1]
+    return rd
 
 
-def main(argv=None, serial_factory=None, predictor=None, max_seconds=None, save_png=None, script=None) -> None:
-    ap = argparse.ArgumentParser(description="Live hand-posture demo (big display)")
-    ap.add_argument("--port", required=True)
+def build_figure(flip_lr: bool, flip_ud: bool, source_note: str):
+    """สร้างหน้าต่างและคืนฟังก์ชัน draw(snap) ที่อัปเดตทุกอย่าง"""
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import Normalize
+
+    plt.rcParams.update({"font.family": "DejaVu Sans", "text.color": TEXT, "axes.labelcolor": TEXT,
+                         "xtick.color": DIM, "ytick.color": TEXT, "toolbar": "None"})
+    fig = plt.figure(figsize=(13.66, 7.68), dpi=100, facecolor=BG)
+    try:
+        fig.canvas.manager.set_window_title("ToF Hand Posture — live on-board recognition (E5R)")
+    except AttributeError:
+        pass
+    fig.text(0.03, 0.945, "Hand Posture Recognition", fontsize=26, weight="bold", color=TEXT)
+    fig.text(0.03, 0.905, "VL53L8CA Time-of-Flight sensor (8×8 zones)  ·  AI model runs on the STM32 NUCLEO-F411RE",
+             fontsize=13, color=DIM)
+    live_txt = fig.text(0.97, 0.945, "● LIVE", fontsize=16, weight="bold", color=BAD, ha="right")
+    fig.text(0.97, 0.908, source_note, fontsize=11, color=DIM, ha="right")
+
+    # ── ซ้าย: สิ่งที่เซ็นเซอร์เห็น ──
+    ax_h = fig.add_axes([0.035, 0.17, 0.40, 0.68])
+    cmap = plt.get_cmap("inferno_r").copy()
+    cmap.set_bad("#2a2f36")
+    edges = np.arange(9) - 0.5
+    img = ax_h.pcolormesh(edges, edges, np.ma.masked_all((8, 8)), cmap=cmap, norm=Normalize(150, 600),
+                          edgecolors=BG, linewidth=1.5)   # pcolormesh วาดเร็วกว่า imshow (ไม่ต้อง resample)
+    ax_h.set_xlim(-0.5, 7.5)
+    ax_h.set_ylim(7.5, -0.5)                              # แถว 0 อยู่บน
+    ax_h.set_aspect("equal")
+    ax_h.set_facecolor(BG)
+    ax_h.set_xticks([])
+    ax_h.set_yticks([])
+    for sp in ax_h.spines.values():
+        sp.set_color("#3a414b")
+    ax_h.set_title("What the sensor sees  (distance per zone, cm — closer = brighter)", fontsize=12, color=DIM, pad=8)
+    cell = [[ax_h.text(c, r, "", ha="center", va="center", fontsize=11, color=TEXT) for c in range(8)] for r in range(8)]
+    side_txt = fig.text(0.235, 0.135, "", fontsize=11, color=DIM, ha="center")
+
+    # ── ขวาบน: คำตอบนิ่ง ──
+    fig.patches.append(plt.Rectangle((0.47, 0.565), 0.50, 0.29, transform=fig.transFigure, color=PANEL, zorder=0))
+    fig.text(0.49, 0.815, "BOARD'S ANSWER", fontsize=13, weight="bold", color=DIM)
+    ans_txt = fig.text(0.72, 0.69, "", fontsize=60, weight="bold", ha="center", va="center", color=TEXT)
+    sub_txt = fig.text(0.72, 0.595, "", fontsize=12, ha="center", color=DIM)
+
+    # ── ขวากลาง: ความน่าจะเป็นของเฟรมนี้ ──
+    ax_b = fig.add_axes([0.585, 0.205, 0.33, 0.33], facecolor=BG)
+    bars = ax_b.barh(range(7), np.zeros(7), color=[COLORS[c] for c in CLASSES], height=0.66)
+    ax_b.set_xlim(0, 1)
+    ax_b.set_ylim(6.6, -0.6)
+    ax_b.set_yticks(range(7))
+    ax_b.set_yticklabels([NICE[c] for c in CLASSES], fontsize=12)
+    ax_b.set_xticks([])
+    for sp in ax_b.spines.values():
+        sp.set_visible(False)
+    ax_b.tick_params(length=0)
+    pct = [ax_b.text(1.01, k, "", va="center", fontsize=11, color=TEXT, transform=ax_b.get_yaxis_transform())
+           for k in range(7)]
+    frame_txt = fig.text(0.49, 0.545, "", fontsize=12, color=DIM)
+
+    # ── ล่าง: 4 ช่องสถานะ ──
+    tiles = []
+    labels = ["Hand distance", "Frame rate", "Board time / frame", "Model on the board"]
+    for k, lab in enumerate(labels):
+        x0 = 0.47 + k * 0.127
+        fig.patches.append(plt.Rectangle((x0, 0.055), 0.118, 0.115, transform=fig.transFigure, color=PANEL, zorder=0))
+        fig.text(x0 + 0.008, 0.143, lab, fontsize=9.5, color=DIM)
+        v = fig.text(x0 + 0.008, 0.093, "–", fontsize=17, weight="bold", color=TEXT)
+        n = fig.text(x0 + 0.008, 0.065, "", fontsize=9, color=DIM)
+        tiles.append((v, n))
+    fig.text(0.035, 0.014, "All recognition is computed on the STM32F411RE (Cortex-M4, 84 MHz). "
+             "The PC only draws what the board sends over USB.", fontsize=10.5, color=DIM)
+    warn_txt = fig.text(0.72, 0.868, "", fontsize=11.5, weight="bold", color=BAD, ha="center")
+
+    def draw(sn: dict) -> None:
+        live_txt.set_color(BAD if not sn["stale"] and int(time.monotonic() * 2) % 2 == 0 else "#5c2b2b")
+        # ภาพเซ็นเซอร์
+        if sn["dist"] is not None and sn["status"] is not None:
+            d = sn["dist"].reshape(8, 8).astype(float)
+            ok = np.isin(sn["status"].reshape(8, 8), VALID_STATUS)
+            show = np.where(ok, d, np.nan)
+            if flip_lr:
+                show, ok, d = show[:, ::-1], ok[:, ::-1], d[:, ::-1]
+            if flip_ud:
+                show, ok, d = show[::-1], ok[::-1], d[::-1]
+            img.set_array(np.ma.masked_invalid(show).ravel())
+            for r in range(8):
+                for c in range(8):
+                    t = cell[r][c]
+                    if not ok[r, c]:
+                        t.set_text("·")
+                        t.set_color(DIM)
+                    elif d[r, c] >= 1000:
+                        t.set_text("")
+                    else:
+                        t.set_text(f"{d[r, c] / 10:.0f}")
+                        t.set_color("#111111" if d[r, c] < 330 else TEXT)
+        side_txt.set_text("top of image = side of the sensor away from the user")
+        # คำตอบนิ่ง
+        stable = sn["stable"]
+        if (sn["warning"] and "MODEL" in sn["warning"]) or sn["y_cls"] == -3:
+            ans_txt.set_text("NO PREDICTION")
+            ans_txt.set_color(BAD)
+            ans_txt.set_fontsize(40)
+            sub_txt.set_text("model check failed on the board")
+        elif sn["n_lines"] == 0:
+            ans_txt.set_text("Waiting …")
+            ans_txt.set_color("#5f6670")
+            ans_txt.set_fontsize(54)
+            sub_txt.set_text("no data from the board yet")
+        elif stable is None:
+            ans_txt.set_text("No hand")
+            ans_txt.set_color("#5f6670")
+            ans_txt.set_fontsize(54)
+            sub_txt.set_text(f"hold your hand {BEST_LO_MM // 10}–{BEST_HI_MM // 10} cm above the sensor")
+        else:
+            ans_txt.set_text(NICE[stable])
+            ans_txt.set_color(COLORS[stable])
+            ans_txt.set_fontsize(60)
+            sub_txt.set_text(f"stable answer = majority of the last {VOTE_WINDOW} frames (≈ 1 s)  ·  "
+                             f"{sn['agree']}/{len(sn['votes'])} frames agree")
+        # แถบความน่าจะเป็น
+        p = sn["y_probs"]
+        yc = sn["y_cls"]
+        for k, b in enumerate(bars):
+            v = 0.0 if p is None else float(p[k])
+            b.set_width(v)
+            b.set_alpha(1.0 if (yc is not None and yc == k) else 0.35)
+            pct[k].set_text("" if p is None else f"{v * 100:5.1f} %")
+        if yc is None:
+            frame_txt.set_text("This frame: waiting for the board …")
+        elif yc >= 0:
+            frame_txt.set_text(f"This frame (#{sn['frame']}): {NICE[CLASSES[yc]]}  ·  confidence {p[yc] * 100:.1f} %"
+                               if p is not None else f"This frame: {NICE[CLASSES[yc]]}")
+        elif yc == -1:
+            frame_txt.set_text(f"This frame (#{sn['frame']}): no hand in range "
+                               f"({FW_MIN_MM // 10}–{FW_MAX_MM // 10} cm) — board does not predict")
+        else:
+            frame_txt.set_text(f"This frame (#{sn['frame']}): no prediction (code {yc})")
+        # ช่องสถานะ
+        (v0, n0), (v1, n1), (v2, n2), (v3, n3) = tiles
+        h = sn["hand_mm"]
+        if h is None or h > FW_MAX_MM:
+            v0.set_text("no hand")
+            v0.set_color("#5f6670")
+            n0.set_text(f"best {BEST_LO_MM // 10}–{BEST_HI_MM // 10} cm")
+        else:
+            v0.set_text(f"{h / 10:.1f} cm")
+            good = BEST_LO_MM <= h <= BEST_HI_MM
+            v0.set_color(GOOD if good else WARN)
+            n0.set_text("good" if good else ("move hand up" if h < BEST_LO_MM else "move hand closer"))
+        v1.set_text("–" if sn["hz"] is None else f"{sn['hz']:.1f} Hz")
+        v1.set_color(TEXT)
+        n1.set_text("sensor max 15 Hz (8×8)")
+        if sn["q_last"] is None:
+            v2.set_text("–")
+            n2.set_text(f"budget {BUDGET_MS:.0f} ms")
+        else:
+            v2.set_text(f"{sn['q_mean']:.1f} ms")
+            v2.set_color(GOOD if sn["q_max"] <= BUDGET_MS else BAD)
+            n2.set_text(f"max {sn['q_max']:.1f} · budget {BUDGET_MS:.0f} ms")
+        if sn["model"]:
+            v3.set_text(sn["model"].upper())
+            v3.set_color(GOOD if sn["check"] == "OK" else BAD)
+            n3.set_text(f"model check {sn['check']}")
+        else:
+            v3.set_text("E5R?")
+            v3.set_color(DIM)
+            n3.set_text("press RESET to show")
+        if sn["stale"]:
+            warn_txt.set_text("No data from the board — check USB cable / COM port"
+                              if sn["n_lines"] == 0 or not sn["warning"] else sn["warning"])
+        else:
+            warn_txt.set_text(sn["warning"] or "")
+
+    return fig, draw
+
+
+def main(argv: list[str] | None = None) -> None:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--port", default="COM3")
     ap.add_argument("--baud", type=int, default=460800)
-    ap.add_argument("--model", type=Path, default=Path("results_phase55_final/deploy/E5.keras"))
-    ap.add_argument("--source", choices=("pc", "board", "both"), default="pc",
-                    help="ใครทาย: pc = PC ทาย, board = บอร์ดทาย (บรรทัด Y), both = บอร์ดทาย + PC ทายเทียบ")
-    ap.add_argument("--vote-window", type=int, default=15)
-    ap.add_argument("--window-lo", type=float, default=220.0, help="ระยะมือใกล้สุดที่เริ่มทาย (มม.)")
-    ap.add_argument("--window-hi", type=float, default=320.0, help="ระยะมือไกลสุดที่เริ่มทาย (มม.)")
-    ap.add_argument("--hold", type=float, default=1.0, help="ต้องถือมือในช่วงนิ่งกี่วินาทีก่อนเริ่มทาย")
-    ap.add_argument("--leave-frames", type=int, default=8, help="หลุดช่วงติดกันกี่เฟรมถึงนับว่าเอามือออก")
+    ap.add_argument("--from-log", type=Path, default=None, help="เล่นไฟล์บรรทัดของบอร์ดแทนการต่อบอร์ด (ลองหน้าจอ)")
+    ap.add_argument("--no-loop", action="store_true", help="ใช้กับ --from-log: เล่นจบแล้วหยุด")
+    ap.add_argument("--flip-lr", action="store_true", help="กลับภาพซ้าย-ขวา")
+    ap.add_argument("--flip-ud", action="store_true", help="กลับภาพบน-ล่าง")
     args = ap.parse_args(argv)
 
-    import matplotlib
-    if save_png:
-        matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    from matplotlib.patches import FancyBboxPatch, Rectangle
+    from matplotlib.animation import FuncAnimation
 
-    if predictor is None and args.source != "board":
-        import tensorflow as tf
-        if not args.model.exists():
-            raise SystemExit(f"ไม่พบไฟล์โมเดล: {args.model}")
-        print(f"Loading model {args.model} ...")
-        model = tf.keras.models.load_model(str(args.model), compile=False)
-        if model.output_shape[-1] != len(CLASSES):
-            raise SystemExit(f"model has {model.output_shape[-1]} outputs, expected 7")
-        fn = tf.function(lambda x: model(x, training=False))
-        predictor = lambda x: fn(tf.constant(x[None, ...])).numpy()[0]   # noqa: E731
-        predictor(np.zeros((8, 8, 2), np.float32))          # อุ่นเครื่องครั้งแรก ไม่ให้ภาพกระตุกตอนเริ่ม
+    st = BoardState()
+    if args.from_log is not None:
+        reader = SerialReader(st, log_readline(args.from_log, loop=not args.no_loop), pace_s=1 / 15)
+        note = f"replaying {args.from_log.name} (not live)"
+    else:
+        try:
+            import serial
+        except ImportError as exc:
+            raise SystemExit("pyserial is required: pip install pyserial") from exc
+        try:
+            ser = serial.Serial(args.port, args.baud, timeout=0.2)
+        except serial.SerialException as exc:
+            raise SystemExit(f"cannot open {args.port}: {exc}\n  → close PuTTY / other programs using the port, or replug the board")
+        ser.reset_input_buffer()
+        reader = SerialReader(st, lambda: ser.readline().decode("ascii", errors="replace"))
+        note = f"{args.port} @ {args.baud} baud"
+    fig, draw = build_figure(args.flip_lr, args.flip_ud, note)
+    reader.start()
 
-    if serial_factory is None:
-        import serial
-        serial_factory = lambda: serial.Serial(args.port, args.baud, timeout=0)   # noqa: E731
-    ser = serial_factory()
-    reader = FrameReader(ser, need_y=args.source != "pc")
+    def tick(_):
+        draw(snapshot(st, time.monotonic()))
+        return []
 
-    # ---------------- หน้าจอ ----------------
-    plt.rcParams.update({"toolbar": "None", "font.family": "DejaVu Sans", "text.color": FG,
-                         "axes.labelcolor": MUTED, "xtick.color": MUTED, "ytick.color": FG})
-    fig = plt.figure(figsize=(12.8, 7.2), facecolor=BG)
-    try:
-        fig.canvas.manager.set_window_title("ToF Hand Posture Recognition — live")
-    except Exception:  # noqa: BLE001
-        pass
-    fig.text(0.03, 0.95, "ToF Hand Posture Recognition", fontsize=16, weight="bold", color=FG, va="center")
-    who = {"pc": "inference on the PC (" + args.model.name + ")",
-           "board": "inference ON THE BOARD (E5, STM32F411RE)",
-           "both": "inference ON THE BOARD (E5)  ·  PC re-checks every frame"}[args.source]
-    fig.text(0.03, 0.91, "VL53L8CA 8×8  ·  NUCLEO-F411RE  ·  " + who, fontsize=11, color=MUTED, va="center")
-
-    # กล่องผลลัพธ์หลัก
-    ax_main = fig.add_axes([0.03, 0.40, 0.60, 0.46]); ax_main.axis("off")
-    ax_main.set_xlim(0, 1); ax_main.set_ylim(0, 1)
-    ax_main.add_patch(FancyBboxPatch((0, 0), 1, 1, boxstyle="round,pad=0,rounding_size=0.04",
-                                     fc=PANEL, ec="none", transform=ax_main.transAxes))
-    status = ax_main.text(0.5, 0.86, "", ha="center", va="center", fontsize=15, color=MUTED, weight="bold")
-    big = ax_main.text(0.5, 0.52, "", ha="center", va="center", fontsize=56, weight="bold", color=FG)
-    sub = ax_main.text(0.5, 0.20, "", ha="center", va="center", fontsize=16, color=MUTED)
-    bar_bg = Rectangle((0.15, 0.07), 0.70, 0.035, fc="#2A323C", ec="none")
-    bar_fg = Rectangle((0.15, 0.07), 0.0, 0.035, fc=OK, ec="none")
-    ax_main.add_patch(bar_bg); ax_main.add_patch(bar_fg)
-
-    # มาตรวัดระยะมือ
-    ax_g = fig.add_axes([0.03, 0.27, 0.60, 0.07]); ax_g.set_facecolor(BG)
-    ax_g.set_xlim(100, 450); ax_g.set_ylim(0, 1); ax_g.set_yticks([])
-    for sp in ax_g.spines.values():
-        sp.set_visible(False)
-    ax_g.add_patch(Rectangle((100, 0.35), 350, 0.3, fc="#2A323C", ec="none"))
-    ax_g.add_patch(Rectangle((args.window_lo, 0.35), args.window_hi - args.window_lo, 0.3, fc="#1E4E3A", ec="none"))
-    marker, = ax_g.plot([], [], marker="v", ms=16, color=FG, ls="")
-    ax_g.set_xticks([100, args.window_lo, args.window_hi, 400])
-    ax_g.tick_params(axis="x", colors=MUTED, length=0, labelsize=11)
-    ax_g.set_xlabel("hand distance (mm)  ·  green = recognition range", fontsize=11, color=MUTED)
-
-    # ความน่าจะเป็นทั้ง 7 ท่า
-    ax_bar = fig.add_axes([0.13, 0.04, 0.50, 0.17]); ax_bar.set_facecolor(BG)
-    bars = ax_bar.barh(range(7), [0] * 7, color="#2A323C", height=0.7)
-    ax_bar.set_yticks(range(7), CLASSES, fontsize=10)
-    ax_bar.invert_yaxis(); ax_bar.set_xlim(0, 100); ax_bar.set_xticks([])
-    for sp in ax_bar.spines.values():
-        sp.set_visible(False)
-    pct_txt = [ax_bar.text(101, i, "", va="center", fontsize=9, color=MUTED) for i in range(7)]
-
-    # ภาพระยะ 8×8
-    ax_img = fig.add_axes([0.67, 0.20, 0.30, 0.60]); ax_img.set_facecolor(BG)
-    im = ax_img.imshow(np.full((8, 8), 4000.0), cmap="magma_r", vmin=150, vmax=450)
-    ax_img.set_xticks([]); ax_img.set_yticks([])
-    for sp in ax_img.spines.values():
-        sp.set_color("#2A323C")
-    ax_img.set_title("sensor view (distance)", color=MUTED, fontsize=12)
-    fig.text(0.82, 0.14, "bright = near, dark = far / background", ha="center", fontsize=10, color=MUTED)
-    fig.text(0.82, 0.06, "q = quit", ha="center", fontsize=10, color=MUTED)
-
-    quit_flag = {"q": False}
-    fig.canvas.mpl_connect("key_press_event", lambda ev: quit_flag.update(q=ev.key in ("q", "escape")))
-    fig.canvas.mpl_connect("close_event", lambda ev: quit_flag.update(q=True))
-
-    hold_frames = max(1, round(args.hold * 15))          # 8×8 ≈ 15 เฟรม/วินาที
-    votes: deque[int] = deque(maxlen=args.vote_window)
-    st = {"phase": "idle", "in_cnt": 0, "out_cnt": 0, "hand": None, "probs": np.zeros(7), "cmp": 0, "agree": 0}
-    last_draw, t0, last_frame_t = 0.0, time.time(), time.time()
-    plt.show(block=False)
-    print("Ready. Put your hand 22–32 cm above the sensor and hold still.  q = quit")
-
-    def step(dist, status_arr, sig, yv=None):
-        x, hand = preprocess(dist, status_arr, sig)
-        st["hand"] = hand
-        disp = np.where(np.isin(status_arr, VALID_STATUS), dist, 4000.0).reshape(8, 8)
-        im.set_data(disp)
-        inside = x is not None and args.window_lo <= hand <= args.window_hi
-        if not inside:
-            st["out_cnt"] += 1
-            st["in_cnt"] = 0
-            if st["phase"] == "armed" and st["out_cnt"] < args.leave_frames:
-                return                                    # หลุดช่วงสั้นๆ ระหว่างทาย: ข้ามเฟรมนี้ ไม่รีเซ็ต
-            st["phase"] = "idle"
-            votes.clear(); st["probs"] = np.zeros(7)
-            return
-        st["out_cnt"] = 0
-        if st["phase"] != "armed":
-            st["in_cnt"] += 1
-            st["phase"] = "holding"
-            if st["in_cnt"] >= hold_frames:
-                st["phase"] = "armed"
-                votes.clear()
-            return
-        if args.source == "pc":
-            st["probs"] = np.asarray(predictor(x), dtype=float)
-        else:
-            # v3: ผลของบอร์ด — Y,<เฟรม>,<ท่า>,<p0..p6> ; -1 = บอร์ดไม่ทายเฟรมนี้ (ไม่ควรเกิดเมื่อมืออยู่ในช่วง)
-            if yv is None or len(yv) < 8 or yv[0] < 0:
-                return
-            st["probs"] = np.asarray(yv[1:8], dtype=float)
-            if args.source == "both":
-                st["cmp"] += 1
-                st["agree"] += int(int(np.argmax(predictor(x))) == int(yv[0]))
-        votes.append(int(st["probs"].argmax()))
-
-    while not quit_flag["q"]:
-        if script is not None:                            # สำหรับทดสอบ: ป้อนเฟรมจำลอง
-            frames = script(time.time() - t0)
-        else:
-            frames = reader.poll()
-        for fr in frames:
-            last_frame_t = time.time()
-            step(fr[1], fr[2], fr[3], fr[4] if len(fr) > 4 else None)
-
-        now = time.time()
-        if now - last_draw > 0.066:
-            hand = st["hand"]
-            bar_fg.set_width(0); bar_fg.set_color(OK); bar_fg.set_visible(False)
-            if reader.wrong_mode:
-                status.set_text("FIRMWARE"); big.set_text("4×4 MODE"); big.set_color(BAD)
-                sub.set_text("board sends 4×4 — model needs 8×8")
-            elif now - last_frame_t > 2.0:
-                status.set_text("NO SIGNAL"); big.set_text("NO DATA"); big.set_color(BAD)
-                sub.set_text("no frames — check COM port, close PuTTY"
-                             + ("; board mode needs firmware MY_TOF_PRED_LINE = 1" if args.source != "pc" else ""))
-            elif st["phase"] == "idle":
-                status.set_text("WAITING")
-                if hand is None or hand > 400:
-                    big.set_text("PLACE HAND"); sub.set_text(f"hold your hand {args.window_lo/10:.0f}–{args.window_hi/10:.0f} cm above the sensor")
-                elif hand > args.window_hi:
-                    big.set_text("MOVE CLOSER"); sub.set_text(f"hand at {hand:.0f} mm")
-                else:
-                    big.set_text("MOVE FARTHER"); sub.set_text(f"hand at {hand:.0f} mm")
-                big.set_color(MUTED)
-            elif st["phase"] == "holding":
-                frac = min(1.0, st["in_cnt"] / hold_frames)
-                status.set_text("HAND DETECTED"); big.set_text("HOLD STILL"); big.set_color(WAIT)
-                sub.set_text(f"starting in {max(0.0, args.hold * (1 - frac)):.1f} s  ·  hand at {hand:.0f} mm")
-                bar_fg.set_width(0.70 * frac); bar_fg.set_color(WAIT); bar_fg.set_visible(True)
-            else:
-                if len(votes) < 3:
-                    status.set_text("RECOGNIZING"); big.set_text("…"); big.set_color(FG); sub.set_text("")
-                else:
-                    w, c = Counter(votes).most_common(1)[0]
-                    agree = c / len(votes)
-                    status.set_text("RESULT")
-                    big.set_text(CLASSES[w]); big.set_color(OK if agree >= 0.8 else WAIT)
-                    sub.set_text(f"{agree*100:.0f}% of last {len(votes)} frames agree"
-                                 + (f"  ·  hand at {hand:.0f} mm" if hand else "")
-                                 + (f"  ·  board = PC {st['agree']}/{st['cmp']}" if args.source == "both" else ""))
-                    bar_fg.set_width(0.70 * agree); bar_fg.set_color(OK if agree >= 0.8 else WAIT); bar_fg.set_visible(True)
-            marker.set_data([min(max(hand, 100), 450)] if hand else [], [0.82] if hand else [])
-            probs = st["probs"]
-            top = int(probs.argmax()) if probs.any() else -1
-            for i, b in enumerate(bars):
-                b.set_width(probs[i] * 100)
-                b.set_color(OK if i == top else "#3A4552")
-                pct_txt[i].set_text(f"{probs[i]*100:.0f}%" if probs.any() else "")
-            fig.canvas.draw_idle()
-            plt.pause(0.001)
-            last_draw = now
-        else:
-            time.sleep(0.004)
-        if max_seconds and now - t0 > max_seconds:
-            break
-    if save_png:
-        fig.savefig(save_png, dpi=80, facecolor=BG)
-    ser.close()
-    plt.close(fig)
+    def on_key(ev):
+        if ev.key in ("q", "escape"):
+            plt.close(fig)
+    fig.canvas.mpl_connect("key_press_event", on_key)
+    anim = FuncAnimation(fig, tick, interval=66, cache_frame_data=False)  # noqa: F841 — ต้องเก็บอ้างอิงไว้ไม่ให้ถูกเก็บกวาด
+    print("Window open — press F for full screen, Q to quit. Press RESET on the board to show the model name.")
+    plt.show()
+    reader.stop_evt.set()
+    if args.from_log is None:
+        ser.close()                         # ปล่อยพอร์ตให้โปรแกรมอื่นใช้ต่อ
 
 
 if __name__ == "__main__":
     main()
 
 # ─────────────────────────────────────────────────────────────────────────
-# จุดที่อาจพลาด
-#  1. "NO DATA" — COM3 ถูกโปรแกรมอื่นเปิดอยู่ (PuTTY) หรือพอร์ตผิด
-#  2. "4×4 MODE" — เฟิร์มแวร์ไม่ใช่ 8×8 → ต้อง build/flash ใหม่
-#  3. ค้างที่ PLACE HAND ทั้งที่มีมือ — status อาจถูก remap (ต้องเป็นค่าดิบ 5/9, MY_TOF_FAST_READ = 1)
-#  4. ผลขึ้นหลังมือนิ่งในช่วง 1 วิ + เก็บโหวตอีก ~0.2 วิ; เปลี่ยนท่า = เอามือออกแล้วเข้าใหม่
-#  5. หน้าต่างอาจอัปเดตช้ากว่าเซ็นเซอร์บนเครื่องช้า — การทายยังใช้ทุกเฟรม แค่ภาพวาดไม่ทุกเฟรม
-#  6. (v3) --source board ขึ้น NO DATA ทั้งที่บอร์ดส่งข้อมูล = เฟิร์มแวร์ไม่ได้พิมพ์บรรทัด Y (MY_TOF_PRED_LINE = 0)
-#  7. (v3) โหมด board: การโหวต/ช่วงระยะ 220–320/ถือ 1 วิ ทำบน PC เหมือนโหมด pc — ส่วนที่ย้ายไปบอร์ดคือ "การทาย" รายเฟรม
-#     (บอร์ดยังมีโหวตของตัวเองในบรรทัด P/VOTE ซึ่งไม่มีช่วง 220–320 และไม่ต้องถือนิ่ง)
+# จุดที่อาจพลาด (failure modes)
+#  1. "cannot open COM3" → PuTTY / live_check / collector ยังเปิดพอร์ตอยู่ → ปิด หรือถอดเสียบบอร์ด
+#  2. ช่องโมเดลขึ้น "E5R?" → แค่ยังไม่เห็นบรรทัดบูต ; กด RESET (ปุ่มดำ) บนบอร์ดหลังหน้าต่างเปิด จะขึ้น E5R / check OK
+#  3. ภาพซ้ายกลับด้าน → ใช้ --flip-lr / --flip-ud (แค่การแสดงผล ไม่มีผลกับการทาย)
+#  4. ขึ้น NO PREDICTION / MODEL CHECK → เฟิร์มแวร์กับโมเดลไม่เข้าคู่ (§5.1y-U) ต้องแก้ที่เฟิร์มแวร์ ไม่ใช่ที่สคริปต์
+#  5. หน้าจอช้ากว่าบอร์ดเล็กน้อย (วาดทุก 66 ms) — ตัวเลขทุกตัวมาจากบอร์ด ไม่ได้คำนวณใหม่ ยกเว้นระยะมือ (โซนใกล้สุด
+#     ที่ status 5/9 = กติกาเดียวกับเฟิร์มแวร์) และเฟรมเรต
 # ─────────────────────────────────────────────────────────────────────────
