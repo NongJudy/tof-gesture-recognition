@@ -54,7 +54,7 @@ setup or a conversation the assistant cannot observe directly
 | **5.5c re-centring (pre-registered 22:35, §5.1w)** | `pc_tools\recentre.py` (integer-exact) + `pc_tools\train_phase55c.py` (arm B re-run vs arm R, 60-model LOSO). Smoke test passed 22:28 (accuracies meaningless). Mean row shift: ST users ≈ −1, User 5 ≈ 0 → re-centring removes exactly the ST-vs-us row offset. **Full LOSO run started/starting the night of 26 Oct** |
 | **5.5c LOSO result (26–27 Oct 2026, 60 models, §5.1x)** | **R ADOPTED by the pre-registered rule.** Mean of 6: B **85.30** → R **89.67** (+4.36 pp); ST-fold mean B 85.61 → R 90.32. R > B for **all 6 subjects** (+0.25 to +9.76 pp), exact Wilcoxon W = 0, **p = 0.031** (the smallest possible with n = 6). P1 ✅ P2 ❌ (+2.75) P3 ❌ (User 5 Like 30.7 %) P4 ❌ (+4.71, favourable direction) P5 ✅ (B re-run 85.30 — reproduces 20 Oct exactly). Losses: User 6 Like 81.3 → 50.9 %, User 5 Dislike 99.6 → 86.5 %. Run from clean `1a4199d` |
 | **A15 decision (27 Oct 2026 ≈ 14:18, §5.1y-R)** | **E5R_PASSES_A15** on `phase56`: E5R 92.34 % vs E5 (board) 93.01 %, −0.66 pp ≥ −3; self-checks A–C pass. Like 81.4 → **52.2 %** (→ Dislike), Dislike 69.6 → 94.2 %. **Then A16 (§5.1y-A16, 15:00, after seeing A15): deployment needs dominance over E5 on LOSO (+1 pp), phase56 overall and every posture (≤ 5 pp below), A6-sim row−1, board parity + timing → E5R fails (Like) and is NOT deployed; E5 stays.** Next: Like diagnosis → round-3 pre-registration (RP) → LOSO → A16 checks; `phase56_stand` stays closed until the final model is chosen |
-| **Next steps (as of 27 Oct 2026, 16:12)** | **E5 stays deployed (A16).** Like diagnosis + orientation check done (§5.1y-D, §5.1y-O): protrusion = thumb; Chin's Like spans 7.5–8 of 8 rows (reaches both FoV edges; thumb end not visible), sitting Like resembles standing Dislike in size (§5.1y-O per-take); arm-dropout cancelled (§9 #69). RP prior lowered to ~10 % for all five A16 steps. **Round 3 = RP (last round):** (1) commit thumb_per_take + results_thumb + this file; (2) RP pre-registered (§5.1y-P): re-centred image + (dr/4, dc/4) as a 2nd input; next = gate G0 (X-CUBE-AI accepts 2 inputs), then the RP training script, tested offline; (3) LOSO; (4) only if RP passes A16 on LOSO: final RP models → phase56 → A6-sim → X-CUBE-AI → firmware `MY_TOF_RECENTRE` + `MY_TOF_REPLAY` (replay E5 first) → parity + timing ≤ 33 ms → blind live look → `phase56_stand` once. If RP fails: stop, E5 stays, write up. Still open: friend's 14 takes (ask stood/sat); `evaluate_phase56.py` header text; `a6sim_E5.png` polish; stray `Inc\my_tof.c`; Flash 111.89 vs 112.61 KiB; report / slides / mock defence; reusable skill at project end |
+| **Next steps (as of 27 Oct 2026, 16:40)** | **A17 (§5.1y-S): standing is the primary condition; the candidate is the existing E5R (no retraining); RP dropped unrun.** E5 stays deployed until A17 decides. (1) commit A17 + `sit_vs_stand.py` + `results_sit_vs_stand\` **before** opening `phase56_stand` for E5R; (2) `pc_tools\a17_decide.py` (from `a15_decide.py` + `a6_sim.py`, offline tests) → run once; (3) if rules 2–4 pass: X-CUBE-AI → firmware `MY_TOF_RECENTRE` + `MY_TOF_REPLAY` (replay E5 first) → parity + timing ≤ 33 ms → blind live look → friend's 14 takes (untouched confirmation; ask stood/sat); if not: E5 stays, write up. Sitting = reported limitation. Still open: `evaluate_phase56.py` header text; `a6sim_E5.png` polish; stray `Inc\my_tof.c`; Flash 111.89 vs 112.61 KiB; report / slides / mock defence; reusable skill at project end |
 | Phase 5.5a (shift augmentation) | **negative**: −12.1 pp vs retrained baseline, paired over 3 seeds (§5.1g-R); not adopted |
 | Phase 4 data collection (`collect_own_data.py` **v5**) | ✅ **Done.** Chin (User 5) 42/42: main 14 (9 Oct) + extra 14 (9 Oct) + extra 14 (15 Oct, v5). Friend (User 6) 42/42: main 14 (14 Oct, v4) + extra 28 in one sitting (A10), file timestamps 18 Oct 2026 21:56–22:16 `[ตรวจแล้ว: xcopy listing 20 Oct]`; his first 14 extras (15 Oct) stay quarantined in `data\phase4_rejected` (A9, §9 #53). Manifest check of the 28 extras: missing frames 0, out-of-window 0, with warning 0 `[STUDENT]` (output pasted 20 Oct). `data\phase4_extra` holds 56 npz (28 + 28) + manifest = 57 files; `data\phase4` 28 npz + manifest = 29 files. Local backups on Chin's PC: `C:\Users\gaming\Documents\backup_phase4_20261020\phase4` (29) and `\phase4_extra` (57). Copy to Drive/USB: **not confirmed** |
 | Collection protocol | guided arming: hand must hold inside **220–320 mm for 3 s** before recording starts; take discarded if the hand leaves the window for **8 consecutive frames**; no frame-level filtering (§5.1e-A8) |
@@ -2741,6 +2741,32 @@ a size/extent change, not a position change. **Consequence for RP:** its mechani
 of Like/Dislike for User5 (separate sessions; why `[ยังไม่ได้ตรวจ]`).
 **Demo hypothesis (untested):** hold Like a little higher so the whole hand fits inside the 8 rows — not adopted; it would move away from
 the training condition.
+**Distance / physical-size check (27 Oct 16:21, same script + `dist`, `phys` columns) `[MEASURED]`** — tests Chin's 20 Oct idea (zones ×
+distance² = physical size; project memory `model-ideas`). Mean hand distance and size in "zones at 300 mm", take means:
+Chin Like standing **306 mm / 18.0** · Chin Like sitting **294 mm / 13.4** · Chin Dislike standing 310 / 16.1 (takes 11.5–19.4) · Chin Dislike
+sitting 321 / **22.8** · friend Like 300 / 10.5 · friend Dislike 293 / 11.9.
+**Reading:** the hand was at about the **same distance** sitting and standing (Like even 12 mm closer when sitting), so the size change is
+**not** a distance effect — a distance-normalised size keeps it (18.0 → 13.4). The sitting hand shape itself is different (Like shorter, Dislike
+larger than anything in the standing training data). → Chin's size idea would not fix this case; RP (position) does not address it either.
+The sitting failure is a **data-coverage** gap (sitting shapes never seen in training), not a feature the model is missing `[inferred]`.
+Chin's hand covers ~16–18 zones at 300 mm vs the friend's ~10.5–12 (larger hand and/or wrist in view, fits reading (ข)).
+**Sit vs stand, every posture (27 Oct 16:30, `pc_tools\sit_vs_stand.py` → `results_sit_vs_stand\`, tested offline 11/11) `[MEASURED]`** —
+asked by Chin (16:27 `[STUDENT]`: arm height differs sitting vs standing, the wrist may be closer when sitting, position varies in both;
+"check, don't believe me"). User 5, 6 standing takes (training) vs 2 sitting takes (phase56) per posture; "*" = both sitting takes outside
+the standing take range on the same side (descriptive; no test possible with 2 takes).
+
+| posture | # of 10 metrics flagged | what changes when sitting |
+|---|---|---|
+| FlatHand, Love, CrossHands, BreakTime | **0** | nothing outside the standing range (centre, edges, size, distance, tilt) |
+| Fist | 1 | slightly fewer zones (21.3 → 19.1) |
+| **Dislike** | **5** | longer 5.46 → 6.85, wider 4.25 → 5.96, reaches row 7 (bottom 5.91 → 7.00), zones 14.9 → 19.9, size 16.1 → 22.8 |
+| **Like** | **6** | far edge retreats (top row 0.47 → 1.95), centre → row 7 (3.79 → 4.50), shorter 7.53 → 6.05, zones 17.3 → 14.0, 12 mm closer |
+
+Tilt (row-7/user side minus row-0 side distance): Like +27 → +6 mm (user/wrist side relatively ~21 mm closer when sitting — Chin's direction,
+but inside the standing range); Dislike +29 → +35 (not closer). **Reading:** sitting changes **only the two thumb postures** (those needing
+wrist rotation) — exactly the two with E5/E5R sitting errors; the other five keep their standing shape and position. Chin's "arm level differs"
+fits Dislike (more of the wrist/forearm side in view) and the Like tilt; "position differs" holds only for Like. → The sitting gap is a
+Like/Dislike-specific data-coverage gap; it supports treating standing (training + demo condition, §5.1p) as the primary condition.
 **What remains for round 3:** candidate **RP** (§5.1y-D / handoff): re-centred image **plus the original hand position (dr, dc)** as extra
 input. Mechanism support: arms B and R differ **only** by re-centring, and E5 (B) keeps Chin's Like at 81.4 % on phase56 while E5R drops to
 52.2 % → the information re-centring removes (where the hand lies in the 8×8 image) is what E5 used for Chin's nearly symmetric Like/Dislike;
@@ -2790,6 +2816,38 @@ seed picking, no threshold change.** `phase56_stand` is opened once at the very 
 P3 passes step 3 (Like **and** Dislike) — **~30 %**, because of the boundary-trade-off prior above. P4 all five steps — ~20 %.
 *Revised 16:12, still before any RP code, after the per-take check (§5.1y-O): P3 ~15 %, P4 ~10 % (Chin's failure is size/extent, not position).*
 **Chin's prediction:** (to be filled in by Chin before the LOSO run — optional, but written before results if given).
+
+### 5.1y-S Amendment A17 — standing is the primary condition; the candidate is the existing E5R (written 27 Oct 2026 ≈ 16:40, BEFORE E5R has ever been scored on `phase56_stand`)
+
+**Why and when — disclosed.** Written **after** the A15 result (§5.1y-R), A16 (§5.1y-A16) and the diagnosis (§5.1y-D, §5.1y-O). Chin, 16:24
+`[STUDENT]`: "ยึดตอนเรายืนทำเป็นหลัก" — standing is the real use condition; then "เอาทางที่ดีที่สุด ชัวร์สุด ละเอียดสุด" (16:32), decision left
+to ครู on merit. Reasons that do not depend on E5R's score: (a) all of Chin's training data and the demo are standing (§5.1p, recorded 26 Oct,
+before E5R existed); (b) the sit-vs-stand check (§5.1y-O) shows sitting changes only Like and Dislike, i.e. `phase56` is a different
+condition for exactly the two postures that decided A16; (c) E5's measured weakness in the use condition is the hand-shift collapse
+(standing row−1: 98.7 → 58.3 %, Like → 3.5 %, CrossHands → 1.5 %, §5.1v), which is what re-centring was built to remove.
+**What A17 does not change:** the candidate is **the existing E5R file** (sha256 as checked by `a15_decide.py`, commit `f43e0b4`) — no
+retraining, no seed choice, no threshold choice after opening. RP (§5.1y-P) is **dropped without being run**: its mechanism (position) does not
+address the measured cause (§5.1y-O). This is the **last** decision; if E5R fails, E5 stays and the model search ends.
+
+**Rule A17 (replaces A16 rules 2–3; rules 1, 4, 5 kept):** E5R replaces E5 on the board only if **all** hold —
+1. LOSO mean of 6 ≥ 86.30 % — already measured: **89.67 % → passes** (§5.1x).
+2. **Standing, overall:** E5R per-frame accuracy on `data\phase56_stand` ≥ E5's on the board on the same frames (98.7 %, §5.1u; recomputed
+   from the recorded board lines).
+3. **Standing, every posture:** no posture's recall on `phase56_stand` more than **5.0 pp** below E5's.
+4. **Hand shift:** A6-sim row−1 on `phase56_stand` (same code as §5.1v) ≥ E5's (58.3 %); all shifts reported. Caveat stated in advance:
+   the simulation shifts the whole image, so re-centring undoes most of it **by construction** — this is a sanity check, not proof of
+   physical robustness (that needs the board-shift test).
+5. **Board:** after X-CUBE-AI + firmware `MY_TOF_RECENTRE`: board = PC on every frame (replay + live) and per-frame work ≤ 33 ms.
+**Self-checks before any rule is read (as A15):** A — E5 on PC = board Y lines on every `phase56_stand` frame; B — E5 board accuracy
+reproduces §5.1u (± 0.05 pp); C — E5R input centred ≥ 0.99. Any failure → stop, fix the evaluation code, re-score the **same** E5R file.
+**Reported, never used to decide:** sitting `phase56` (E5R 92.34 vs E5 93.01 %, Like 52.2 vs 81.4 %) as a stated **limitation** ("sitting
+Like/Dislike are outside the training conditions"); `a5_love`.
+**Honest cost of A17:** `phase56_stand` becomes the selection set, so the deployed model's standing figure is slightly optimistic (chosen
+from 2 fixed models). An untouched confirmation = the friend's 14 new-day takes at the end (ask first whether he stood), scored once, report only.
+**Order:** commit this text → write `pc_tools\a17_decide.py` (from `a15_decide.py` + `a6_sim.py`, tested offline) → run once → if rules
+2–4 pass: X-CUBE-AI → firmware → replay (E5 first) → parity + timing → blind live look → friend's takes.
+**Predictions (ครู, before opening):** rule 2 ~55 % (E5 is near the ceiling; E5R may fix Love take 1's position error but can add others);
+rule 3 ~60 %; rule 4 ~95 % (by construction); rules 2–4 together ~40 %. **Chin's prediction:** (optional, before the run).
 
 ### 5.1z E5R — final arm-R models and ensemble (27 Oct 2026) `[MEASURED]`
 
@@ -3802,3 +3860,6 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *2026-10-27 16:04 addendum: §5.1y-P — round 3 pre-registered before any code: RP = re-centred image + (dr/4, dc/4) as a 2nd input concatenated after Flatten (4,575 params; image-plane variant rejected, ≈ 39 ms > 33); gate G0 = X-CUBE-AI accepts it; LOSO 30 models, B/R reused from 5.5c; A16 decides; if RP fails, search stops, E5 stays.*
 *2026-10-27 16:07 addendum: thumb claim corrected (§9 #70) after Chin's objection; `pc_tools\thumb_per_take.py` written (tested offline) to separate the three readings per take.*
 *2026-10-27 16:12 addendum: per-take check — Chin's Like spans 7.5–8 of 8 rows (reaches both FoV edges, thumb end not visible), all 6 takes alike; his Dislike varies by take; sitting Like resembles standing Dislike in size → RP prior lowered (P3 ~15 %, P4 ~10 %).*
+*2026-10-27 16:25 addendum: distance check — Chin's hand at the same distance sitting/standing (294 vs 306 mm); physical size still differs (13.4 vs 18.0) → sitting failure = data-coverage gap, not distance/position; neither Chin's size idea nor RP addresses it. Round-3 decision pending Chin.*
+*2026-10-27 16:33 addendum: sit vs stand, all 7 postures — only Like (6/10 metrics) and Dislike (5/10) leave the standing range when sitting; FlatHand/Love/CrossHands/BreakTime 0, Fist 1. A17 (standing as primary condition) proposed to Chin, not yet adopted.*
+*2026-10-27 16:40 addendum: **A17 written** (§5.1y-S) before E5R is scored on phase56_stand — standing primary, candidate = existing E5R, rules 1/4/5 kept, sitting = limitation, RP dropped unrun; disclosed as written after A15/A16.*

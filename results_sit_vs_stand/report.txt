@@ -1,0 +1,19 @@
+======================================================================================================================================================
+  Sit vs stand · User5 · every posture · standing takes (training data) → sitting takes (phase56) · §5.1y-O
+======================================================================================================================================================
+  cell = standing mean → sitting mean ; * = every sitting take outside the standing take range, same side
+  row/col = hand centre (row 0 = away from user) · top/bot = first/last hand row · rspan/cspan = length/width (zones)
+  phys = zones × (dist/300)² · tilt = distance of the hand's row-7 side (toward user) − row-0 side; negative = wrist side closer
+  posture     takes          row          col          top          bot        rspan        cspan        zones         dist         phys         tilt  #*
+  Fist          6/2   4.10→4.36    2.67→2.77    1.14→1.56    7.00→7.00    6.86→6.44    5.05→5.39    21.3→19.1*     289→287    19.8→17.5        -3→-1    1
+  FlatHand      6/2   3.48→3.52    2.41→2.56    0.00→0.00    7.00→7.00    8.00→8.00    4.55→4.80    28.8→29.5      289→282    26.7→26.1        -6→-6    0
+  Dislike       6/2   3.65→4.08    2.90→2.43    1.45→1.15    5.91→7.00*   5.46→6.85*   4.25→5.96*   14.9→19.9*     310→321    16.1→22.8*     +29→+35    5
+  Like          6/2   3.79→4.50*   2.38→2.69    0.47→1.95*   7.00→7.00    7.53→6.05*   3.32→3.17    17.3→14.0*     306→294*   18.0→13.4*      +27→+6    6
+  Love          6/2   2.42→2.60    3.46→3.42    0.58→0.69    4.41→4.05    4.83→4.36    8.00→8.00    32.2→29.7      302→302    32.6→30.1      +13→+11    0
+  CrossHands    6/2   3.63→3.67    3.31→3.36    0.01→0.00    7.00→7.00    7.99→8.00    8.00→8.00    37.4→35.8      308→305    39.3→37.0        +2→-0    0
+  BreakTime     6/2   3.13→2.98    3.51→3.37    0.96→0.85    7.00→7.00    7.04→7.15    7.95→8.00    27.3→26.8      304→300    28.0→26.7      -16→-14    0
+
+  takes = standing/sitting. Descriptive only (2 sitting takes per posture; no test is possible). Same hand
+  definition as recentre.py. Errors of E5 on phase56 per posture: see §5.1q / results_a15.
+  output: results_sit_vs_stand
+======================================================================================================================================================
