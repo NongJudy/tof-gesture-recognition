@@ -13,6 +13,8 @@ posture_maps.py ให้ค่าเฉลี่ยรวมของ User 5 (L
   ลง−ขึ้น  = (แถวสุดท้ายของมือ − แถวจุดศูนย์กลาง) − (แถวจุดศูนย์กลาง − แถวแรกของมือ)   <0 = ยื่นไปทางแถว 0 (ไกลตัว)
   %→0 / %สมมาตร / %→7 = สัดส่วนเฟรมที่ ลง−ขึ้น ≤ −0.5 / อยู่ระหว่าง / ≥ +0.5
   ขึ้น, ลง (แถว), ช่วงแถว = แถวสุดท้าย − แถวแรก + 1, โซนมือ
+  ระยะมือ (มม.) = ค่าเฉลี่ยระยะของโซนมือ ; ขนาดจริง = โซนมือ × (ระยะ/300)²  (หน่วย "โซนที่ระยะ 300 มม.")
+    — 1 โซนกว้างตามระยะ (มุมคงที่) พื้นที่จึงโตตามระยะยกกำลังสอง (ไอเดียของ Chin 20 ต.ค.)
 
 วิธีรัน (ที่ root ของ repo):
     python pc_tools\\thumb_per_take.py
@@ -36,6 +38,8 @@ import posture_maps as pm           # noqa: E402  (extents — นิยาม�
 FOCUS = ("Like", "Dislike")
 FORBIDDEN = ("phase56_stand", "phase57")
 CLEAR = 0.5          # |ลง−ขึ้น| ≥ 0.5 แถว ถือว่า "ยื่นชัด" ไปฝั่งนั้น (ครึ่งโซน)
+REF_MM = 300.0       # ระยะอ้างอิงของ "ขนาดจริง"
+DIST_MEAN, DIST_STD = 295.0, 196.0   # ค่า normalise ระยะของ st_dataset (เหมือน recentre.py)
 
 
 def take_stats(X: np.ndarray) -> dict | None:
@@ -46,12 +50,17 @@ def take_stats(X: np.ndarray) -> dict | None:
         return None
     d = (e["row_down"] - e["row_up"])[h]
     span = (e["row_down"] + e["row_up"])[h] + 1
+    hand = X[h][..., 0] < pm.rc.HAND_THRESH                       # โซนมือของเฟรมที่มีมือ
+    mm = X[h][..., 0] * DIST_STD + DIST_MEAN                       # กลับเป็นมิลลิเมตร
+    dist = (np.where(hand, mm, 0).sum(axis=(1, 2)) / hand.sum(axis=(1, 2)))
+    phys = e["zones"][h] * (dist / REF_MM) ** 2
     sd = lambda a: float(np.std(a, ddof=1)) if len(a) > 1 else float("nan")  # noqa: E731
     return {"frames": int(h.sum()), "down_minus_up": float(d.mean()), "down_minus_up_sd": sd(d),
             "pct_to_row0": float((d <= -CLEAR).mean() * 100), "pct_symmetric": float((np.abs(d) < CLEAR).mean() * 100),
             "pct_to_row7": float((d >= CLEAR).mean() * 100),
             "up_rows": float(e["row_up"][h].mean()), "down_rows": float(e["row_down"][h].mean()),
-            "row_span": float(span.mean()), "zones": float(e["zones"][h].mean())}
+            "row_span": float(span.mean()), "zones": float(e["zones"][h].mean()),
+            "dist_mm": float(dist.mean()), "dist_mm_sd": sd(dist), "phys_size": float(phys.mean())}
 
 
 def main(argv: list[str] | None = None) -> dict:
@@ -100,14 +109,15 @@ def main(argv: list[str] | None = None) -> dict:
         v = np.array([x["down_minus_up"] for x in rs])
         summ[k] = {"takes": len(rs), "mean_of_takes": float(v.mean()), "min_take": float(v.min()), "max_take": float(v.max()),
                    "takes_clear_to_row0": int((v <= -CLEAR).sum()), "takes_clear_to_row7": int((v >= CLEAR).sum()),
-                   "row_span": float(np.mean([x["row_span"] for x in rs])), "zones": float(np.mean([x["zones"] for x in rs]))}
+                   "row_span": float(np.mean([x["row_span"] for x in rs])), "zones": float(np.mean([x["zones"] for x in rs])),
+                   "dist_mm": float(np.mean([x["dist_mm"] for x in rs])), "phys_size": float(np.mean([x["phys_size"] for x in rs]))}
     (args.out_dir / "summary.json").write_text(json.dumps({"groups": summ, "takes": rows}, indent=2, ensure_ascii=False, default=str),
                                                encoding="utf-8")
 
     L = ["=" * 104, "  Thumb per take · Like / Dislike · does the hand extend clearly toward row 0 (away) or row 7 (toward)? · §5.1y-O",
          "=" * 104, f"  down−up < 0 → extends toward row 0 ; 'clear' = |down−up| ≥ {CLEAR} row ; mean ± SD over frames of each take",
          f"  {'user':<7}{'posture':<9}{'condition':<13}{'folder':<14}{'take':>5}{'frames':>7}{'down−up':>14}{'%→0':>6}{'%sym':>6}"
-         f"{'%→7':>6}{'up':>6}{'down':>6}{'span':>6}{'zones':>7}"]
+         f"{'%→7':>6}{'up':>6}{'down':>6}{'span':>6}{'zones':>7}{'dist':>6}{'phys':>6}"]
     last = None
     for r in rows:
         key = (r["user"], r["posture"])
@@ -116,12 +126,13 @@ def main(argv: list[str] | None = None) -> dict:
         last = key
         L.append(f"  {r['user']:<7}{r['posture']:<9}{r['condition']:<13}{r['folder'][:13]:<14}{r['take']:>5}{r['frames']:>7}"
                  f"{r['down_minus_up']:>+8.2f} ±{r['down_minus_up_sd']:4.2f}{r['pct_to_row0']:>6.0f}{r['pct_symmetric']:>6.0f}"
-                 f"{r['pct_to_row7']:>6.0f}{r['up_rows']:>6.2f}{r['down_rows']:>6.2f}{r['row_span']:>6.2f}{r['zones']:>7.1f}")
-    L += ["", "  Per group (take means): mean [min … max] · takes clear →0 / →7 · mean row span · mean zones"]
+                 f"{r['pct_to_row7']:>6.0f}{r['up_rows']:>6.2f}{r['down_rows']:>6.2f}{r['row_span']:>6.2f}{r['zones']:>7.1f}"
+                 f"{r['dist_mm']:>6.0f}{r['phys_size']:>6.1f}")
+    L += ["", "  Per group (take means): mean [min … max] · takes clear →0 / →7 · row span · zones · hand distance mm · size at 300 mm"]
     for k, s in summ.items():
         L.append(f"  {k:<32}{s['mean_of_takes']:>+6.2f} [{s['min_take']:+.2f} … {s['max_take']:+.2f}]  "
                  f"{s['takes_clear_to_row0']}/{s['takes']} →0, {s['takes_clear_to_row7']}/{s['takes']} →7   "
-                 f"span {s['row_span']:.2f}  zones {s['zones']:.1f}")
+                 f"span {s['row_span']:.2f}  zones {s['zones']:.1f}  dist {s['dist_mm']:.0f}  phys {s['phys_size']:.1f}")
     L += ["", "  Reading: takes that differ a lot → (ก) some clear, some not ; long span both ways → (ข) thumb + wrist ;",
           "  short span both ways → (ค) thumb not resolved at 8×8. Descriptive only; same hand definition as recentre.py.",
           f"  output: {args.out_dir}", "=" * 104]
@@ -138,5 +149,6 @@ if __name__ == "__main__":
 # จุดที่อาจพลาด (failure modes)
 #  1. "ยื่น" วัดจากจุดศูนย์กลางของโซนมือ — ถ้าแขนกับนิ้วโป้งยื่นคนละฝั่งเท่าๆ กัน ค่าจะใกล้ 0 (ดูคอลัมน์ up/down/span ประกอบ)
 #  2. ชุดนั่ง (phase56) ใช้แค่บรรยาย ไม่ได้ใช้เลือกโมเดล — ไม่ผิดกติกา A16
-#  3. ถ้าชื่อไฟล์ไม่มี __UserN__ / __takeN  load_takes จะ error (รูปแบบเดียวกับ evaluate_phase56)
+#  3. "ขนาดจริง" ประเมินต่ำไปถ้ามือล้นขอบภาพ (span = 8) — ส่วนที่หลุดภาพไม่ถูกนับ
+#  4. ถ้าชื่อไฟล์ไม่มี __UserN__ / __takeN  load_takes จะ error (รูปแบบเดียวกับ evaluate_phase56)
 # ─────────────────────────────────────────────────────────────────────────
