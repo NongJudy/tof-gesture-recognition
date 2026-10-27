@@ -1,0 +1,43 @@
+==============================================================================
+  A15 decision  ·  E5R vs E5 on data\phase56 (sitting)  ·  FACTS §5.1y
+==============================================================================
+  E5  (ON THE BOARD, recorded 26 Oct)   per-frame  93.01 %   vote  92.69 %   n = 4219
+  E5R (PC, re-centred input)            per-frame  92.34 %   vote  92.22 %
+  difference E5R - E5                    -0.66 pp
+
+  Rule 1  bug guard: E5R >= 80 %                 ok (not triggered)
+  Rule 2  E5R >= E5 - 3.0 = 90.01 %             HOLDS
+  DECISION: E5R_PASSES_A15  (still needs board = PC 100 % and <= 33 ms before deployment)
+
+  ── User5: recall %    Fist  FlatHa  Dislik    Like    Love  CrossH  BreakT
+    E5 board          100.0   100.0    69.6    81.4   100.0   100.0   100.0
+    E5R               100.0   100.0    94.2    52.2   100.0   100.0   100.0
+    E5R top confusions: Like→Dislike 288, Dislike→Fist 29, Dislike→Like 6
+
+  ── per take (report only; d_row/d_col = hand centroid minus this posture's phase4 position) ──
+    take             E5 board     E5R    diff   d_row   d_col
+    BreakTime 1         100.0   100.0    +0.0   -0.28   -0.28
+    BreakTime 2         100.0   100.0    +0.0   -0.04   -0.11
+    CrossHands 1        100.0   100.0    +0.0   +0.32   -0.09
+    CrossHands 2        100.0   100.0    +0.0   +0.47   -0.14
+    Dislike 1            39.2    88.4   +49.2   +0.38   -1.07  ← E5 failure take
+    Dislike 2           100.0   100.0    +0.0   -0.12   -1.04
+    Fist 1              100.0   100.0    +0.0   +0.31   -0.01
+    Fist 2              100.0   100.0    +0.0   +0.27   +0.34
+    FlatHand 1          100.0   100.0    +0.0   +0.03   +0.23
+    FlatHand 2          100.0   100.0    +0.0   +0.12   +0.04
+    Like 1              100.0    64.8   -35.2   +0.88   +0.52
+    Like 2               62.9    39.7   -23.2   +1.03   +0.03  ← E5 failure take
+    Love 1              100.0   100.0    +0.0   +0.11   -0.08
+    Love 2              100.0   100.0    +0.0   -0.02   -0.05
+    take-level paired Wilcoxon (descriptive, 3 of 14 takes differ): W = 3.0, p = 1.000
+
+  Pre-registered predictions (§5.1y)
+    HOLDS  N1 bug guard not triggered
+    HOLDS  N2 E5R on phase56 >= 90.0 %   [92.34]
+
+  Self-checks: A board = PC for E5 on every frame · B E5 board = 93.0 % (§5.1p) · C input centred — all PASS
+  n = 1 subject, 1 sitting session, 2 takes per posture: a known-user safety check, not proof of 'better'.
+  data\phase56_stand was NOT opened. Commit results_a15\ before scoring it.
+  output: results_a15
+==============================================================================

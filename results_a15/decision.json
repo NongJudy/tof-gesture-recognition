@@ -1,0 +1,42 @@
+{
+  "decided_at": "2026-10-27T14:16:52",
+  "rule": "FACTS §5.1y A15 (pre-registered, commit a0a0ed2)",
+  "data_dir": "data\\phase56",
+  "e5_sha256": "1a2268d3b5ab4fe7abfd17f39545a1748b032ede1afbb7e1ab4225555e648936",
+  "e5r_sha256": "3a583d0e8bcee9b22849c4759d291c2493f9f66e026bdeb8a9c422f833023575",
+  "E5_board": {
+    "n_frames": 4219,
+    "acc": 93.00782175871059,
+    "vote_acc": 92.69202087994034
+  },
+  "E5R_pc_recentred": {
+    "n_frames": 4219,
+    "acc": 92.34415738326618,
+    "vote_acc": 92.21973651503853
+  },
+  "threshold_pct": 90.00782175871059,
+  "bug_guard_pct": 80.0,
+  "bug_guard_triggered": false,
+  "decision": "E5R_PASSES_A15",
+  "self_check_board_vs_pc": {
+    "compared": 4219,
+    "agree": 4219,
+    "gate_mismatch": 0,
+    "missing_rows": 0,
+    "max_abs_diff": 7.375907897788636e-07,
+    "median_abs_diff": 3.675694465604673e-07,
+    "first_mismatches": []
+  },
+  "centred_fraction": 1.0,
+  "take_level_wilcoxon_descriptive": {
+    "n_takes": 14,
+    "n_nonzero": 3,
+    "W": 3.0,
+    "p": 1.0
+  },
+  "still_required_if_pass": [
+    "board = PC 100 % for E5R (MY_TOF_RECENTRE firmware)",
+    "per-frame work <= 33 ms"
+  ],
+  "phase56_stand": "untouched — score only after this decision is committed (§5.1y rule 5)"
+}

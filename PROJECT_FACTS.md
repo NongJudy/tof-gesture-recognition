@@ -53,6 +53,7 @@ setup or a conversation the assistant cannot observe directly
 | **A6-sim (26 Oct 22:14, §5.1v)** | Simulated whole-zone shift on phase56 / stand / a5_love: strong **asymmetry** — row−1 standing 98.7 → **58.3 %**, row−2 ≈ 32–35 %, row+1/+2 tolerated (≥ 85 %). Not clipping (≤ 8 % hand lost). **Decision rule triggered → 5.5c** |
 | **5.5c re-centring (pre-registered 22:35, §5.1w)** | `pc_tools\recentre.py` (integer-exact) + `pc_tools\train_phase55c.py` (arm B re-run vs arm R, 60-model LOSO). Smoke test passed 22:28 (accuracies meaningless). Mean row shift: ST users ≈ −1, User 5 ≈ 0 → re-centring removes exactly the ST-vs-us row offset. **Full LOSO run started/starting the night of 26 Oct** |
 | **5.5c LOSO result (26–27 Oct 2026, 60 models, §5.1x)** | **R ADOPTED by the pre-registered rule.** Mean of 6: B **85.30** → R **89.67** (+4.36 pp); ST-fold mean B 85.61 → R 90.32. R > B for **all 6 subjects** (+0.25 to +9.76 pp), exact Wilcoxon W = 0, **p = 0.031** (the smallest possible with n = 6). P1 ✅ P2 ❌ (+2.75) P3 ❌ (User 5 Like 30.7 %) P4 ❌ (+4.71, favourable direction) P5 ✅ (B re-run 85.30 — reproduces 20 Oct exactly). Losses: User 6 Like 81.3 → 50.9 %, User 5 Dislike 99.6 → 86.5 %. Run from clean `1a4199d` |
+| **A15 decision (27 Oct 2026 ≈ 14:18, §5.1y-R)** | **E5R_PASSES_A15** on `phase56`: E5R 92.34 % vs E5 (board) 93.01 %, −0.66 pp ≥ −3; self-checks A–C pass. Like 81.4 → **52.2 %** (→ Dislike), Dislike 69.6 → 94.2 %. **Then A16 (§5.1y-A16, 15:00, after seeing A15): deployment needs dominance over E5 on LOSO (+1 pp), phase56 overall and every posture (≤ 5 pp below), A6-sim row−1, board parity + timing → E5R fails (Like) and is NOT deployed; E5 stays.** Next: Like diagnosis → round-3 pre-registration (RP) → LOSO → A16 checks; `phase56_stand` stays closed until the final model is chosen |
 | **Next steps (as of 27 Oct 2026, 11:20)** | **Deployment rule amended by A15 (§5.1y): choose on `phase56` (sitting) — E5R must be ≥ E5 − 3 pp (≥ 90.0 %), bug guard < 80 %, parity 100 %, ≤ 33 ms; `phase56_stand` (standing) is kept untouched as the final known-user number. No new collection needed.** §5.1w Rule-6 chain for R: (1) commit `results_phase55c\` + this file; (2) final **E5R** = 5 arm-R models on all 6 subjects (seeds 42–46) + ensemble + board-check set built from **re-centred** inputs; (3) old-data comparison E5 (board Y lines) vs E5R (PC) take by take on `phase56`, `phase56_stand`, `a5_love` — watch **Like and Dislike** (the classes R hurt in LOSO, §5.1x) and the three E5 failure takes; A6-sim on E5R as sanity only; (4) X-CUBE-AI; (5) firmware `MY_TOF_RECENTRE` (integer floor division in C) + board vs PC on every frame; (6) timing ≤ 33 ms; (7) decide/pre-register the ruler board-shift test; deploy E5R only if (5) = 100 % and (6) ≤ 33 ms. Still open: User 6 Phase 5.6; `evaluate_phase56.py` header text; `a6sim_E5.png` polish; stray `Inc\my_tof.c`; Flash 111.89 vs 112.61 KiB; final report / slides / mock defence; reusable skill at project end |
 | Phase 5.5a (shift augmentation) | **negative**: −12.1 pp vs retrained baseline, paired over 3 seeds (§5.1g-R); not adopted |
 | Phase 4 data collection (`collect_own_data.py` **v5**) | ✅ **Done.** Chin (User 5) 42/42: main 14 (9 Oct) + extra 14 (9 Oct) + extra 14 (15 Oct, v5). Friend (User 6) 42/42: main 14 (14 Oct, v4) + extra 28 in one sitting (A10), file timestamps 18 Oct 2026 21:56–22:16 `[ตรวจแล้ว: xcopy listing 20 Oct]`; his first 14 extras (15 Oct) stay quarantined in `data\phase4_rejected` (A9, §9 #53). Manifest check of the 28 extras: missing frames 0, out-of-window 0, with warning 0 `[STUDENT]` (output pasted 20 Oct). `data\phase4_extra` holds 56 npz (28 + 28) + manifest = 57 files; `data\phase4` 28 npz + manifest = 29 files. Local backups on Chin's PC: `C:\Users\gaming\Documents\backup_phase4_20261020\phase4` (29) and `\phase4_extra` (57). Copy to Drive/USB: **not confirmed** |
@@ -2608,6 +2609,57 @@ of the hand is optional. **Status: anecdotal** — it cannot change the decision
 accuracy, and is not counted as a test set; the blind preference may be reported as such. Tools (`live_demo.py` extension + replay) to be
 written from the real `live_demo.py` and tested on a simulated board before use.
 
+### 5.1y-R A15 result — E5R vs E5 on `data\phase56` (sitting), 27 Oct 2026 ≈ 14:18 `[MEASURED]`
+
+`python pc_tools\a15_decide.py` from commit `2bbeaa0` (rule 1b committed first) → `results_a15\` (decision.json, report.txt,
+per_take.csv). Self-checks **A** (E5 recomputed on the PC = the board's recorded Y lines on every frame), **B** (E5 on the board 93.01 %
+= §5.1p) and **C** (E5R input centred) all PASS. `data\phase56_stand` not opened.
+
+| | per-frame % | 15-frame vote % |
+|---|---|---|
+| E5, **on the board** (Y lines recorded 26 Oct) | **93.01** | 92.69 |
+| E5R, PC, re-centred input | **92.34** | 92.22 |
+| E5R − E5 | **−0.66 pp** | |
+
+**Rule 1** (bug guard ≥ 80 %): not triggered. **Rule 2** (E5R ≥ E5 − 3.0 = 90.01 %): **HOLDS** → **DECISION: E5R_PASSES_A15** — it still
+needs board = PC 100 % and per-frame work ≤ 33 ms before deployment (§5.1y rule 3). Predictions N1 ✅, N2 ✅ (92.34 ≥ 90.0).
+
+**Recall % (Fist / FlatHand / Dislike / Like / Love / CrossHands / BreakTime):** E5 board 100 / 100 / 69.6 / 81.4 / 100 / 100 / 100 ·
+E5R 100 / 100 / **94.2** / **52.2** / 100 / 100 / 100. E5R top confusions: **Like→Dislike 288**, Dislike→Fist 29, Dislike→Like 6.
+**Per take (only 3 of 14 differ):** Dislike 1 39.2 → **88.4** (E5's failure take, fixed) · Like 1 100 → **64.8** · Like 2 62.9 → **39.7**
+(E5's other failure take, worse); the other 11 takes 100 → 100. Take-level paired Wilcoxon (descriptive) W = 3.0, p = 1.000.
+Hand centroids vs phase4: both Like takes sat **+0.88 / +1.03 rows** (toward ST's Like rows) — the position cue that E5 can use and E5R
+removes by construction; Dislike takes sat ≈ −1.05 columns.
+
+**Reading (n = 1, one session, 2 takes per posture — descriptive):** E5R trades Like for Dislike on Chin's sitting hand: the net change is
+small (−0.66 pp) but **Like falls to 52 %, mostly → Dislike** — the named risk of §5.1w (absolute position carried Like/Dislike
+information) and the same pattern LOSO showed for User 6 (§5.1x). There is no per-posture rule (§5.1y rule 4, fixed in advance), so the
+decision stands as written; Like is the posture to watch in the standing set, the replay and the live look, and must be reported as a
+weakness of E5R. Any attempt to fix it is new work with its own pre-registration (e.g. a Like/Dislike-specific feature), not a change to
+this decision.
+
+### 5.1y-A16 Amendment A16 — deployment needs dominance over E5 (written 27 Oct 2026 ≈ 15:00, AFTER the A15 result, BEFORE any round-3 model)
+
+**Why and when.** After seeing §5.1y-R (E5R passes A15 overall but Like 81.4 → 52.2 %), Chin stated twice (14:54, 14:56) `[STUDENT]` that he
+wants a model that is **better than the old one in every respect**, because in real use the system will mostly be used with **his own
+hand**. This amendment is written **after** the A15 result was seen — it must be reported as such. It is a **stricter** rule (it can only
+reject a new model, never admit one A15 would have rejected), and its reason is the stated use case, not a wish for a particular model.
+
+**Rule A16 (replaces §5.1y rule 3 for deployment):** a new model replaces E5 on the board only if **all** hold —
+1. **New people:** 6-subject LOSO mean of 6 ≥ E5's recipe (arm B, 85.30 %) **+ 1.0 pp** (the "strictly better somewhere" condition).
+2. **Chin sitting, overall:** per-frame accuracy on `data\phase56` ≥ E5 on the board (93.01 %).
+3. **Chin sitting, every posture:** no posture's recall on `data\phase56` below E5's by more than **5.0 pp**. (Deliberately strict: with 2 takes
+   per posture this can reject a genuinely good model by chance — the cost of that error is only that E5 stays.)
+4. **Hand shift:** A6-sim row−1 per-frame accuracy (sitting and standing sets as in §5.1v) ≥ E5's; report all shifts.
+5. **Board:** board = PC on every frame (replay + live) and per-frame work ≤ 33 ms.
+If no candidate passes all five, **E5 stays deployed**, and the thesis reports the trade-off measured.
+
+**Consequence for E5R:** fails rule 3 (Like −29.2 pp) → **E5R is not deployed**; it remains the 5.5c research result (LOSO +4.36 pp, §5.1x).
+**Data roles:** LOSO = new people; `phase56` = selection set for Chin (already used once, A15); **`phase56_stand` stays closed** and is opened
+once, for the finally chosen model (or for E5 if none passes) — that is the final known-user figure. `a5_love` = report only.
+**Next:** diagnose E5R's Like errors with existing data (bug vs real shape difference; all 5 single models?; mean hand images), then
+pre-register round 3 (candidate **RP** = re-centred image + the original hand position as extra input) before training it.
+
 ### 5.1z E5R — final arm-R models and ensemble (27 Oct 2026) `[MEASURED]`
 
 **Training** `pc_tools\train_phase55c_final.py` (written + tested offline 27 Oct, 20/20 checks incl. "fit inputs identical to LOSO arm R"
@@ -3609,3 +3661,5 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *2026-10-27 11:30 addendum: §5.1y — blind live side-by-side look (board E5 vs PC E5R on the same frames, A/B hidden, logged + replay viewer) added; after the decision, anecdotal only.*
 *2026-10-27 12:40 addendum: §5.1z — E5R trained (5 arm-R models) and built (22,555 params, 100.9 KiB tflite, all checks PASS); §9 #67 (centred 99.57 %, not 100 %); replay feasibility confirmed from firmware source; `a15_decide.py` ready — commit before running it.*
 *2026-10-27 12:47 addendum: §5.1y rule 1b (what happens if the bug guard triggers) added before `a15_decide.py` was run; committed on its own so its timestamp precedes the decision.*
+*2026-10-27 14:20 addendum: **A15 decided — E5R_PASSES_A15** (§5.1y-R): E5R 92.34 % vs E5 on board 93.01 % (−0.66 pp, threshold 90.01 %); Like 81.4 → 52.2 % (→ Dislike), Dislike 69.6 → 94.2 %. Commit `results_a15\` before opening `phase56_stand`.*
+*2026-10-27 15:00 addendum: **A16** (§5.1y-A16) — written after the A15 result at Chin's request: a new model must be at least as good as E5 in every measured respect; E5R fails it (Like) → not deployed, E5 stays; `phase56_stand` stays closed; round 3 (RP) next.*
