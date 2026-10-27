@@ -54,7 +54,7 @@ setup or a conversation the assistant cannot observe directly
 | **5.5c re-centring (pre-registered 22:35, §5.1w)** | `pc_tools\recentre.py` (integer-exact) + `pc_tools\train_phase55c.py` (arm B re-run vs arm R, 60-model LOSO). Smoke test passed 22:28 (accuracies meaningless). Mean row shift: ST users ≈ −1, User 5 ≈ 0 → re-centring removes exactly the ST-vs-us row offset. **Full LOSO run started/starting the night of 26 Oct** |
 | **5.5c LOSO result (26–27 Oct 2026, 60 models, §5.1x)** | **R ADOPTED by the pre-registered rule.** Mean of 6: B **85.30** → R **89.67** (+4.36 pp); ST-fold mean B 85.61 → R 90.32. R > B for **all 6 subjects** (+0.25 to +9.76 pp), exact Wilcoxon W = 0, **p = 0.031** (the smallest possible with n = 6). P1 ✅ P2 ❌ (+2.75) P3 ❌ (User 5 Like 30.7 %) P4 ❌ (+4.71, favourable direction) P5 ✅ (B re-run 85.30 — reproduces 20 Oct exactly). Losses: User 6 Like 81.3 → 50.9 %, User 5 Dislike 99.6 → 86.5 %. Run from clean `1a4199d` |
 | **A15 decision (27 Oct 2026 ≈ 14:18, §5.1y-R)** | **E5R_PASSES_A15** on `phase56`: E5R 92.34 % vs E5 (board) 93.01 %, −0.66 pp ≥ −3; self-checks A–C pass. Like 81.4 → **52.2 %** (→ Dislike), Dislike 69.6 → 94.2 %. **Then A16 (§5.1y-A16, 15:00, after seeing A15): deployment needs dominance over E5 on LOSO (+1 pp), phase56 overall and every posture (≤ 5 pp below), A6-sim row−1, board parity + timing → E5R fails (Like) and is NOT deployed; E5 stays.** Next: Like diagnosis → round-3 pre-registration (RP) → LOSO → A16 checks; `phase56_stand` stays closed until the final model is chosen |
-| **Next steps (as of 27 Oct 2026, 21:00)** | **E5R is deployed (A17 rules 1–5 passed, §5.1y-V):** replay board = PC 9,941/9,941, live 1,359/1,359, per-frame max 29.5 ms. Firmware: RECENTRE 1, REPLAY 0. (1) commit `live_check.py`, `results_live\`, `my_tof.c`, this file; (2) friend's 14 new-day standing takes (untouched confirmation; ask whether he stood for phase4) — scored once with the board's own Y lines; (3) optional blind live look; (4) report / slides / mock defence. Still open: stray `Inc\my_tof.c`; untracked file `python` in the repo root; `evaluate_phase56.py` header text; `a6sim_E5.png` polish; Flash 111.89 vs 112.61 KiB; `ai_conversion_project` is git-ignored (E5/E5R generated code kept as backups); reusable skill at project end |
+| **Next steps (as of 27 Oct 2026, 21:00)** | **E5R is deployed (A17 rules 1–5 passed, §5.1y-V):** replay board = PC 9,941/9,941, live 1,359/1,359, per-frame max 29.5 ms. Firmware: RECENTRE 1, REPLAY 0. (1) done (`fbca5e4`); (2) **phase57 pre-registered (§5.1y-W)**: commit `score_phase57.py` + this file, then the friend's 14 new-day standing takes (he stood for phase4), scored once with `score_phase57.py`; (3) optional blind live look; (4) report / slides / mock defence. Still open: stray `Inc\my_tof.c`; untracked file `python` in the repo root; `evaluate_phase56.py` header text; `a6sim_E5.png` polish; Flash 111.89 vs 112.61 KiB; `ai_conversion_project` is git-ignored (E5/E5R generated code kept as backups); reusable skill at project end |
 | Phase 5.5a (shift augmentation) | **negative**: −12.1 pp vs retrained baseline, paired over 3 seeds (§5.1g-R); not adopted |
 | Phase 4 data collection (`collect_own_data.py` **v5**) | ✅ **Done.** Chin (User 5) 42/42: main 14 (9 Oct) + extra 14 (9 Oct) + extra 14 (15 Oct, v5). Friend (User 6) 42/42: main 14 (14 Oct, v4) + extra 28 in one sitting (A10), file timestamps 18 Oct 2026 21:56–22:16 `[ตรวจแล้ว: xcopy listing 20 Oct]`; his first 14 extras (15 Oct) stay quarantined in `data\phase4_rejected` (A9, §9 #53). Manifest check of the 28 extras: missing frames 0, out-of-window 0, with warning 0 `[STUDENT]` (output pasted 20 Oct). `data\phase4_extra` holds 56 npz (28 + 28) + manifest = 57 files; `data\phase4` 28 npz + manifest = 29 files. Local backups on Chin's PC: `C:\Users\gaming\Documents\backup_phase4_20261020\phase4` (29) and `\phase4_extra` (57). Copy to Drive/USB: **not confirmed** |
 | Collection protocol | guided arming: hand must hold inside **220–320 mm for 3 s** before recording starts; take discarded if the hand leaves the window for **8 consecutive frames**; no frame-level filtering (§5.1e-A8) |
@@ -2953,8 +2953,27 @@ live board = PC 1,359/1,359 + max 29.5 ms (rule 5, §5.1y-U, this section).
 `X-CUBE-AI\App\` (signature `0x402dab2e…`); E5 restorable from `backup_App_E5_fw_20261027\` + switch 0 (the model guard forces the pair).
 **Thesis caveats (unchanged):** 100 % standing = ceiling on 14 takes of one person and the set was the selection set; sitting Like is a stated
 limitation (52.2 %); A6-sim is simulated.
-**Remaining:** (a) the friend's (User 6) 14 new-day takes = the only untouched confirmation (ask first whether he stood for phase4; collect
-standing, with E5R on the board, no live predictions shown); (b) optional blind live look for Chin (anecdotal); (c) report/slides/defence.
+**Remaining:** (a) the friend's (User 6) 14 new-day takes = the only untouched confirmation — **Chin, 27 Oct 21:00 `[STUDENT]`: the friend STOOD for his phase4 / phase4_extra collection** → collect standing, with E5R on the board, no live predictions shown; (b) optional blind live look for Chin (anecdotal); (c) report/slides/defence.
+
+### 5.1y-W Pre-registration — final confirmation set `data\phase57` (User 6, new day, standing) (written 27 Oct 2026 ≈ 21:15, BEFORE collection)
+
+**Purpose.** `phase56_stand` became the selection set in A17, so the project has **no untouched known-user number**. `phase57` is collected
+**after** the model is fixed (E5R, signature `0x402dab2e…`, firmware commit `fbca5e4`) and is used **once, report-only**: whatever it shows,
+no model change, no retraining with it (training scripts already refuse `phase57`), no take selection after seeing results.
+**Collection (fixed now).** `pc_tools\collect_own_data.py` v6.2 as is (checked 21:05: records the board's Y/Q lines to `*_board.csv`;
+shows **no** predictions on screen — only distance, hold bar and Y/Q line counts):
+`python pc_tools\collect_own_data.py --port COM3 --user 6 --out-dir data\phase57 --minutes-since-poweron <n> --fw-note "fbca5e4 E5R RECENTRE1 REPLAY0"`
+— defaults: 7 postures × 2 takes, 20 s, window 220–320 mm, hold 3 s, abort 8 frames. The friend **stands** (he stood for phase4,
+`[STUDENT]` 21:00). Chin operates and answers y/r/s **only on whether the posture was held correctly**, never on anything the board says.
+The friend must not see a live prediction anywhere (no PuTTY, no live tool) before or during collection.
+**Scoring (fixed now).** `pc_tools\score_phase57.py` (tested offline 6/6): board accuracy from the board's own Y lines (per frame, 15-frame
+vote, per posture, per take); parity check board = PC (st_dataset → recentre → `E5R.keras`) on every frame; Q timing. **Bug guard:** any
+board ≠ PC frame or accuracy < 80 % → stop and find the cause before reporting.
+**Predictions (ครู, before collection):** P1 per-frame board accuracy ≥ 95 % (~75 %); P2 every posture ≥ 85 % (~65 %; Like is the
+posture to watch — friend's LOSO Like under arm R was 50.9 %, §5.1x, but he is a known user now and shows a clear thumb, §5.1y-O);
+P3 board = PC on every frame (~99 %); P4 per-frame max ≤ 30 ms (~95 %). **Chin's prediction:** (optional, before collection).
+**Thesis wording:** "known user (User 6), new day, standing, board's own predictions, set collected after the model was frozen" — n = 1
+subject, 1 session, 2 takes per posture: descriptive.
 
 ### 5.1z E5R — final arm-R models and ensemble (27 Oct 2026) `[MEASURED]`
 
@@ -3978,3 +3997,5 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *2026-10-27 20:36 addendum: **5.6 — E5R on the board = PC on all 4,221 phase56_stand frames** (p diff 7.5e-7, accuracy 100 %), preprocess +0.14 ms for re-centring. Next: replay phase56 + a5_love, then live timing/parity (REPLAY 0).*
 *2026-10-27 20:42 addendum: E5R replay parity on all three recorded sets — 9,941/9,941 frames, max p diff 7.8e-7; phase56 board accuracy 92.34 % = PC. Next: commit, then live check (REPLAY 0): timing ≤ 33 ms + live board = PC.*
 *2026-10-27 21:00 addendum: **Rule 5 passed live** (§5.1y-V): board = PC 1,359/1,359, per-frame 29.32 ± 0.06 ms (max 29.50) → **E5R replaces E5 (A17 complete).** Next: commit, friend's takes, write-up.*
+*2026-10-27 21:02 addendum: friend (User 6) stood for phase4 `[STUDENT]` — open question in §5.1p/§5.1y closed.*
+*2026-10-27 21:15 addendum: §5.1y-W — phase57 (User 6 new day, standing) pre-registered before collection: collector v6.2 unchanged (no live predictions shown), `score_phase57.py` (offline 6/6), report-only, bug guard 80 % / parity.*
