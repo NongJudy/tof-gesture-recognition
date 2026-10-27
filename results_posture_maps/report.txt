@@ -1,0 +1,33 @@
+============================================================================================
+  Posture maps · where does the hand/forearm extend? · training data only · §5.1y-D
+============================================================================================
+  down−up > 0  → hand extends further toward row 7 than toward row 0 (mean ± SD, rows)
+  right−left > 0 → extends further toward column 7
+  group           posture      frames        down−up  % down>up     right−left    zones
+  ST users 1-4    Fist           2274   -0.01 ±0.52        45%   +0.04 ±0.45     18.1
+  ST users 1-4    FlatHand       1738   -0.42 ±0.71        22%   +0.07 ±0.67     26.9
+  ST users 1-4    Dislike        1686   +0.46 ±0.46        80%   +0.20 ±0.56     18.1
+  ST users 1-4    Like           1580   -1.18 ±0.60         2%   +0.07 ±0.63     17.5
+  ST users 1-4    Love           1274   +0.01 ±0.49        48%   +0.14 ±0.38     32.1
+  ST users 1-4    CrossHands     1266   -0.56 ±0.52        15%   +0.07 ±0.55     31.2
+  ST users 1-4    BreakTime      1243   +1.19 ±0.45       100%   -0.27 ±0.51     24.6
+
+  User5 (Chin)    Fist           1809   -0.06 ±0.22        37%   +0.00 ±0.38     21.3
+  User5 (Chin)    FlatHand       1809   +0.04 ±0.25        45%   +0.08 ±0.35     28.8
+  User5 (Chin)    Dislike        1809   +0.05 ±0.48        48%   -0.51 ±0.59     14.9
+  User5 (Chin)    Like           1811   -0.11 ±0.32        28%   -0.04 ±0.43     17.3
+  User5 (Chin)    Love           1808   +0.14 ±0.46        46%   +0.07 ±0.15     32.2
+  User5 (Chin)    CrossHands     1809   -0.25 ±0.72        49%   +0.39 ±0.31     37.4
+  User5 (Chin)    BreakTime      1809   +1.70 ±0.31       100%   +0.04 ±0.35     27.3
+
+  User6 (friend)  Fist           1812   +0.17 ±0.25        73%   +0.09 ±0.35     23.2
+  User6 (friend)  FlatHand       1812   -0.54 ±0.33         3%   +0.43 ±0.44     27.2
+  User6 (friend)  Dislike        1812   +0.42 ±0.38        79%   -0.17 ±0.42     12.4
+  User6 (friend)  Like           1812   -0.52 ±0.36         4%   +0.03 ±0.33     10.5
+  User6 (friend)  Love           1812   -0.06 ±0.44        38%   +0.04 ±0.17     32.1
+  User6 (friend)  CrossHands     1812   -1.23 ±0.41         0%   +0.09 ±0.36     41.2
+  User6 (friend)  BreakTime      1812   +1.44 ±0.36       100%   -0.35 ±0.36     28.0
+
+  Descriptive only. Uses the same hand definition as recentre.py (distance < 2000 mm after preprocessing).
+  output: results_posture_maps
+============================================================================================
