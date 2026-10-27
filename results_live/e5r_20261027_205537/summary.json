@@ -1,0 +1,77 @@
+{
+  "generated": "2026-10-27T20:55:37",
+  "verdict": "PASS",
+  "checks": {
+    "class_all_frames": true,
+    "no_guard_or_run_errors": true,
+    "probabilities_within_tol": true,
+    "enough_timed_frames": true,
+    "max_total_within_budget": true
+  },
+  "boot": {
+    "model": "e5r",
+    "recentre": "1",
+    "check": "OK"
+  },
+  "model": "e5r",
+  "keras": "results_phase55c_final\\deploy\\E5R.keras",
+  "keras_sha256": "3a583d0e8bcee9b22849c4759d291c2493f9f66e026bdeb8a9c422f833023575",
+  "seconds": 90.0,
+  "frames_complete": 1359,
+  "frames_incomplete_dropped": 1,
+  "frames_missing_in_sequence": 0,
+  "in_range_frames": 1222,
+  "class_agree": 1359,
+  "guard_or_run_errors": 0,
+  "prob_maxdiff": 1.1201820373507587e-06,
+  "timing_us": {
+    "total": {
+      "n": 1222,
+      "mean": 29319.763502454993,
+      "sd": 57.242208874483964,
+      "p99": 29474.0,
+      "max": 29503.0
+    },
+    "sensor_us": {
+      "n": 1222,
+      "mean": 13255.091653027823,
+      "sd": 0.2886536581870463,
+      "p99": 13256.0,
+      "max": 13256.0
+    },
+    "preprocess_us": {
+      "n": 1222,
+      "mean": 261.22749590834695,
+      "sd": 69.06291423740181,
+      "p99": 332.0,
+      "max": 333.0
+    },
+    "inference_us": {
+      "n": 1222,
+      "mean": 15801.423895253682,
+      "sd": 66.88090324513423,
+      "p99": 15930.0,
+      "max": 15940.0
+    },
+    "decision_us": {
+      "n": 1222,
+      "mean": 2.020458265139116,
+      "sd": 0.2333541760403016,
+      "p99": 3.0,
+      "max": 9.0
+    }
+  },
+  "budget_us": 33000,
+  "board_class_counts": {
+    "none": 137,
+    "Fist": 198,
+    "FlatHand": 242,
+    "Dislike": 248,
+    "Like": 160,
+    "Love": 170,
+    "CrossHands": 64,
+    "BreakTime": 140
+  },
+  "clock": "DWT cycle counter, SystemCoreClock 84 MHz from HSE (§3.1)",
+  "note": "live parity + timing, not accuracy"
+}

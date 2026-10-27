@@ -93,7 +93,7 @@ extern void *VL53L8A1_RANGING_SENSOR_CompObj[];
    1 = รับเฟรมจาก PC ทาง UART แทนการอ่านเซ็นเซอร์ (ดูหัวไฟล์) — ใช้ทดสอบเท่านั้น ห้ามใช้ตอนเดโม
    0 = อ่านเซ็นเซอร์ตามปกติ */
 #ifndef MY_TOF_REPLAY
-#define MY_TOF_REPLAY        1     /* ขั้น 5.5 (27 ต.ค.): 1 ชั่วคราวเพื่อ replay — ใช้งานจริง/เดโมต้องเป็น 0 */
+#define MY_TOF_REPLAY        0     /* 0 = อ่านเซ็นเซอร์ (ใช้งานจริง/เดโม/ลองสด) ; 1 = replay (ขั้น 5.5–5.6) */
 #endif
 
 #if MY_TOF_REPLAY && (MY_TOF_TIMING_MODE || !MY_TOF_PRED_LINE || MY_TOF_USE_4X4)

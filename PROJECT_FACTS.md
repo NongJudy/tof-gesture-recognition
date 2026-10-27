@@ -54,7 +54,7 @@ setup or a conversation the assistant cannot observe directly
 | **5.5c re-centring (pre-registered 22:35, §5.1w)** | `pc_tools\recentre.py` (integer-exact) + `pc_tools\train_phase55c.py` (arm B re-run vs arm R, 60-model LOSO). Smoke test passed 22:28 (accuracies meaningless). Mean row shift: ST users ≈ −1, User 5 ≈ 0 → re-centring removes exactly the ST-vs-us row offset. **Full LOSO run started/starting the night of 26 Oct** |
 | **5.5c LOSO result (26–27 Oct 2026, 60 models, §5.1x)** | **R ADOPTED by the pre-registered rule.** Mean of 6: B **85.30** → R **89.67** (+4.36 pp); ST-fold mean B 85.61 → R 90.32. R > B for **all 6 subjects** (+0.25 to +9.76 pp), exact Wilcoxon W = 0, **p = 0.031** (the smallest possible with n = 6). P1 ✅ P2 ❌ (+2.75) P3 ❌ (User 5 Like 30.7 %) P4 ❌ (+4.71, favourable direction) P5 ✅ (B re-run 85.30 — reproduces 20 Oct exactly). Losses: User 6 Like 81.3 → 50.9 %, User 5 Dislike 99.6 → 86.5 %. Run from clean `1a4199d` |
 | **A15 decision (27 Oct 2026 ≈ 14:18, §5.1y-R)** | **E5R_PASSES_A15** on `phase56`: E5R 92.34 % vs E5 (board) 93.01 %, −0.66 pp ≥ −3; self-checks A–C pass. Like 81.4 → **52.2 %** (→ Dislike), Dislike 69.6 → 94.2 %. **Then A16 (§5.1y-A16, 15:00, after seeing A15): deployment needs dominance over E5 on LOSO (+1 pp), phase56 overall and every posture (≤ 5 pp below), A6-sim row−1, board parity + timing → E5R fails (Like) and is NOT deployed; E5 stays.** Next: Like diagnosis → round-3 pre-registration (RP) → LOSO → A16 checks; `phase56_stand` stays closed until the final model is chosen |
-| **Next steps (as of 27 Oct 2026, 16:45)** | **A17 result (§5.1y-T): E5R passes rules 1–4** — standing 100.00 % vs E5 98.72 % (board), Love take 1 fixed, A6-sim row−1 86.4 vs 58.3 %, all self-checks pass. **E5 stays on the board until rule 5 passes.** (1) commit `results_a17\` + this file; (2) X-CUBE-AI Analyze/convert `E5R.tflite`; (3) firmware `MY_TOF_RECENTRE` (C floor division, switch default 0) + `MY_TOF_REPLAY` (UART RX, replay E5 first: must reproduce recorded Y lines); (4) E5R board = PC 100 % (replay + live), per-frame ≤ 33 ms; (5) then E5R replaces E5 → blind live look → friend's 14 takes (untouched confirmation; ask stood/sat). Caveats: 100 % = ceiling on 14 takes, n = 1, selection set; sitting Like = limitation. Still open: `evaluate_phase56.py` header text; `a6sim_E5.png` polish; stray `Inc\my_tof.c`; Flash 111.89 vs 112.61 KiB; report / slides / mock defence; reusable skill at project end |
+| **Next steps (as of 27 Oct 2026, 21:00)** | **E5R is deployed (A17 rules 1–5 passed, §5.1y-V):** replay board = PC 9,941/9,941, live 1,359/1,359, per-frame max 29.5 ms. Firmware: RECENTRE 1, REPLAY 0. (1) commit `live_check.py`, `results_live\`, `my_tof.c`, this file; (2) friend's 14 new-day standing takes (untouched confirmation; ask whether he stood for phase4) — scored once with the board's own Y lines; (3) optional blind live look; (4) report / slides / mock defence. Still open: stray `Inc\my_tof.c`; untracked file `python` in the repo root; `evaluate_phase56.py` header text; `a6sim_E5.png` polish; Flash 111.89 vs 112.61 KiB; `ai_conversion_project` is git-ignored (E5/E5R generated code kept as backups); reusable skill at project end |
 | Phase 5.5a (shift augmentation) | **negative**: −12.1 pp vs retrained baseline, paired over 3 seeds (§5.1g-R); not adopted |
 | Phase 4 data collection (`collect_own_data.py` **v5**) | ✅ **Done.** Chin (User 5) 42/42: main 14 (9 Oct) + extra 14 (9 Oct) + extra 14 (15 Oct, v5). Friend (User 6) 42/42: main 14 (14 Oct, v4) + extra 28 in one sitting (A10), file timestamps 18 Oct 2026 21:56–22:16 `[ตรวจแล้ว: xcopy listing 20 Oct]`; his first 14 extras (15 Oct) stay quarantined in `data\phase4_rejected` (A9, §9 #53). Manifest check of the 28 extras: missing frames 0, out-of-window 0, with warning 0 `[STUDENT]` (output pasted 20 Oct). `data\phase4_extra` holds 56 npz (28 + 28) + manifest = 57 files; `data\phase4` 28 npz + manifest = 29 files. Local backups on Chin's PC: `C:\Users\gaming\Documents\backup_phase4_20261020\phase4` (29) and `\phase4_extra` (57). Copy to Drive/USB: **not confirmed** |
 | Collection protocol | guided arming: hand must hold inside **220–320 mm for 3 s** before recording starts; take discarded if the hand leaves the window for **8 consecutive frames**; no frame-level filtering (§5.1e-A8) |
@@ -2933,6 +2933,29 @@ difference 0.00** (bit-identical to the 26 Oct live run), no resends, board infe
 **Next (was):** commit; then copy E5R's 8 files into the firmware's
 `X-CUBE-AI\App\` (back up E5's first), `MY_TOF_RECENTRE 1`, replay with `--model e5r --reference pc` on `phase56_stand`, `phase56`, `a5_love`.
 
+### 5.1y-V Rule 5 passed — **E5R is the deployed model** (27 Oct 2026 ≈ 20:56) `[MEASURED]`
+
+**5.7 Live check** (`pc_tools\live_check.py`, tested offline 13/13 against the real `my_tof.c`; firmware `MY_TOF_REPLAY 0`,
+`MY_TOF_RECENTRE 1`, E5R; flashed 249.02 KB) → `results_live\e5r_20261027_205537\`. Chin standing, 90 s, all 7 postures in turn with free
+hand placement (he could not say how high/tilted — irrelevant here: this is parity + timing, not accuracy; varied placement tests more cases).
+- **Live board = PC on every frame: 1,359/1,359** (PC = the board's own F/S/G → `st_dataset` → `recentre.py` → `E5R.keras`), max probability
+  difference **1.1e-06**, no −2/−3; 1 incomplete frame at the capture edge dropped, 0 missing in sequence.
+- **Per-frame work** (DWT, 84 MHz HSE, `-O0`, n = 1,222 frames with the hand in range): **29.320 ± 0.057 ms, p99 29.474, max 29.503 ms**
+  (budget 33 ms) — sensor 13.255 · preprocess incl. re-centring 0.261 (max 0.333) · inference 15.801 (max 15.940) · decision 0.002 ms.
+  E5 for comparison: 29.3 ± 0.04 ms (§5.1n) → re-centring adds ≈ 0.13 ms.
+- Board answers during the run (not accuracy, no labels): none 137, Fist 198, FlatHand 242, Dislike 248, Like 160, Love 170, CrossHands 64,
+  BreakTime 140.
+
+**A17 outcome (§5.1y-S): rules 1–5 all pass → E5R replaces E5 on the board.** Evidence chain: LOSO 89.67 % (rule 1, §5.1x) · standing
+100.00 % vs E5 98.72 % (rules 2–3, §5.1y-T) · A6-sim row−1 86.4 vs 58.3 % (rule 4) · replay board = PC 9,941/9,941 frames on three sets +
+live board = PC 1,359/1,359 + max 29.5 ms (rule 5, §5.1y-U, this section).
+**Deployed firmware configuration:** `MY_TOF_RECENTRE 1`, `MY_TOF_REPLAY 0`, `MY_TOF_PRED_LINE 1`, `MY_TOF_FRAME_TIMING 1`, E5R in
+`X-CUBE-AI\App\` (signature `0x402dab2e…`); E5 restorable from `backup_App_E5_fw_20261027\` + switch 0 (the model guard forces the pair).
+**Thesis caveats (unchanged):** 100 % standing = ceiling on 14 takes of one person and the set was the selection set; sitting Like is a stated
+limitation (52.2 %); A6-sim is simulated.
+**Remaining:** (a) the friend's (User 6) 14 new-day takes = the only untouched confirmation (ask first whether he stood for phase4; collect
+standing, with E5R on the board, no live predictions shown); (b) optional blind live look for Chin (anecdotal); (c) report/slides/defence.
+
 ### 5.1z E5R — final arm-R models and ensemble (27 Oct 2026) `[MEASURED]`
 
 **Training** `pc_tools\train_phase55c_final.py` (written + tested offline 27 Oct, 20/20 checks incl. "fit inputs identical to LOSO arm R"
@@ -3954,3 +3977,4 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *2026-10-27 20:25 addendum: full E5 replay on phase56_stand = the recorded live run on all 4,221 frames, probability difference 0 → replay method validated. Next: commit, then E5R into the firmware (RECENTRE 1) and replay vs PC.*
 *2026-10-27 20:36 addendum: **5.6 — E5R on the board = PC on all 4,221 phase56_stand frames** (p diff 7.5e-7, accuracy 100 %), preprocess +0.14 ms for re-centring. Next: replay phase56 + a5_love, then live timing/parity (REPLAY 0).*
 *2026-10-27 20:42 addendum: E5R replay parity on all three recorded sets — 9,941/9,941 frames, max p diff 7.8e-7; phase56 board accuracy 92.34 % = PC. Next: commit, then live check (REPLAY 0): timing ≤ 33 ms + live board = PC.*
+*2026-10-27 21:00 addendum: **Rule 5 passed live** (§5.1y-V): board = PC 1,359/1,359, per-frame 29.32 ± 0.06 ms (max 29.50) → **E5R replaces E5 (A17 complete).** Next: commit, friend's takes, write-up.*
