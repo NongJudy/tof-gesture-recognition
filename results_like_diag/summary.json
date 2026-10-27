@@ -1,0 +1,163 @@
+{
+  "user": "User5",
+  "bug_check_training_data": {
+    "E5R_train_recall": {
+      "Fist": 100.0,
+      "FlatHand": 100.0,
+      "Dislike": 99.94472084024324,
+      "Like": 99.50303699613472,
+      "Love": 100.0,
+      "CrossHands": 100.0,
+      "BreakTime": 100.0
+    },
+    "E5_train_recall": {
+      "Fist": 100.0,
+      "FlatHand": 100.0,
+      "Dislike": 100.0,
+      "Like": 100.0,
+      "Love": 100.0,
+      "CrossHands": 100.0,
+      "BreakTime": 100.0
+    }
+  },
+  "selection_recall_per_model": {
+    "E5R": {
+      "Fist": 100.0,
+      "FlatHand": 100.0,
+      "Dislike": 94.18604651162791,
+      "Like": 52.23880597014925,
+      "Love": 100.0,
+      "CrossHands": 100.0,
+      "BreakTime": 100.0
+    },
+    "E5_board": {
+      "Fist": 100.0,
+      "FlatHand": 100.0,
+      "Dislike": 69.60132890365448,
+      "Like": 81.4262023217247,
+      "Love": 100.0,
+      "CrossHands": 100.0,
+      "BreakTime": 100.0
+    },
+    "R_seed42": {
+      "Fist": 85.59602649006622,
+      "FlatHand": 100.0,
+      "Dislike": 99.83388704318938,
+      "Like": 38.14262023217247,
+      "Love": 100.0,
+      "CrossHands": 100.0,
+      "BreakTime": 100.0
+    },
+    "R_seed43": {
+      "Fist": 96.52317880794702,
+      "FlatHand": 100.0,
+      "Dislike": 54.65116279069767,
+      "Like": 24.046434494195687,
+      "Love": 100.0,
+      "CrossHands": 100.0,
+      "BreakTime": 100.0
+    },
+    "R_seed44": {
+      "Fist": 100.0,
+      "FlatHand": 100.0,
+      "Dislike": 60.797342192691026,
+      "Like": 30.34825870646766,
+      "Love": 100.0,
+      "CrossHands": 100.0,
+      "BreakTime": 100.0
+    },
+    "R_seed45": {
+      "Fist": 85.09933774834437,
+      "FlatHand": 100.0,
+      "Dislike": 67.44186046511628,
+      "Like": 52.40464344941957,
+      "Love": 100.0,
+      "CrossHands": 100.0,
+      "BreakTime": 100.0
+    },
+    "R_seed46": {
+      "Fist": 93.54304635761589,
+      "FlatHand": 100.0,
+      "Dislike": 98.33887043189368,
+      "Like": 88.88888888888889,
+      "Love": 100.0,
+      "CrossHands": 100.0,
+      "BreakTime": 100.0
+    },
+    "B_seed42": {
+      "Fist": 100.0,
+      "FlatHand": 100.0,
+      "Dislike": 23.754152823920265,
+      "Like": 86.23548922056385,
+      "Love": 100.0,
+      "CrossHands": 100.0,
+      "BreakTime": 100.0
+    },
+    "B_seed43": {
+      "Fist": 100.0,
+      "FlatHand": 100.0,
+      "Dislike": 84.0531561461794,
+      "Like": 60.86235489220564,
+      "Love": 100.0,
+      "CrossHands": 100.0,
+      "BreakTime": 100.0
+    },
+    "B_seed44": {
+      "Fist": 86.09271523178808,
+      "FlatHand": 100.0,
+      "Dislike": 74.91694352159467,
+      "Like": 78.1094527363184,
+      "Love": 100.0,
+      "CrossHands": 100.0,
+      "BreakTime": 100.0
+    },
+    "B_seed45": {
+      "Fist": 100.0,
+      "FlatHand": 100.0,
+      "Dislike": 24.58471760797342,
+      "Like": 64.6766169154229,
+      "Love": 100.0,
+      "CrossHands": 100.0,
+      "BreakTime": 100.0
+    },
+    "B_seed46": {
+      "Fist": 99.66887417218543,
+      "FlatHand": 100.0,
+      "Dislike": 49.667774086378735,
+      "Like": 82.91873963515755,
+      "Love": 100.0,
+      "CrossHands": 100.0,
+      "BreakTime": 100.0
+    }
+  },
+  "shape": {
+    "Like|train": {
+      "frames": 1811,
+      "hand_zones_mean": 17.319712865819987
+    },
+    "Dislike|train": {
+      "frames": 1809,
+      "hand_zones_mean": 14.90326147042565
+    },
+    "Like|sitting": {
+      "frames": 603,
+      "hand_zones_mean": 13.99502487562189
+    },
+    "Dislike|sitting": {
+      "frames": 602,
+      "hand_zones_mean": 19.93687707641196
+    }
+  },
+  "map_correlations": {
+    "Like|sitting vs Like|train": 0.9053814305233139,
+    "Like|sitting vs Dislike|train": 0.9059273915850143,
+    "Dislike|sitting vs Dislike|train": 0.743556867606086,
+    "Dislike|sitting vs Like|train": 0.5355205346462301,
+    "Like|train vs Dislike|train": 0.8378642831392491
+  },
+  "sitting_like_frames_closer_to_training_dislike_pct": 37.47927031509121,
+  "models": {
+    "E5": "1a2268d3b5ab4fe7",
+    "E5R": "3a583d0e8bcee9b2"
+  }
+}

@@ -1,0 +1,37 @@
+==============================================================================
+  Like diagnosis  ·  User5  ·  existing data only (phase56_stand NOT opened)  ·  §5.1y-A16
+==============================================================================
+  A. bug check — models on the data they were TRAINED on (diagnostic, not accuracy)
+    recall %         Fist  FlatHa  Dislik    Like    Love  CrossH  BreakT
+    E5              100.0   100.0   100.0   100.0   100.0   100.0   100.0
+    E5R             100.0   100.0    99.9    99.5   100.0   100.0   100.0
+
+  B. every model on phase56 (sitting) — recall % Like / Dislike
+    E5R            Like   52.2   Dislike   94.2
+    E5_board       Like   81.4   Dislike   69.6
+    R_seed42       Like   38.1   Dislike   99.8
+    R_seed43       Like   24.0   Dislike   54.7
+    R_seed44       Like   30.3   Dislike   60.8
+    R_seed45       Like   52.4   Dislike   67.4
+    R_seed46       Like   88.9   Dislike   98.3
+    B_seed42       Like   86.2   Dislike   23.8
+    B_seed43       Like   60.9   Dislike   84.1
+    B_seed44       Like   78.1   Dislike   74.9
+    B_seed45       Like   64.7   Dislike   24.6
+    B_seed46       Like   82.9   Dislike   49.7
+
+  C. hand shape after re-centring (correlation of mean hand maps; 1 = identical)
+    Like|sitting vs Like|train            0.905
+    Like|sitting vs Dislike|train         0.906
+    Dislike|sitting vs Dislike|train      0.744
+    Dislike|sitting vs Like|train         0.536
+    Like|train vs Dislike|train           0.838
+    sitting Like frames closer to training-Dislike than to training-Like: 37.5 %
+    Like|train         frames  1811   mean hand zones  17.3
+    Dislike|train      frames  1809   mean hand zones  14.9
+    Like|sitting       frames   603   mean hand zones  14.0
+    Dislike|sitting    frames   602   mean hand zones  19.9
+
+  D. per-frame table: results_like_diag\per_frame_phase56.csv  (1205 Like/Dislike frames)
+  Training-data numbers are a bug check only — never report them as accuracy.
+==============================================================================
