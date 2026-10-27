@@ -54,7 +54,7 @@ setup or a conversation the assistant cannot observe directly
 | **5.5c re-centring (pre-registered 22:35, §5.1w)** | `pc_tools\recentre.py` (integer-exact) + `pc_tools\train_phase55c.py` (arm B re-run vs arm R, 60-model LOSO). Smoke test passed 22:28 (accuracies meaningless). Mean row shift: ST users ≈ −1, User 5 ≈ 0 → re-centring removes exactly the ST-vs-us row offset. **Full LOSO run started/starting the night of 26 Oct** |
 | **5.5c LOSO result (26–27 Oct 2026, 60 models, §5.1x)** | **R ADOPTED by the pre-registered rule.** Mean of 6: B **85.30** → R **89.67** (+4.36 pp); ST-fold mean B 85.61 → R 90.32. R > B for **all 6 subjects** (+0.25 to +9.76 pp), exact Wilcoxon W = 0, **p = 0.031** (the smallest possible with n = 6). P1 ✅ P2 ❌ (+2.75) P3 ❌ (User 5 Like 30.7 %) P4 ❌ (+4.71, favourable direction) P5 ✅ (B re-run 85.30 — reproduces 20 Oct exactly). Losses: User 6 Like 81.3 → 50.9 %, User 5 Dislike 99.6 → 86.5 %. Run from clean `1a4199d` |
 | **A15 decision (27 Oct 2026 ≈ 14:18, §5.1y-R)** | **E5R_PASSES_A15** on `phase56`: E5R 92.34 % vs E5 (board) 93.01 %, −0.66 pp ≥ −3; self-checks A–C pass. Like 81.4 → **52.2 %** (→ Dislike), Dislike 69.6 → 94.2 %. **Then A16 (§5.1y-A16, 15:00, after seeing A15): deployment needs dominance over E5 on LOSO (+1 pp), phase56 overall and every posture (≤ 5 pp below), A6-sim row−1, board parity + timing → E5R fails (Like) and is NOT deployed; E5 stays.** Next: Like diagnosis → round-3 pre-registration (RP) → LOSO → A16 checks; `phase56_stand` stays closed until the final model is chosen |
-| **Next steps (as of 27 Oct 2026, 21:00)** | **E5R is deployed (A17 rules 1–5 passed, §5.1y-V):** replay board = PC 9,941/9,941, live 1,359/1,359, per-frame max 29.5 ms. Firmware: RECENTRE 1, REPLAY 0. (1) done (`fbca5e4`); (2) **phase57 pre-registered (§5.1y-W)**: commit `score_phase57.py` + this file, then the friend's 14 new-day standing takes (he stood for phase4), scored once with `score_phase57.py`; (3) optional blind live look; (4) report / slides / mock defence. Still open: stray `Inc\my_tof.c`; untracked file `python` in the repo root; `evaluate_phase56.py` header text; `a6sim_E5.png` polish; Flash 111.89 vs 112.61 KiB; `ai_conversion_project` is git-ignored (E5/E5R generated code kept as backups); reusable skill at project end |
+| **Next steps (as of 27 Oct 2026, 21:00)** | **E5R is deployed (A17 rules 1–5 passed, §5.1y-V):** replay board = PC 9,941/9,941, live 1,359/1,359, per-frame max 29.5 ms. Firmware: RECENTRE 1, REPLAY 0. (1) done (`fbca5e4`); (2) **phase57 done (§5.1y-X): board 100.00 % on 4,228 frames / 14 of 14 takes, board = PC on every frame, 29.33 ± 0.06 ms** (data `df9e171`); (3) optional blind live look; (4) report / slides / mock defence. Still open: stray `Inc\my_tof.c`; untracked file `python` in the repo root; `evaluate_phase56.py` header text; `a6sim_E5.png` polish; Flash 111.89 vs 112.61 KiB; `ai_conversion_project` is git-ignored (E5/E5R generated code kept as backups); reusable skill at project end |
 | Phase 5.5a (shift augmentation) | **negative**: −12.1 pp vs retrained baseline, paired over 3 seeds (§5.1g-R); not adopted |
 | Phase 4 data collection (`collect_own_data.py` **v5**) | ✅ **Done.** Chin (User 5) 42/42: main 14 (9 Oct) + extra 14 (9 Oct) + extra 14 (15 Oct, v5). Friend (User 6) 42/42: main 14 (14 Oct, v4) + extra 28 in one sitting (A10), file timestamps 18 Oct 2026 21:56–22:16 `[ตรวจแล้ว: xcopy listing 20 Oct]`; his first 14 extras (15 Oct) stay quarantined in `data\phase4_rejected` (A9, §9 #53). Manifest check of the 28 extras: missing frames 0, out-of-window 0, with warning 0 `[STUDENT]` (output pasted 20 Oct). `data\phase4_extra` holds 56 npz (28 + 28) + manifest = 57 files; `data\phase4` 28 npz + manifest = 29 files. Local backups on Chin's PC: `C:\Users\gaming\Documents\backup_phase4_20261020\phase4` (29) and `\phase4_extra` (57). Copy to Drive/USB: **not confirmed** |
 | Collection protocol | guided arming: hand must hold inside **220–320 mm for 3 s** before recording starts; take discarded if the hand leaves the window for **8 consecutive frames**; no frame-level filtering (§5.1e-A8) |
@@ -2972,9 +2972,33 @@ board ≠ PC frame or accuracy < 80 % → stop and find the cause before reporti
 **Predictions (ครู, before collection):** P1 per-frame board accuracy ≥ 95 % (~75 %); P2 every posture ≥ 85 % (~65 %; Like is the
 posture to watch — friend's LOSO Like under arm R was 50.9 %, §5.1x, but he is a known user now and shows a clear thumb, §5.1y-O);
 P3 board = PC on every frame (~99 %); P4 per-frame max ≤ 30 ms (~95 %). **Chin's prediction:** (optional, before collection).
-**Collection done (27 Oct 2026 21:50:30–21:58:56)** `[ตรวจแล้ว: collector console output pasted by Chin 21:59]`: 14/14 saved, discarded 0, skipped 0, no redo; every take 302 frames at 15.1 Hz, missing 0, out-of-window 0; board log Y 302/302 and Q 302/302 in every take (4,228 frames); median distance per take 240–283 mm (Like 240/242, lowest). Board check before: 45 frames / 3.0 s = 14.8 Hz PASS, Y/Q 45/45 (Chin's hand, 208 mm, not recorded). `--minutes-since-poweron 1` (board replugged just before). Answer rule fixed before the first take: y only if the posture was held the whole time, r on any warning. Friend stood. **Chin's prediction: none given.** Data committed before scoring (commit hash: pending).
+**Collection done (27 Oct 2026 21:50:30–21:58:56)** `[ตรวจแล้ว: collector console output pasted by Chin 21:59]`: 14/14 saved, discarded 0, skipped 0, no redo; every take 302 frames at 15.1 Hz, missing 0, out-of-window 0; board log Y 302/302 and Q 302/302 in every take (4,228 frames); median distance per take 240–283 mm (Like 240/242, lowest). Board check before: 45 frames / 3.0 s = 14.8 Hz PASS, Y/Q 45/45 (Chin's hand, 208 mm, not recorded). `--minutes-since-poweron 1` (board replugged just before). Answer rule fixed before the first take: y only if the posture was held the whole time, r on any warning. Friend stood. **Chin's prediction: none given.** Data committed before scoring as **`df9e171`** (pushed 27 Oct 22:02, 30 files: 14 npz + 14 `_board.csv` + manifest + FACTS).
 **Thesis wording:** "known user (User 6), new day, standing, board's own predictions, set collected after the model was frozen" — n = 1
 subject, 1 session, 2 takes per posture: descriptive.
+
+### 5.1y-X Result — phase57 confirmation (User 6, new day, standing, E5R on the board) (27 Oct 2026 22:04) `[MEASURED]`
+
+`python pc_tools\score_phase57.py`, run once on data commit `df9e171` `[ตรวจแล้ว: console output pasted by Chin 22:04]`:
+
+| measure | value |
+|---|---|
+| takes / in-range frames | 14 / 4,228 |
+| **board accuracy per frame** | **100.00 %** (after 15-frame vote 100.00 %) |
+| recall per posture | 100.0 % for all 7 (Fist, FlatHand, Dislike, Like, Love, CrossHands, BreakTime); confusions none |
+| per take | 14/14 takes at 100.0 % (frame and vote) |
+| board = PC (st_dataset → recentre → `E5R.keras`) | **YES 4,228/4,228**, missing Y rows 0, max p diff 6.5e-07 |
+| per-frame work (Q lines) | **29.332 ± 0.058 ms**, max 29.522 ms, n = 4,228 (budget 33 ms) |
+| bug guard | not triggered |
+
+**Pre-registered predictions (§5.1y-W):** P1 per-frame ≥ 95 % ✅ · P2 every posture ≥ 85 % ✅ (Like 100 %) · P3 board = PC every frame ✅ ·
+P4 max ≤ 30 ms ✅ (29.52). Chin made no prediction.
+**How to read it (caveats, for the thesis):** (1) ceiling — 100 % cannot separate "very good" from "perfect"; (2) n = 1 subject, 1 session,
+2 takes/posture; frames inside a take are strongly correlated, so the honest unit is the take: 14/14, Clopper–Pearson 95 % lower bound
+76.8 % (take level); (3) User 6 is a **known** user (his 42 phase4 takes are in E5R's training data) — this is "known user, new day,
+on the board", not new-person generalisation (that is LOSO: E5R 89.67 % mean, User 6 fold 91.2 %, §5.1x); (4) standing, distance window
+220–320 mm enforced by the collector. Timing matches live check (29.32 ± 0.06 ms, §5.1y-V) — consistent across sessions.
+**Thesis wording:** "On a set collected after the model was frozen (known user, new day, standing), the board's own predictions were
+correct on all 4,228 frames (14/14 takes) and identical to the PC reference on every frame; per-frame processing 29.3 ms."
 
 ### 5.1z E5R — final arm-R models and ensemble (27 Oct 2026) `[MEASURED]`
 

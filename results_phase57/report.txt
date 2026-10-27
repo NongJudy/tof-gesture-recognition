@@ -1,0 +1,30 @@
+====================================================================================
+  Phase 5.7 confirmation · User6 new day, standing · E5R on the board · FACTS §5.1y-W (report only)
+====================================================================================
+  takes 14 · in-range frames 4,228
+  BOARD accuracy per frame 100.00 %   after 15-frame vote 100.00 %
+  recall %    Fist  FlatHa  Dislik    Like    Love  CrossH  BreakT
+             100.0   100.0   100.0   100.0   100.0   100.0   100.0
+  top confusions: none
+  board = PC (st_dataset → recentre → E5R.keras) on every frame: YES (4,228/4,228, missing Y rows 0, max p diff 6.5e-07)
+  per-frame work 29.332 ± 0.058 ms, max 29.522 ms (n = 4,228; budget 33 ms)
+
+  per take:        board %   vote %   most frequent wrong answer
+    BreakTime 1       100.0    100.0   
+    BreakTime 2       100.0    100.0   
+    CrossHands 1      100.0    100.0   
+    CrossHands 2      100.0    100.0   
+    Dislike 1         100.0    100.0   
+    Dislike 2         100.0    100.0   
+    Fist 1            100.0    100.0   
+    Fist 2            100.0    100.0   
+    FlatHand 1        100.0    100.0   
+    FlatHand 2        100.0    100.0   
+    Like 1            100.0    100.0   
+    Like 2            100.0    100.0   
+    Love 1            100.0    100.0   
+    Love 2            100.0    100.0   
+
+  bug guard not triggered · report these numbers as measured (n = 1 subject, 1 session, 2 takes/posture)
+  output: results_phase57
+====================================================================================

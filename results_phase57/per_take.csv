@@ -1,0 +1,15 @@
+class,take,frames_in_range,board_acc,vote_acc,top_wrong,file
+BreakTime,1,302,100.0,100.0,,log__20261027_215823__User6__take1.npz
+BreakTime,2,302,100.0,100.0,,log__20261027_215856__User6__take2.npz
+CrossHands,1,302,100.0,100.0,,log__20261027_215658__User6__take1.npz
+CrossHands,2,302,100.0,100.0,,log__20261027_215730__User6__take2.npz
+Dislike,1,302,100.0,100.0,,log__20261027_215302__User6__take1.npz
+Dislike,2,302,100.0,100.0,,log__20261027_215335__User6__take2.npz
+Fist,1,302,100.0,100.0,,log__20261027_215030__User6__take1.npz
+Fist,2,302,100.0,100.0,,log__20261027_215110__User6__take2.npz
+FlatHand,1,302,100.0,100.0,,log__20261027_215144__User6__take1.npz
+FlatHand,2,302,100.0,100.0,,log__20261027_215223__User6__take2.npz
+Like,1,302,100.0,100.0,,log__20261027_215410__User6__take1.npz
+Like,2,302,100.0,100.0,,log__20261027_215447__User6__take2.npz
+Love,1,302,100.0,100.0,,log__20261027_215529__User6__take1.npz
+Love,2,302,100.0,100.0,,log__20261027_215620__User6__take2.npz
