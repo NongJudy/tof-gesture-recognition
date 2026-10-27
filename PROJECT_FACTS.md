@@ -2972,6 +2972,7 @@ board ≠ PC frame or accuracy < 80 % → stop and find the cause before reporti
 **Predictions (ครู, before collection):** P1 per-frame board accuracy ≥ 95 % (~75 %); P2 every posture ≥ 85 % (~65 %; Like is the
 posture to watch — friend's LOSO Like under arm R was 50.9 %, §5.1x, but he is a known user now and shows a clear thumb, §5.1y-O);
 P3 board = PC on every frame (~99 %); P4 per-frame max ≤ 30 ms (~95 %). **Chin's prediction:** (optional, before collection).
+**Collection done (27 Oct 2026 21:50:30–21:58:56)** `[ตรวจแล้ว: collector console output pasted by Chin 21:59]`: 14/14 saved, discarded 0, skipped 0, no redo; every take 302 frames at 15.1 Hz, missing 0, out-of-window 0; board log Y 302/302 and Q 302/302 in every take (4,228 frames); median distance per take 240–283 mm (Like 240/242, lowest). Board check before: 45 frames / 3.0 s = 14.8 Hz PASS, Y/Q 45/45 (Chin's hand, 208 mm, not recorded). `--minutes-since-poweron 1` (board replugged just before). Answer rule fixed before the first take: y only if the posture was held the whole time, r on any warning. Friend stood. **Chin's prediction: none given.** Data committed before scoring (commit hash: pending).
 **Thesis wording:** "known user (User 6), new day, standing, board's own predictions, set collected after the model was frozen" — n = 1
 subject, 1 session, 2 takes per posture: descriptive.
 
