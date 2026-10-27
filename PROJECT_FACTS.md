@@ -3000,6 +3000,19 @@ on the board", not new-person generalisation (that is LOSO: E5R 89.67 % mean, Us
 **Thesis wording:** "On a set collected after the model was frozen (known user, new day, standing), the board's own predictions were
 correct on all 4,228 frames (14/14 takes) and identical to the PC reference on every frame; per-frame processing 29.3 ms."
 
+### 5.1y-Y Live demo screen `pc_tools\live_demo.py` (27 Oct 2026 22:10–22:47)
+
+Purpose: show / record the board's own live answers (for Chin and a clip for the advisor). **Draws only what the board sends** (F/S for the
+8×8 picture, Y for per-frame probabilities, P for the board's 15-frame-vote answer, Q for per-frame time, `MY_AI:` boot line for the model
+name); loads no model, no TensorFlow. Before the first P line it applies the firmware vote rule to the board's Y lines; offline test: the PC
+vote equals the firmware's P at all 13 P lines of a stream produced by the real `my_tof.c` compiled on the PC (13/13 checks passed).
+Not a measurement tool — no accuracy is computed. **On the real board (22:42–22:47)** `[ตรวจแล้ว: screenshots by Chin]`: 15.0–15.1 Hz,
+board time 29.3 ms (max 29.4–29.5), after RESET "E5R / model check OK"; Fist 96.9 % and Flat Hand 100.0 % frame confidence, 15/15 votes.
+**Orientation:** rows as stored (row 0 at the top = side away from the user, §5.1y-O — the forearm enters from the bottom row); **columns
+are mirrored for a user standing at the board** — without a flip, moving the hand to the user's right moved the blob left; with
+`--flip-lr` it follows the hand `[STUDENT]` 22:47. Display only (the board's input is unchanged). Demo command:
+`python pc_tools\live_demo.py --port COM3 --flip-lr`.
+
 ### 5.1z E5R — final arm-R models and ensemble (27 Oct 2026) `[MEASURED]`
 
 **Training** `pc_tools\train_phase55c_final.py` (written + tested offline 27 Oct, 20/20 checks incl. "fit inputs identical to LOSO arm R"
