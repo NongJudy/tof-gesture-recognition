@@ -1,0 +1,43 @@
+====================================================================================
+  A17 decision · E5R vs E5 on data\phase56_stand (standing) · FACTS §5.1y-S
+====================================================================================
+  E5  (ON THE BOARD)          per-frame  98.72 %   vote  98.58 %   n = 4221
+  E5R (PC, re-centred input)  per-frame 100.00 %   vote 100.00 %
+
+  Rule 1  LOSO 89.67 >= 86.30 %  (measured §5.1x)          HOLDS
+  Rule 2  standing overall E5R >= E5 board (100.00 vs 98.72)        HOLDS
+  Rule 3  no posture more than 5.0 pp below E5                      HOLDS
+  Rule 4  A6-sim row-1 E5R >= E5 (86.43 vs 58.28)       HOLDS
+  Rule 5  board = PC + <= 33 ms                                  (later, after firmware)
+  DECISION: E5R_PASSES_A17_RULES_1_TO_4
+
+  recall %             Fist   FlatHand    Dislike       Like       Love  CrossHand  BreakTime
+  E5 board            100.0      100.0       99.8      100.0       91.2      100.0      100.0
+  E5R                 100.0      100.0      100.0      100.0      100.0      100.0      100.0
+  E5R − E5             +0.0       +0.0       +0.2       +0.0       +8.8       +0.0       +0.0
+
+  A6-sim per-frame %     none  row+1  row-1  col+1  col-1  row+2  row-2  col+2  col-2
+  E5                     98.7   98.4   58.3   99.5   94.6   99.9   31.8   80.2   70.7
+  E5R                   100.0   99.7   86.4  100.0   94.7  100.0   44.5   93.3   79.0
+  (A6-sim: re-centring undoes a whole-image shift by construction — sanity check, not physical proof)
+
+  per take:      E5 board     E5R    diff
+    BreakTime 1      100.0   100.0    +0.0
+    BreakTime 2      100.0   100.0    +0.0
+    CrossHands 1     100.0   100.0    +0.0
+    CrossHands 2     100.0   100.0    +0.0
+    Dislike 1        100.0   100.0    +0.0
+    Dislike 2         99.7   100.0    +0.3
+    Fist 1           100.0   100.0    +0.0
+    Fist 2           100.0   100.0    +0.0
+    FlatHand 1       100.0   100.0    +0.0
+    FlatHand 2       100.0   100.0    +0.0
+    Like 1           100.0   100.0    +0.0
+    Like 2           100.0   100.0    +0.0
+    Love 1            82.5   100.0   +17.6
+    Love 2           100.0   100.0    +0.0
+
+  Self-checks A (board = PC) · B (E5 98.7 %) · C (centred) · D (A6-sim = §5.1v) · E (same files as A15): all PASS
+  n = 1 subject, 1 standing session, 2 takes per posture. phase56_stand is now the selection set (§5.1y-S).
+  output: results_a17
+====================================================================================

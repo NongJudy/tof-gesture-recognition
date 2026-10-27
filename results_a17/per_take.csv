@@ -1,0 +1,15 @@
+class,take,frames,E5_board_acc,E5R_acc,diff_pp,file
+BreakTime,1,301,100.0,100.0,0.0,log__20261026_220214__User5__take1.npz
+BreakTime,2,301,100.0,100.0,0.0,log__20261026_220250__User5__take2.npz
+CrossHands,1,302,100.0,100.0,0.0,log__20261026_220052__User5__take1.npz
+CrossHands,2,301,100.0,100.0,0.0,log__20261026_220132__User5__take2.npz
+Dislike,1,302,100.0,100.0,0.0,log__20261026_215619__User5__take1.npz
+Dislike,2,302,99.67,100.0,0.33,log__20261026_215702__User5__take2.npz
+Fist,1,301,100.0,100.0,0.0,log__20261026_215201__User5__take1.npz
+Fist,2,302,100.0,100.0,0.0,log__20261026_215339__User5__take2.npz
+FlatHand,1,301,100.0,100.0,0.0,log__20261026_215432__User5__take1.npz
+FlatHand,2,301,100.0,100.0,0.0,log__20261026_215513__User5__take2.npz
+Like,1,302,100.0,100.0,0.0,log__20261026_215747__User5__take1.npz
+Like,2,301,100.0,100.0,0.0,log__20261026_215825__User5__take2.npz
+Love,1,302,82.45,100.0,17.55,log__20261026_215911__User5__take1.npz
+Love,2,302,100.0,100.0,0.0,log__20261026_220005__User5__take2.npz

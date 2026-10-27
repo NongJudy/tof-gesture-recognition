@@ -1,0 +1,114 @@
+{
+  "decided_at": "2026-10-27T16:42:39",
+  "rule": "FACTS §5.1y-S A17 (pre-registered, commit e7a803d)",
+  "data_dir": "data\\phase56_stand",
+  "e5_sha256": "1a2268d3b5ab4fe7abfd17f39545a1748b032ede1afbb7e1ab4225555e648936",
+  "e5r_sha256": "3a583d0e8bcee9b22849c4759d291c2493f9f66e026bdeb8a9c422f833023575",
+  "E5_board": {
+    "n_frames": 4221,
+    "acc": 98.72068230277186,
+    "vote_acc": 98.58385093167702
+  },
+  "E5R_pc_recentred": {
+    "n_frames": 4221,
+    "acc": 100.0,
+    "vote_acc": 100.0
+  },
+  "recall_E5_board": {
+    "Fist": 100.0,
+    "FlatHand": 100.0,
+    "Dislike": 99.83443708609272,
+    "Like": 100.0,
+    "Love": 91.22516556291392,
+    "CrossHands": 100.0,
+    "BreakTime": 100.0
+  },
+  "recall_E5R": {
+    "Fist": 100.0,
+    "FlatHand": 100.0,
+    "Dislike": 100.0,
+    "Like": 100.0,
+    "Love": 100.0,
+    "CrossHands": 100.0,
+    "BreakTime": 100.0
+  },
+  "rules": {
+    "1_loso": {
+      "value": 89.67,
+      "threshold": 86.3,
+      "holds": true,
+      "note": "measured earlier (§5.1x), recorded only"
+    },
+    "2_standing_overall": {
+      "E5R": 100.0,
+      "E5_board": 98.72068230277186,
+      "holds": true
+    },
+    "3_every_posture": {
+      "diff_pp": {
+        "Fist": 0.0,
+        "FlatHand": 0.0,
+        "Dislike": 0.16556291390728006,
+        "Like": 0.0,
+        "Love": 8.774834437086085,
+        "CrossHands": 0.0,
+        "BreakTime": 0.0
+      },
+      "margin_pp": 5.0,
+      "holds": true
+    },
+    "4_shift_row_minus_1": {
+      "E5R": 86.42501776830134,
+      "E5": 58.28002842928216,
+      "holds": true
+    }
+  },
+  "decision": "E5R_PASSES_A17_RULES_1_TO_4",
+  "a6sim_acc": {
+    "E5": {
+      "none": 98.72068230277186,
+      "row+1": 98.4126984126984,
+      "row-1": 58.28002842928216,
+      "col+1": 99.54986969912343,
+      "col-1": 94.59843638948117,
+      "row+2": 99.92892679459844,
+      "row-2": 31.79341388296612,
+      "col+2": 80.17057569296375,
+      "col-2": 70.69414830608861
+    },
+    "E5R": {
+      "none": 100.0,
+      "row+1": 99.69201610992656,
+      "row-1": 86.42501776830134,
+      "col+1": 100.0,
+      "col-1": 94.71689173181711,
+      "row+2": 100.0,
+      "row-2": 44.5392087183132,
+      "col+2": 93.34280976072021,
+      "col-2": 78.98602226960436
+    }
+  },
+  "self_checks": {
+    "A_board_vs_pc": {
+      "compared": 4221,
+      "agree": 4221,
+      "gate_mismatch": 0,
+      "missing_rows": 0,
+      "max_abs_diff": 2.2437019348009457e-06,
+      "median_abs_diff": 3.5684002377092845e-07,
+      "first_mismatches": []
+    },
+    "B_e5_board": 98.72068230277186,
+    "C_centred_fraction": 1.0,
+    "D_e5_sim": [
+      98.72068230277186,
+      58.28002842928216
+    ],
+    "D_reference": "results_a6sim\\eval_20261026_221509\\summary.json",
+    "E_same_files_as_A15": true
+  },
+  "still_required_if_pass": [
+    "rule 5: X-CUBE-AI + MY_TOF_RECENTRE, board = PC 100 % (replay + live), <= 33 ms"
+  ],
+  "caveat": "phase56_stand is now the selection set → the deployed model's standing figure is slightly optimistic"
+}
