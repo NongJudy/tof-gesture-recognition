@@ -54,7 +54,7 @@ setup or a conversation the assistant cannot observe directly
 | **5.5c re-centring (pre-registered 22:35, §5.1w)** | `pc_tools\recentre.py` (integer-exact) + `pc_tools\train_phase55c.py` (arm B re-run vs arm R, 60-model LOSO). Smoke test passed 22:28 (accuracies meaningless). Mean row shift: ST users ≈ −1, User 5 ≈ 0 → re-centring removes exactly the ST-vs-us row offset. **Full LOSO run started/starting the night of 26 Oct** |
 | **5.5c LOSO result (26–27 Oct 2026, 60 models, §5.1x)** | **R ADOPTED by the pre-registered rule.** Mean of 6: B **85.30** → R **89.67** (+4.36 pp); ST-fold mean B 85.61 → R 90.32. R > B for **all 6 subjects** (+0.25 to +9.76 pp), exact Wilcoxon W = 0, **p = 0.031** (the smallest possible with n = 6). P1 ✅ P2 ❌ (+2.75) P3 ❌ (User 5 Like 30.7 %) P4 ❌ (+4.71, favourable direction) P5 ✅ (B re-run 85.30 — reproduces 20 Oct exactly). Losses: User 6 Like 81.3 → 50.9 %, User 5 Dislike 99.6 → 86.5 %. Run from clean `1a4199d` |
 | **A15 decision (27 Oct 2026 ≈ 14:18, §5.1y-R)** | **E5R_PASSES_A15** on `phase56`: E5R 92.34 % vs E5 (board) 93.01 %, −0.66 pp ≥ −3; self-checks A–C pass. Like 81.4 → **52.2 %** (→ Dislike), Dislike 69.6 → 94.2 %. **Then A16 (§5.1y-A16, 15:00, after seeing A15): deployment needs dominance over E5 on LOSO (+1 pp), phase56 overall and every posture (≤ 5 pp below), A6-sim row−1, board parity + timing → E5R fails (Like) and is NOT deployed; E5 stays.** Next: Like diagnosis → round-3 pre-registration (RP) → LOSO → A16 checks; `phase56_stand` stays closed until the final model is chosen |
-| **Next steps (as of 27 Oct 2026, 16:10)** | **E5 stays deployed (A16).** Like diagnosis + orientation check done (§5.1y-D, §5.1y-O): protrusion = thumb; Chin's thumb barely visible at 8×8; arm-dropout cancelled (§9 #69). **Round 3 = RP (last round):** (1) commit posture_maps + this file; (2) pre-register RP (re-centred image + (dr, dc) as input; LOSO 6 × 5 seeds; A16 decides) **before** writing the training script; (3) LOSO; (4) only if RP passes A16 on LOSO: final RP models → phase56 → A6-sim → X-CUBE-AI → firmware `MY_TOF_RECENTRE` + `MY_TOF_REPLAY` (replay E5 first) → parity + timing ≤ 33 ms → blind live look → `phase56_stand` once. If RP fails: stop, E5 stays, write up. Still open: friend's 14 takes (ask stood/sat); `evaluate_phase56.py` header text; `a6sim_E5.png` polish; stray `Inc\my_tof.c`; Flash 111.89 vs 112.61 KiB; report / slides / mock defence; reusable skill at project end |
+| **Next steps (as of 27 Oct 2026, 16:12)** | **E5 stays deployed (A16).** Like diagnosis + orientation check done (§5.1y-D, §5.1y-O): protrusion = thumb; Chin's Like spans 7.5–8 of 8 rows (reaches both FoV edges; thumb end not visible), sitting Like resembles standing Dislike in size (§5.1y-O per-take); arm-dropout cancelled (§9 #69). RP prior lowered to ~10 % for all five A16 steps. **Round 3 = RP (last round):** (1) commit thumb_per_take + results_thumb + this file; (2) RP pre-registered (§5.1y-P): re-centred image + (dr/4, dc/4) as a 2nd input; next = gate G0 (X-CUBE-AI accepts 2 inputs), then the RP training script, tested offline; (3) LOSO; (4) only if RP passes A16 on LOSO: final RP models → phase56 → A6-sim → X-CUBE-AI → firmware `MY_TOF_RECENTRE` + `MY_TOF_REPLAY` (replay E5 first) → parity + timing ≤ 33 ms → blind live look → `phase56_stand` once. If RP fails: stop, E5 stays, write up. Still open: friend's 14 takes (ask stood/sat); `evaluate_phase56.py` header text; `a6sim_E5.png` polish; stray `Inc\my_tof.c`; Flash 111.89 vs 112.61 KiB; report / slides / mock defence; reusable skill at project end |
 | Phase 5.5a (shift augmentation) | **negative**: −12.1 pp vs retrained baseline, paired over 3 seeds (§5.1g-R); not adopted |
 | Phase 4 data collection (`collect_own_data.py` **v5**) | ✅ **Done.** Chin (User 5) 42/42: main 14 (9 Oct) + extra 14 (9 Oct) + extra 14 (15 Oct, v5). Friend (User 6) 42/42: main 14 (14 Oct, v4) + extra 28 in one sitting (A10), file timestamps 18 Oct 2026 21:56–22:16 `[ตรวจแล้ว: xcopy listing 20 Oct]`; his first 14 extras (15 Oct) stay quarantined in `data\phase4_rejected` (A9, §9 #53). Manifest check of the 28 extras: missing frames 0, out-of-window 0, with warning 0 `[STUDENT]` (output pasted 20 Oct). `data\phase4_extra` holds 56 npz (28 + 28) + manifest = 57 files; `data\phase4` 28 npz + manifest = 29 files. Local backups on Chin's PC: `C:\Users\gaming\Documents\backup_phase4_20261020\phase4` (29) and `\phase4_extra` (57). Copy to Drive/USB: **not confirmed** |
 | Collection protocol | guided arming: hand must hold inside **220–320 mm for 3 s** before recording starts; take discarded if the hand leaves the window for **8 consecutive frames**; no frame-level filtering (§5.1e-A8) |
@@ -2708,21 +2708,88 @@ Column (right−left) shows no consistent side for any group (largest |mean| 0.5
 - For ST and the friend, Like extends toward **row 0** and Dislike toward **row 7**: the protruding part is the **thumb**, not the forearm.
   With Chin's description (Like = thumb away from the body), this gives the long-open answer: **row 0 = the side away from the user**
   (supported for 2 of our groups + ST; not a direct physical measurement).
-- **Chin's Like and Dislike are almost symmetric** — his thumb barely protrudes at 8×8. His Like is a long thin vertical strip (rows 0–7,
-  col 3 in the mean map), his Dislike a compact blob; the models can only use length/size for him, and those swap when he sits
-  (§5.1y-D: Like zones 17.3 → 14.0, Dislike 14.9 → 19.9). This explains why Chin is the hard case and why it is seed-dependent.
+- **Chin's Like and Dislike are almost symmetric on average** (−0.11 / +0.05). What this means is **not yet known** — ครู first wrote "his thumb
+  barely protrudes", which was an inference, not a measurement. **Chin, 16:03 `[STUDENT]`: in training he made the thumb very clear; maybe only
+  some takes were unclear.** Three readings: (ก) some takes clear, others not (means cancel); (ข) thumb visible but wrist/forearm also in view on
+  the other side (symmetric, long row span); (ค) thumb smaller than one zone at 8×8 (symmetric, short span). Check = `pc_tools\thumb_per_take.py`
+  (per take, training data + phase56 descriptive). What *is* measured: the models must separate his Like/Dislike with little asymmetry to use,
+  and length/size swap when he sits (§5.1y-D: Like zones 17.3 → 14.0, Dislike 14.9 → 19.9).
 - No common forearm side exists across postures/people (Chin's Fist/FlatHand extend to the lower-left; BreakTime's vertical bar points to
   row 7 for everyone by construction).
 **Consequence:** the arm-dropout plan of §5.1y-D (erase the lowest rows) is **cancelled before any training** — it would erase Dislike's
 thumb for ST and the friend. The "forearm tail" reading of the re-centred mean map was wrong (§9 #69).
+**Per-take check (27 Oct 16:09, `pc_tools\thumb_per_take.py` → `results_thumb\`) `[MEASURED]`** — n = takes, one session each, descriptive:
+
+| group | takes | down−up, take means [min … max] | takes clear →0 / →7 | row span (of 8) | zones |
+|---|---|---|---|---|---|
+| Chin Like, standing (train) | 6 | −0.11 [−0.31 … +0.05] | 0 / 0 | **7.53** (phase4: 7.97, 8.00) | 17.3 |
+| Chin Dislike, standing (train) | 6 | +0.05 [−0.32 … +0.57] | 0 / 2 | 5.46 | 14.9 |
+| Chin Like, sitting (phase56) | 2 | −0.05 [−0.25 … +0.14] | 0 / 0 | 6.05 | 14.0 |
+| Chin Dislike, sitting (phase56) | 2 | −0.02 [−0.37 … +0.34] | 0 / 0 | 6.85 | 19.9 |
+| Friend Like, standing | 6 | −0.52 [−0.81 … −0.13] | 3 / 0 | 5.09 | 10.5 |
+| Friend Dislike, standing | 6 | +0.42 [+0.14 … +0.72] | 0 / 2 | 5.81 | 12.4 |
+
+**Reading:** (ก) "some takes clear, some not" does **not** fit Chin's Like — all 6 takes are equally symmetric; it fits his **Dislike** partly
+(takes range −0.32 … +0.57; matches Chin's remark that the wrist is hard to rotate). (ค) "thumb too small to see" does **not** fit — his Like
+is the **longest** shape of anyone. Best fit = (ข) plus a new reading: Chin's Like spans **7.5–8 of 8 rows** (phase4 takes: every frame row 0
+to row 7) — the hand/forearm **reaches both edges of the field of view**, so where the thumb ends cannot be seen and the shape looks
+symmetric. Chin's statement that he made the thumb clearly is consistent with this. Size: his hand covers ~17 zones vs the friend's ~10.5
+(closer to the sensor or a larger hand — distance per take `[ยังไม่ได้ตรวจ]`).
+**Why sitting fails:** sitting Like (span 6.05, 14.0 zones) resembles **standing Dislike** (5.46, 14.9) more than standing Like (7.53, 17.3) —
+a size/extent change, not a position change. **Consequence for RP:** its mechanism (give back position) does not address this; prior lowered
+(§5.1y-P P3 ~30 % → ~15 %, P4 ~20 % → ~10 %). RP stays the pre-registered last round. `phase4_extra` holds two files each for take 1 and take 2
+of Like/Dislike for User5 (separate sessions; why `[ยังไม่ได้ตรวจ]`).
+**Demo hypothesis (untested):** hold Like a little higher so the whole hand fits inside the 8 rows — not adopted; it would move away from
+the training condition.
 **What remains for round 3:** candidate **RP** (§5.1y-D / handoff): re-centred image **plus the original hand position (dr, dc)** as extra
 input. Mechanism support: arms B and R differ **only** by re-centring, and E5 (B) keeps Chin's Like at 81.4 % on phase56 while E5R drops to
 52.2 % → the information re-centring removes (where the hand lies in the 8×8 image) is what E5 used for Chin's nearly symmetric Like/Dislike;
 RP gives it back while keeping the centred shape that helped new people (+4.4 pp LOSO). Caveat: seed variance is large (§5.1y-D), so this is a
-hypothesis, not a measurement. **Plan (decided 16:10, ครู's recommendation on merit):** RP is the **last** model round — pre-register before
+hypothesis, not a measurement. **Plan (decided ≈ 16:00, ครู's recommendation on merit):** RP is the **last** model round — pre-register before
 any training, LOSO 6 × 5 seeds, decide by A16; if RP fails A16, the search stops and **E5 stays deployed** (E5R reported as the 5.5c result).
-**Untested demo hypothesis:** Like/Dislike with the thumb **clearly protruding** (as ST's users and the friend do) — live look only.
 **`phase56_stand`:** E5 was already scored on it (98.7 %, §5.1u); it stays closed for E5R/RP until the final choice is made.
+
+### 5.1y-P Pre-registration of round 3 — candidate RP (written 27 Oct 2026 ≈ 16:04, BEFORE any RP code or model exists)
+
+**Question.** Does giving the model back *where the hand was* (the shift re-centring applied) keep arm R's gain for new people **and**
+remove the Like/Dislike problem on Chin's sitting set, so that one model beats E5 in every respect (A16)?
+
+**What the existing numbers already say (honest prior, from §5.1y-D B, single models on phase56, mean of seeds 42–46):**
+B Like 74.6 / Dislike 51.4 · R Like 46.7 / Dislike 76.2 · E5 ensemble 81.4 / 69.6. Like + Dislike ≈ 126 (B) vs 123 (R): moving from B to R
+mostly **moves the boundary** between Like and Dislike for Chin's nearly symmetric shapes; it does not clearly lose separability. So position
+information *may* only move the boundary back. The ensemble (E5) is better than any single-seed mean on both. This makes RP a real test,
+not a likely win.
+
+**Candidate RP (fixed now):**
+- Input 1 = re-centred image 8×8×2 (exactly `recentre.py`, unchanged). Input 2 = `[dr/4, dc/4]` (the integer shifts from `recentre.shifts`,
+  computed on the same frame, after flip augmentation so a flipped frame gets its own dc).
+- Network = `train_st_cnn2d.build_model` unchanged up to Flatten (128 values); **Concatenate(Flatten, input 2) → Dense(32) → Dense(7)**.
+  Parameters per model 4,511 + 64 = **4,575**; MACC +64 per model.
+- Rejected alternative, with the reason: dr/dc as two extra constant image planes (8×8×4) costs +9,216 MACC per model → ×5 ≈ +46 k MACC ×
+  216 ns ≈ **+10 ms → ≈ 39 ms > 33 ms** budget (§5.1n). The second input costs ≈ +0.07 ms (`[CALC]`; re-centring in C not yet measured).
+- Recipe = arm R exactly (subject-balanced weights, flip, Adam 0.01, batch 32, val 0.1, early stop 30, max epochs as 5.5c), seeds 42–46.
+
+**Gate G0 (before LOSO, cheap):** build an untrained RP model (and a 5-branch RP ensemble), convert to .tflite, run X-CUBE-AI *Analyze*
+in STM32CubeIDE: must accept 2 inputs and report MACC ≈ 5 × 13,600. If it refuses 2 inputs → fallback encoding, decided before training:
+single input of 130 floats → slice 128 → Reshape(8,8,2), slice 2 (same network). If both fail → RP is not deployable → stop, E5 stays.
+
+**LOSO (new people):** 6 folds × 5 seeds = 30 RP models, same folds/subjects/metric as §5.1x. B and R are **not** re-trained: their 5.5c
+results (`results_phase55c`, `a0a0ed2`) are reused — valid because the 5.5c B re-run reproduced 20 Oct exactly. Reported: RP vs B and RP vs
+R, per subject, exact Wilcoxon (n = 6, smallest possible p = 0.031), plus per-posture LOSO recall.
+
+**Decision = A16, unchanged, in this order — stop at the first failure:**
+1. LOSO mean of 6 ≥ **86.30 %** (85.30 + 1.0).
+2. Final RP (5 models on all 6 subjects, seeds 42–46, ensemble "E5RP") on `data\phase56`: overall ≥ **93.01 %**.
+3. Every posture on `phase56` ≥ E5's − 5.0 pp (Like ≥ 76.4, Dislike ≥ 64.6, …).
+4. A6-sim row−1 ≥ E5's (sitting and standing sets as §5.1v).
+5. Board: replay + live parity 100 %, per-frame work ≤ 33 ms.
+**If RP fails any step: the model search stops for good. E5 stays deployed; E5R and RP are reported as research results. No RP2, no
+seed picking, no threshold change.** `phase56_stand` is opened once at the very end for whichever model is deployed (E5 already scored there).
+
+**Predictions (ครู, written before any run):** P1 LOSO RP mean between B and R, ≈ 88 % (passes step 1, ~80 %). P2 phase56 overall ≈ 92–94 %.
+P3 passes step 3 (Like **and** Dislike) — **~30 %**, because of the boundary-trade-off prior above. P4 all five steps — ~20 %.
+*Revised 16:12, still before any RP code, after the per-take check (§5.1y-O): P3 ~15 %, P4 ~10 % (Chin's failure is size/extent, not position).*
+**Chin's prediction:** (to be filled in by Chin before the LOSO run — optional, but written before results if given).
 
 ### 5.1z E5R — final arm-R models and ensemble (27 Oct 2026) `[MEASURED]`
 
@@ -3426,6 +3493,7 @@ are not logged in this file — it lives in the repo.
 | 67 | Said (26 Oct 23:05, and the 27 Oct smoke-test instructions) that after `recentre()` every hand centroid lies in (3.0, 4.0] — "must be 100 %" | Real data (smoke test of `train_phase55c_final.py`, 27 Oct 11:42): **99.57 %** of 36,409 frames (99.66 % after the training flip); 155 frames would shift again on a second pass. Cause: when a hand zone is pushed off the grid it is dropped, so the remaining zones' centroid is no longer centred. Harmless for the recipe (LOSO, E5R and the firmware all use the same single pass) but the claim was false | The independent test used synthetic 3×3 hand blobs, which never touch both sides — same family as #47/#50: a simulation only checks what you put into it. State a property of real data only after measuring it on real data |
 | 68 | Proposed (27 Oct 15:35) 'arm-dropout' augmentation on **every** posture to stop the model relying on the forearm | Chin pointed out (15:36) that other postures may legitimately depend on the wrist/forearm (two-hand postures: Love, CrossHands, BreakTime include forearms in their shape); erasing them could damage those classes. Revised: single-hand postures only, p < 1, plus a per-posture LOSO guard (§5.1y-D) | Designed a fix from the failing class alone — check what the change does to every other class before proposing it |
 | 69 | Read the re-centred mean hand map (§5.1y-D) as a forearm 'tail' at rows 6–7 and built the arm-dropout plan on it | The direction check (§5.1y-O) shows the protruding part is the **thumb** (ST and friend: Like → row 0, Dislike → row 7); Chin's shapes are nearly symmetric. Erasing the bottom rows would have removed Dislike's thumb. Caught before any training by the extra check added after Chin's objection (#68) | Do not infer an anatomical cause from a mean image; measure the direction/asymmetry it implies before designing a fix |
+| 70 | Wrote "Chin's thumb barely protrudes at 8×8" (≈ 16:00) from a near-zero *mean* asymmetry | A mean near 0 also fits takes that differ (some clear, some not) or thumb + wrist on opposite sides. Chin said (16:03) he made the thumb very clear in training. Re-worded as an open question with a per-take check (`thumb_per_take.py`) | A mean describes the group, not each take or frame; check the per-take distribution before naming a cause |
 
 **Real finding behind #36 (not an assistant mistake — a genuine project fact):**
 The `53L8A1_SimpleRanging` project's `.ioc` has always been configured for **STM32F401RETx / NUCLEO-F401RE**, while the physical board (confirmed by a photo of the chip marking) is **STM32F411RET6**. Confirmed via the linker script header: *"Linker script for NUCLEO-F401RE Board embedding STM32F401RETx Device... 96KBytes RAM"*. This has been true since the project was first created and was never the assistant's error to log — it predates this conversation.
@@ -3730,4 +3798,7 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *2026-10-27 14:20 addendum: **A15 decided — E5R_PASSES_A15** (§5.1y-R): E5R 92.34 % vs E5 on board 93.01 % (−0.66 pp, threshold 90.01 %); Like 81.4 → 52.2 % (→ Dislike), Dislike 69.6 → 94.2 %. Commit `results_a15\` before opening `phase56_stand`.*
 *2026-10-27 15:00 addendum: **A16** (§5.1y-A16) — written after the A15 result at Chin's request: a new model must be at least as good as E5 in every measured respect; E5R fails it (Like) → not deployed, E5 stays; `phase56_stand` stays closed; round 3 (RP) next.*
 *2026-10-27 15:40 addendum: §5.1y-D — Like diagnosis: no bug (training-data Like 99.5 %); huge seed spread (R Like 24–89 %); sitting Like lost the forearm 'tail'; Chin's thumb direction is in-plane (Like away from body). Round 3 = arm-dropout augmentation after an orientation check; demo protocol: stand at the user side, arm straight in.*
-*2026-10-27 16:05 addendum: §5.1y-O — orientation check: protrusion = thumb (row 0 = away from user); Chin's thumb barely visible at 8×8; arm-dropout cancelled before training (§9 #69); RP = last model round (pre-register next); E5 stays unless RP passes A16.*
+*2026-10-27 16:00 addendum: §5.1y-O — orientation check: protrusion = thumb (row 0 = away from user); Chin's Like/Dislike nearly symmetric on average (cause open); arm-dropout cancelled before training (§9 #69); RP = last model round (pre-register next); E5 stays unless RP passes A16.*
+*2026-10-27 16:04 addendum: §5.1y-P — round 3 pre-registered before any code: RP = re-centred image + (dr/4, dc/4) as a 2nd input concatenated after Flatten (4,575 params; image-plane variant rejected, ≈ 39 ms > 33); gate G0 = X-CUBE-AI accepts it; LOSO 30 models, B/R reused from 5.5c; A16 decides; if RP fails, search stops, E5 stays.*
+*2026-10-27 16:07 addendum: thumb claim corrected (§9 #70) after Chin's objection; `pc_tools\thumb_per_take.py` written (tested offline) to separate the three readings per take.*
+*2026-10-27 16:12 addendum: per-take check — Chin's Like spans 7.5–8 of 8 rows (reaches both FoV edges, thumb end not visible), all 6 takes alike; his Dislike varies by take; sitting Like resembles standing Dislike in size → RP prior lowered (P3 ~15 %, P4 ~10 %).*

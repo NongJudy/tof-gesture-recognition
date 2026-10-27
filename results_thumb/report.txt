@@ -1,0 +1,49 @@
+========================================================================================================
+  Thumb per take · Like / Dislike · does the hand extend clearly toward row 0 (away) or row 7 (toward)? · §5.1y-O
+========================================================================================================
+  down−up < 0 → extends toward row 0 ; 'clear' = |down−up| ≥ 0.5 row ; mean ± SD over frames of each take
+  user   posture  condition    folder         take frames       down−up   %→0  %sym   %→7    up  down  span  zones
+  User5  Dislike  sit/phase56  phase56           1    301   -0.37 ±0.25    31    69     0  3.04  2.66  6.70   19.3
+  User5  Dislike  sit/phase56  phase56           2    301   +0.34 ±0.28     0    52    48  2.83  3.17  7.00   20.6
+  User5  Dislike  stand/train  phase4            1    301   -0.13 ±0.20     1    99     0  2.06  1.94  5.00   16.6
+  User5  Dislike  stand/train  phase4            2    301   -0.23 ±0.33    31    69     0  2.42  2.18  5.60   16.4
+  User5  Dislike  stand/train  phase4_extra      1    302   +0.51 ±0.30     0    51    49  2.00  2.51  5.51   13.9
+  User5  Dislike  stand/train  phase4_extra      1    302   -0.07 ±0.48    23    64    13  2.50  2.43  5.92   16.5
+  User5  Dislike  stand/train  phase4_extra      2    301   +0.57 ±0.29     0    33    67  2.06  2.63  5.69   11.9
+  User5  Dislike  stand/train  phase4_extra      2    302   -0.32 ±0.27    35    65     0  2.18  1.86  5.05   14.2
+
+  User5  Like     sit/phase56  phase56           1    301   +0.14 ±0.15     0   100     0  2.43  2.57  6.00   14.8
+  User5  Like     sit/phase56  phase56           2    302   -0.25 ±0.25    21    79     0  2.67  2.42  6.09   13.2
+  User5  Like     stand/train  phase4            1    302   -0.00 ±0.30     3    93     4  3.49  3.49  7.97   18.2
+  User5  Like     stand/train  phase4            2    302   -0.19 ±0.13     3    97     0  3.59  3.41  8.00   18.1
+  User5  Like     stand/train  phase4_extra      1    302   -0.07 ±0.42     4    84    11  3.03  2.96  7.00   16.1
+  User5  Like     stand/train  phase4_extra      1    302   +0.05 ±0.40    18    82     0  3.08  3.13  7.21   16.9
+  User5  Like     stand/train  phase4_extra      2    301   -0.31 ±0.24    18    82     0  3.19  2.88  7.08   16.3
+  User5  Like     stand/train  phase4_extra      2    302   -0.16 ±0.18     6    94     0  3.53  3.37  7.90   18.3
+
+  User6  Dislike  stand/train  phase4            1    302   +0.42 ±0.41     0    57    42  2.25  2.67  5.92   12.8
+  User6  Dislike  stand/train  phase4            2    302   +0.14 ±0.40     6    79    15  2.40  2.54  5.94   12.9
+  User6  Dislike  stand/train  phase4_extra      1    302   +0.51 ±0.27     0    36    64  2.32  2.83  6.16   12.4
+  User6  Dislike  stand/train  phase4_extra      2    302   +0.37 ±0.36     0    51    49  2.16  2.53  5.69   11.8
+  User6  Dislike  stand/train  phase4_extra      3    302   +0.34 ±0.27     0    58    42  1.89  2.22  5.11   11.3
+  User6  Dislike  stand/train  phase4_extra      4    302   +0.72 ±0.26     0    16    84  2.16  2.88  6.05   13.2
+
+  User6  Like     stand/train  phase4            1    302   -0.13 ±0.26    17    83     0  2.49  2.35  5.84   10.9
+  User6  Like     stand/train  phase4            2    302   -0.41 ±0.34    43    57     0  2.37  1.97  5.34   11.0
+  User6  Like     stand/train  phase4_extra      1    302   -0.36 ±0.29    45    55     0  2.25  1.89  5.14   12.0
+  User6  Like     stand/train  phase4_extra      2    302   -0.72 ±0.26    77    23     0  2.35  1.64  4.99   10.4
+  User6  Like     stand/train  phase4_extra      3    302   -0.81 ±0.29    78    22     0  2.40  1.60  5.00   10.5
+  User6  Like     stand/train  phase4_extra      4    302   -0.67 ±0.19    71    29     0  1.96  1.29  4.26    8.2
+
+  Per group (take means): mean [min … max] · takes clear →0 / →7 · mean row span · mean zones
+  User5|Dislike|sit/phase56        -0.02 [-0.37 … +0.34]  0/2 →0, 0/2 →7   span 6.85  zones 19.9
+  User5|Dislike|stand/train        +0.05 [-0.32 … +0.57]  0/6 →0, 2/6 →7   span 5.46  zones 14.9
+  User5|Like|sit/phase56           -0.05 [-0.25 … +0.14]  0/2 →0, 0/2 →7   span 6.05  zones 14.0
+  User5|Like|stand/train           -0.11 [-0.31 … +0.05]  0/6 →0, 0/6 →7   span 7.53  zones 17.3
+  User6|Dislike|stand/train        +0.42 [+0.14 … +0.72]  0/6 →0, 2/6 →7   span 5.81  zones 12.4
+  User6|Like|stand/train           -0.52 [-0.81 … -0.13]  3/6 →0, 0/6 →7   span 5.09  zones 10.5
+
+  Reading: takes that differ a lot → (ก) some clear, some not ; long span both ways → (ข) thumb + wrist ;
+  short span both ways → (ค) thumb not resolved at 8×8. Descriptive only; same hand definition as recentre.py.
+  output: results_thumb
+========================================================================================================
