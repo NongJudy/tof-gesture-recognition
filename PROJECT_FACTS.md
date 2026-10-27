@@ -2453,7 +2453,7 @@ ST-fold mean −3.1 pp vs A, §5.1i-R). Re-centring is the remaining §5.1f opti
 preprocessed 8×8×2 frame, hand zones = distance channel not empty (< 2,000 mm before normalisation); integer counts cnt, Σrow, Σcol;
 shift **dr = ⌊(4·cnt − Σrow)/cnt⌋, dc = ⌊(4·cnt − Σcol)/cnt⌋** (= ⌊3.5 − centroid + 0.5⌋, integer floor division, so Python and C
 agree bit-for-bit); both channels shifted, vacated zones = empty values, zones pushed off the grid dropped, no-hand frames unchanged.
-Afterwards every hand centroid lies in (3.0, 4.0] on both axes. Unweighted centroid, same definition as §5.1j.
+Afterwards every hand centroid lies in (3.0, 4.0] on both axes. *(Corrected 27 Oct 11:45, §9 #67: true only when no hand zone is pushed off the grid — on the real 36,409 frames 99.57 % land in (3.0, 4.0], and 155 frames would move again on a second pass.)* Unweighted centroid, same definition as §5.1j.
 **LOSO experiment (`pc_tools\train_phase55c.py`):** arm **B** = the E5 recipe (§5.1i arm B) **re-run in the same job**; arm **R** = B +
 `recentre()` on the training frames (after the left-right flip) and on the test frames — the only difference. Seeds 42–46 × 6 folds × 2
 arms = 60 models; folds, data (`data\phase4` + `phase4_extra`, ST 4 users), weighting, early stopping exactly as §5.1i (reuses
@@ -2606,6 +2606,42 @@ replay viewer (scrub frame by frame: 8×8 view, both answers, prompted posture, 
 of the hand is optional. **Status: anecdotal** — it cannot change the decision (already made from recorded data), is not reported as
 accuracy, and is not counted as a test set; the blind preference may be reported as such. Tools (`live_demo.py` extension + replay) to be
 written from the real `live_demo.py` and tested on a simulated board before use.
+
+### 5.1z E5R — final arm-R models and ensemble (27 Oct 2026) `[MEASURED]`
+
+**Training** `pc_tools\train_phase55c_final.py` (written + tested offline 27 Oct, 20/20 checks incl. "fit inputs identical to LOSO arm R"
+and "a broken recentre() is caught before training"; refuses test sets in `--ours`). Smoke test 11:42 passed (1 seed, 2 epochs; showed
+the §9 #67 fact: 99.57 % of the 36,409 frames centred). Real run started 11:45:57: arm R, all 6 subjects, 36,409 frames, seeds 42–46 →
+`results_phase55c_final\` (5 `.keras`, `runs.jsonl`, `manifest.json` with `input_transform.recentre = true`):
+
+| seed | epochs | params | centred (training frames) | sha256 (first 16) |
+|---|---|---|---|---|
+| 42 | 61 | 4,511 | 99.66 % | `bf10582b5b72f9cc` |
+| 43 | 59 | 4,511 | 99.66 % | `bd4fd4d60ebd4ca4` |
+| 44 | 71 | 4,511 | 99.65 % | `7187aca5d8ed3000` |
+| 45 | 68 | 4,511 | 99.65 % | `5f3ef0c8bb8fa349` |
+| 46 | 75 | 4,511 | 99.66 % | `bcc7ee9096dcdf89` |
+
+(E5's arm-B models: 83/68/87/85/76 epochs, §5.1l.) No accuracy (every subject is in training).
+
+**Ensemble** `pc_tools\build_ensemble_r.py` (wrapper reusing `build_ensemble.py`'s verify/build/convert functions; only change: check data and
+board-check frames are re-centred; refuses an arm-B or smoke-test manifest; tested offline 11/11), run 27 Oct ≈ 12:30 on `data\phase4`:
+**E5R 22,555 params** (= E5) · E5R == mean of 5 (max |diff| branch 0.0, mean **6.0e-08** over 8,448 re-centred frames — same as E5) ·
+re-centring moved 5,807 of 8,448 frames · **`E5R.tflite` 100.9 KiB** (`from_keras_model`), same class as `.keras` on 2,000/2,000 frames
+(batch 1, max |diff| 2.4e-07) · 200 re-centred board-check frames + E5R answers saved (`board_check_inputs_R_200.npy`,
+`board_check_E5R_probs_200.npy`) in `results_phase55c_final\deploy\`. No accuracy (check data = training data).
+
+**Next (§5.1y):** commit these files **before** `pc_tools\a15_decide.py` is run, so the E5R file is fixed in git before any known-user
+number exists. `a15_decide.py` (tested offline on synthetic phase56-format data, 16/16): refuses any data dir except `data\phase56`;
+self-checks before deciding — (A) E5 recomputed on the PC must equal the board's recorded Y lines on every frame, (B) E5 on the board
+must be 93.0 % ± 0.05 (§5.1p), (C) E5R's input must be centred; then rule 1 (bug guard < 80 %) and rule 2 (E5R ≥ E5 − 3.0 pp); writes
+`results_a15\decision.json` and refuses a second decision for a different E5R file.
+
+**Replay feasibility (checked 27 Oct from `my_tof.c`, `my_uart.c`, `main.c`, `collect_own_data.py`):** `my_tof_infer()` uses only
+`g_distance_mm` (uint16), `g_status` (uint8), `g_signal` (uint32); all three are printed as full integers (`%u`, `%lu`) in the F/S/G lines
+and stored unchanged in the `.npz` → recorded frames hold the exact on-board input. Missing piece: UART **receive** (`my_uart.c` is TX-only)
+→ a new switch `MY_TOF_REPLAY` (default 0). Plan and fallback as agreed 11:55: validate replay with E5 first (must reproduce the recorded
+Y lines on every frame); if it fails after one fix round → collect a new standing set with the chosen model on the board instead.
 
 ## 5.2 Dynamic-gesture datasets — what exists
 
@@ -3270,6 +3306,7 @@ are not logged in this file — it lives in the repo.
 | 64 | A12 pre-registration said the collector holds **1 s** before recording | The collector default `HOLD_S` is **3 s** (banner `Hold before rec. 3.0 s`). Corrected in §5.1q at 20:15, before any analysis | Copy parameters from the tool's own output/code, not from memory of an older protocol |
 | 65 | Designed live A6 around an on-screen numeric aiming guide (§5.1s) | Unusable in practice: the user does not know which physical direction raises row/col, and aiming makes the posture unnatural (confounds position with posture) — 25 min of a frustrated student, no data. Abandoned before any data (A13, §5.1t); replaced by A6-sim and, later, moving the **board** with a ruler | Pilot any human-in-the-loop procedure for 2 minutes before pre-registering it; prefer moving the apparatus over asking a person to aim |
 | 66 | Listed "a new 14-take new-day collection with E5R on the board" in the 5.5c plan shown to Chin (22:31) | Not needed: the existing phase56 / phase56_stand sets give a paired E5-vs-E5R comparison on identical frames; on-board E5R evidence comes from the parity check and the board-shift test. Corrected at 22:34 after Chin asked | Before adding data collection to a plan, check whether existing recorded data already answer the question |
+| 67 | Said (26 Oct 23:05, and the 27 Oct smoke-test instructions) that after `recentre()` every hand centroid lies in (3.0, 4.0] — "must be 100 %" | Real data (smoke test of `train_phase55c_final.py`, 27 Oct 11:42): **99.57 %** of 36,409 frames (99.66 % after the training flip); 155 frames would shift again on a second pass. Cause: when a hand zone is pushed off the grid it is dropped, so the remaining zones' centroid is no longer centred. Harmless for the recipe (LOSO, E5R and the firmware all use the same single pass) but the claim was false | The independent test used synthetic 3×3 hand blobs, which never touch both sides — same family as #47/#50: a simulation only checks what you put into it. State a property of real data only after measuring it on real data |
 
 **Real finding behind #36 (not an assistant mistake — a genuine project fact):**
 The `53L8A1_SimpleRanging` project's `.ioc` has always been configured for **STM32F401RETx / NUCLEO-F401RE**, while the physical board (confirmed by a photo of the chip marking) is **STM32F411RET6**. Confirmed via the linker script header: *"Linker script for NUCLEO-F401RE Board embedding STM32F401RETx Device... 96KBytes RAM"*. This has been true since the project was first created and was never the assistant's error to log — it predates this conversation.
@@ -3569,3 +3606,4 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *2026-10-27 11:00 addendum: **5.5c done — R adopted** (§5.1x): mean of 6 85.30 → 89.67 %, R > B for all 6 subjects, Wilcoxon W = 0, p = 0.031; P1 P5 hold, P2 P3 P4 fail (P4 favourably); B re-run reproduces 20 Oct exactly; R hurts User 6 Like and User 5 Dislike. Commit hashes of 26 Oct recorded. Next: final E5R.*
 *2026-10-27 11:20 addendum: **A15 pre-registered** (§5.1y) before any E5R model exists — choose on `phase56` (sitting): E5R ≥ E5 − 3 pp + 80 % bug guard; `phase56_stand` kept untouched for the final known-user number; no new collection needed (Chin: no more subjects). An 11:15 draft that required a fresh Phase 5.7 set was replaced before commit.*
 *2026-10-27 11:30 addendum: §5.1y — blind live side-by-side look (board E5 vs PC E5R on the same frames, A/B hidden, logged + replay viewer) added; after the decision, anecdotal only.*
+*2026-10-27 12:40 addendum: §5.1z — E5R trained (5 arm-R models) and built (22,555 params, 100.9 KiB tflite, all checks PASS); §9 #67 (centred 99.57 %, not 100 %); replay feasibility confirmed from firmware source; `a15_decide.py` ready — commit before running it.*

@@ -1,0 +1,13 @@
+══════════════════════════════════════════════════════════════════
+  Phase 5.5c final training  ·  arm R (re-centring)  ·  all 6 subjects  ·  §5.1w/§5.1x
+══════════════════════════════════════════════════════════════════
+  seed    epochs   params   centred  model file / sha256 (first 16)
+  42          61     4511    99.66%  model_R_seed42.keras  bf10582b5b72f9cc
+  43          59     4511    99.66%  model_R_seed43.keras  bd4fd4d60ebd4ca4
+  44          71     4511    99.65%  model_R_seed44.keras  7187aca5d8ed3000
+  45          68     4511    99.65%  model_R_seed45.keras  5f3ef0c8bb8fa349
+  46          75     4511    99.66%  model_R_seed46.keras  bcc7ee9096dcdf89
+  'centred' = share of training frames whose hand centroid lies in (3, 4] after recentre().
+  These models expect RE-CENTRED input (pc_tools\recentre.py on PC, MY_TOF_RECENTRE on the board).
+  No accuracy here: every subject is in training (new people = LOSO §5.1x; known user = A15 §5.1y).
+══════════════════════════════════════════════════════════════════

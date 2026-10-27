@@ -1,0 +1,142 @@
+{
+  "run_at": "2026-10-27T11:55:14",
+  "smoke_test": false,
+  "arm": "R",
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "max_epochs": 1000,
+  "class_order": [
+    "Fist",
+    "FlatHand",
+    "Dislike",
+    "Like",
+    "Love",
+    "CrossHands",
+    "BreakTime"
+  ],
+  "input_transform": {
+    "recentre": true,
+    "applied_after": "st_dataset/train_st_cnn2d preprocessing (+ flip in training)",
+    "recentre_py": {
+      "path": "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\pc_tools\\recentre.py",
+      "sha256": "f490478d5efd8e1e9672941bf9649194cd0bdb8adb0fc2408720205dfd17b209"
+    },
+    "firmware_switch": "MY_TOF_RECENTRE"
+  },
+  "git_commit": "a0a0ed2",
+  "train_st_cnn2d": {
+    "path": "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\pc_tools\\train_st_cnn2d.py",
+    "sha256": "5ad0593da2e24b2ed335adef235ad508559d3e738c3472fbfff1d9cba897987e"
+  },
+  "train_phase55": {
+    "path": "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\pc_tools\\train_phase55.py",
+    "sha256": "34a13f85728d945a912cd502fccdf154de5f5d2d8a73e8fb886adcc31f7e5526"
+  },
+  "train_phase55_final": {
+    "path": "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\pc_tools\\train_phase55_final.py",
+    "sha256": "cd07dd6aa941e0c746a4b21b28004ed3c27d3186e9b3311619721c5b5deadcd5"
+  },
+  "this_script": {
+    "path": "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\pc_tools\\train_phase55c_final.py",
+    "sha256": "f3f50a4f0a0dd2c312a4ce58d9fc42264ed20f2f2110e36cd85d9573206ad12d"
+  },
+  "libs": {
+    "tensorflow": "2.21.0",
+    "keras": "3.15.1"
+  },
+  "frames_per_user": {
+    "User1": {
+      "frames": 4584,
+      "main": 4584,
+      "extra": 0
+    },
+    "User2": {
+      "frames": 2134,
+      "main": 2134,
+      "extra": 0
+    },
+    "User3": {
+      "frames": 2172,
+      "main": 2172,
+      "extra": 0
+    },
+    "User4": {
+      "frames": 2171,
+      "main": 2171,
+      "extra": 0
+    },
+    "User5": {
+      "frames": 12664,
+      "main": 4220,
+      "extra": 8444
+    },
+    "User6": {
+      "frames": 12684,
+      "main": 4228,
+      "extra": 8456
+    }
+  },
+  "n_frames": 36409,
+  "recentre_check_all_frames": {
+    "frames": 36409,
+    "frames_with_hand": 36409,
+    "centroid_in_box_frac": 0.9957428108434727,
+    "second_pass_nonzero_shift": 155
+  },
+  "data_checksums": {
+    "C:\\ds\\ST_VL53L8CX_handposture_dataset": {
+      "n_files": 162,
+      "sha256": "539642ab570b647a4804e85c2e70e5e1e0a144856b3abd36011b11fc1835df26"
+    },
+    "data\\phase4": {
+      "n_files": 28,
+      "sha256": "094068dd85625feaca66205726ae127cbc34b186d4fd79d7e3ff6e3b46fd8506"
+    },
+    "data\\phase4_extra": {
+      "n_files": 56,
+      "sha256": "30162801d8ff48902e0109fcca369799b8c4809ee14256607276030bd996c10a"
+    }
+  },
+  "models": [
+    {
+      "seed": 42,
+      "model_file": "model_R_seed42.keras",
+      "model_sha256": "bf10582b5b72f9ccdc4b76f7f808087af81846cf399499cce72193ffe35fc168",
+      "epochs": 61,
+      "params": 4511
+    },
+    {
+      "seed": 43,
+      "model_file": "model_R_seed43.keras",
+      "model_sha256": "bd4fd4d60ebd4ca44f9f6730e883397117fa8c5fba8fa7e4d80719068c027c97",
+      "epochs": 59,
+      "params": 4511
+    },
+    {
+      "seed": 44,
+      "model_file": "model_R_seed44.keras",
+      "model_sha256": "7187aca5d8ed3000524af2381385c1d2e23700fe57444a4b39728ede6919814b",
+      "epochs": 71,
+      "params": 4511
+    },
+    {
+      "seed": 45,
+      "model_file": "model_R_seed45.keras",
+      "model_sha256": "5f3ef0c8bb8fa34932954308cba6b9bd074b7534d145486d1834df957ed295eb",
+      "epochs": 68,
+      "params": 4511
+    },
+    {
+      "seed": 46,
+      "model_file": "model_R_seed46.keras",
+      "model_sha256": "bcc7ee9096dcdf89b26f4d9399eaa8741d0dd9c2ddf6ddbb37099062005893e3",
+      "epochs": 75,
+      "params": 4511
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+══════════════════════════════════════════════════════════════════
+  Phase 5.5c build  ·  E5R ensemble (re-centred input)  ·  §5.1w/§5.1x
+══════════════════════════════════════════════════════════════════
+  E5R parameters     22,555
+  E5R == mean of 5   PASS  (max |diff| 6.0e-08 over 8,448 re-centred frames)
+  E5R.tflite         PASS  (100.9 KiB, same class on 100 % of 2000 frames)
+  board-check set      200 re-centred frames saved (board_check_inputs_R_200.npy)
+  No accuracy computed: check data is in the training set.
+  Output: results_phase55c_final\deploy
+══════════════════════════════════════════════════════════════════

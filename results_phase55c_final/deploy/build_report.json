@@ -1,0 +1,65 @@
+{
+  "run_at": "2026-10-27T12:31:05",
+  "git_commit": "a0a0ed2",
+  "name": "E5R",
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "params": 22555,
+  "class_order": [
+    "Fist",
+    "FlatHand",
+    "Dislike",
+    "Like",
+    "Love",
+    "CrossHands",
+    "BreakTime"
+  ],
+  "input_transform": {
+    "recentre": true,
+    "applied_after": "st_dataset/train_st_cnn2d preprocessing (+ flip in training)",
+    "recentre_py": {
+      "path": "C:\\Users\\gaming\\Documents\\GitHub\\tof-gesture-recognition\\pc_tools\\recentre.py",
+      "sha256": "f490478d5efd8e1e9672941bf9649194cd0bdb8adb0fc2408720205dfd17b209"
+    },
+    "firmware_switch": "MY_TOF_RECENTRE"
+  },
+  "check_data": "data\\phase4",
+  "n_check_frames": 8448,
+  "checks": {
+    "1_sha256": "PASS",
+    "1_manifest_arm_R_recentre": "PASS",
+    "3_frames_moved_by_recentre": 5807,
+    "3_branch_max_abs_diff": 0.0,
+    "3_mean_max_abs_diff": 5.960464477539063e-08,
+    "4_method": "from_keras_model",
+    "4_argmax_agree": 1.0,
+    "4_max_abs_diff": 2.384185791015625e-07,
+    "5_classes_in_sample": {
+      "Fist": 28,
+      "FlatHand": 29,
+      "Dislike": 29,
+      "Like": 28,
+      "Love": 29,
+      "CrossHands": 29,
+      "BreakTime": 28
+    }
+  },
+  "source_models": {
+    "model_R_seed42.keras": "bf10582b5b72f9ccdc4b76f7f808087af81846cf399499cce72193ffe35fc168",
+    "model_R_seed43.keras": "bd4fd4d60ebd4ca44f9f6730e883397117fa8c5fba8fa7e4d80719068c027c97",
+    "model_R_seed44.keras": "7187aca5d8ed3000524af2381385c1d2e23700fe57444a4b39728ede6919814b",
+    "model_R_seed45.keras": "5f3ef0c8bb8fa34932954308cba6b9bd074b7534d145486d1834df957ed295eb",
+    "model_R_seed46.keras": "bcc7ee9096dcdf89b26f4d9399eaa8741d0dd9c2ddf6ddbb37099062005893e3"
+  },
+  "files": {
+    "board_check_E5R_probs_200.npy": "66c723caf5516b9b025c55a1ce4b5073a450eb989c09bc2a34ec553a52613817",
+    "board_check_inputs_R_200.npy": "6c68b71d4c8a0b8256bfe35ff004f77c36d74069cb0f61d99eb85cb2327bf6e9",
+    "E5R.keras": "3a583d0e8bcee9b22849c4759d291c2493f9f66e026bdeb8a9c422f833023575",
+    "E5R.tflite": "41a8f6e21e8c89618a60bc3576fea1e89493565ace312f9150b0460feb0fdaba"
+  }
+}
