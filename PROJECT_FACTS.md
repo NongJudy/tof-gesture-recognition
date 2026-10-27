@@ -31,7 +31,7 @@ setup or a conversation the assistant cannot observe directly
 
 ---
 
-## QUICK STATUS — as of 26 Oct 2026
+## QUICK STATUS — as of 27 Oct 2026
 
 | Item | State |
 |---|---|
@@ -52,7 +52,8 @@ setup or a conversation the assistant cannot observe directly
 | **Standing new-day set (A14, 26 Oct 21:52–22:03, §5.1u)** | `data\phase56_stand` 14/14 takes: **E5 98.7 % on the board** (= PC 4,221/4,221) vs sitting 93.0 %; take-level U = 106, p = 0.52 (not distinguishable; confounded with order). Only error: Love take 1 82 % (→ BreakTime), Love sat 1 row toward row 0 |
 | **A6-sim (26 Oct 22:14, §5.1v)** | Simulated whole-zone shift on phase56 / stand / a5_love: strong **asymmetry** — row−1 standing 98.7 → **58.3 %**, row−2 ≈ 32–35 %, row+1/+2 tolerated (≥ 85 %). Not clipping (≤ 8 % hand lost). **Decision rule triggered → 5.5c** |
 | **5.5c re-centring (pre-registered 22:35, §5.1w)** | `pc_tools\recentre.py` (integer-exact) + `pc_tools\train_phase55c.py` (arm B re-run vs arm R, 60-model LOSO). Smoke test passed 22:28 (accuracies meaningless). Mean row shift: ST users ≈ −1, User 5 ≈ 0 → re-centring removes exactly the ST-vs-us row offset. **Full LOSO run started/starting the night of 26 Oct** |
-| **Next session (as of 26 Oct 2026, 22:45)** | (1) Record commit hashes of today's later commits (`git log --oneline -8`). (2) Read the 5.5c LOSO report (`results_phase55c\report.txt`) and apply the §5.1w adoption rule + P1–P5 — no other reading of the numbers before that. (3) If R adopted: final E5R (5 seeds, all 6 subjects) → old-data comparison E5 (board Y lines) vs E5R (PC) take by take (§5.1w addition 22:43) → X-CUBE-AI → firmware `MY_TOF_RECENTRE` (integer floor division in C) → board vs PC → timing → decide on the ruler/board-shift test. If not adopted: E5 stays; write the position asymmetry as a limitation + positioning guide. (4) Still open: User 6 Phase 5.6; `evaluate_phase56.py` header hard-codes "data\phase56" (cosmetic); thesis figure polish for `a6sim_E5.png` (colour-blind palette, labels); stray `Inc\my_tof.c`; Flash 111.89 vs 112.61 KiB question; final report / slides / mock defence; build a reusable skill at project end |
+| **5.5c LOSO result (26–27 Oct 2026, 60 models, §5.1x)** | **R ADOPTED by the pre-registered rule.** Mean of 6: B **85.30** → R **89.67** (+4.36 pp); ST-fold mean B 85.61 → R 90.32. R > B for **all 6 subjects** (+0.25 to +9.76 pp), exact Wilcoxon W = 0, **p = 0.031** (the smallest possible with n = 6). P1 ✅ P2 ❌ (+2.75) P3 ❌ (User 5 Like 30.7 %) P4 ❌ (+4.71, favourable direction) P5 ✅ (B re-run 85.30 — reproduces 20 Oct exactly). Losses: User 6 Like 81.3 → 50.9 %, User 5 Dislike 99.6 → 86.5 %. Run from clean `1a4199d` |
+| **Next steps (as of 27 Oct 2026, 11:20)** | **Deployment rule amended by A15 (§5.1y): choose on `phase56` (sitting) — E5R must be ≥ E5 − 3 pp (≥ 90.0 %), bug guard < 80 %, parity 100 %, ≤ 33 ms; `phase56_stand` (standing) is kept untouched as the final known-user number. No new collection needed.** §5.1w Rule-6 chain for R: (1) commit `results_phase55c\` + this file; (2) final **E5R** = 5 arm-R models on all 6 subjects (seeds 42–46) + ensemble + board-check set built from **re-centred** inputs; (3) old-data comparison E5 (board Y lines) vs E5R (PC) take by take on `phase56`, `phase56_stand`, `a5_love` — watch **Like and Dislike** (the classes R hurt in LOSO, §5.1x) and the three E5 failure takes; A6-sim on E5R as sanity only; (4) X-CUBE-AI; (5) firmware `MY_TOF_RECENTRE` (integer floor division in C) + board vs PC on every frame; (6) timing ≤ 33 ms; (7) decide/pre-register the ruler board-shift test; deploy E5R only if (5) = 100 % and (6) ≤ 33 ms. Still open: User 6 Phase 5.6; `evaluate_phase56.py` header text; `a6sim_E5.png` polish; stray `Inc\my_tof.c`; Flash 111.89 vs 112.61 KiB; final report / slides / mock defence; reusable skill at project end |
 | Phase 5.5a (shift augmentation) | **negative**: −12.1 pp vs retrained baseline, paired over 3 seeds (§5.1g-R); not adopted |
 | Phase 4 data collection (`collect_own_data.py` **v5**) | ✅ **Done.** Chin (User 5) 42/42: main 14 (9 Oct) + extra 14 (9 Oct) + extra 14 (15 Oct, v5). Friend (User 6) 42/42: main 14 (14 Oct, v4) + extra 28 in one sitting (A10), file timestamps 18 Oct 2026 21:56–22:16 `[ตรวจแล้ว: xcopy listing 20 Oct]`; his first 14 extras (15 Oct) stay quarantined in `data\phase4_rejected` (A9, §9 #53). Manifest check of the 28 extras: missing frames 0, out-of-window 0, with warning 0 `[STUDENT]` (output pasted 20 Oct). `data\phase4_extra` holds 56 npz (28 + 28) + manifest = 57 files; `data\phase4` 28 npz + manifest = 29 files. Local backups on Chin's PC: `C:\Users\gaming\Documents\backup_phase4_20261020\phase4` (29) and `\phase4_extra` (57). Copy to Drive/USB: **not confirmed** |
 | Collection protocol | guided arming: hand must hold inside **220–320 mm for 3 s** before recording starts; take discarded if the hand leaves the window for **8 consecutive frames**; no frame-level filtering (§5.1e-A8) |
@@ -2480,6 +2481,132 @@ board once step (4) shows board = PC for E5R. Report per take: E5 (board) vs E5R
 phase4 position, with special attention to the takes where E5 failed (sitting Dislike 1 39 %, sitting Like 2 63 %, standing Love 1 82 %).
 Real, uncontrolled placement variation → non-circular evidence, unlike A6-sim. The ruler/board-shift test (step 6) is decided after this.
 
+### 5.1x Phase 5.5c result — re-centring LOSO (26–27 Oct 2026) `[MEASURED]`
+
+**Run.** `python pc_tools\train_phase55c.py --st-data C:\ds\ST_VL53L8CX_handposture_dataset --ours data\phase4 data\phase4_extra`,
+started **26 Oct 22:54:28** (TensorFlow log timestamp) from commit **`1a4199d`** with a clean tree (`git status --short` empty, 22:53);
+`results_phase55c\` did not exist before (only `results_phase55c_SMOKE_TEST`). 60/60 models, 0 resumed; outputs `report.txt`,
+`runs.jsonl`, `summary.json`. Finish time = last `at` in `runs.jsonl` `[ยังไม่ได้ตรวจ]` (script's own estimate ≈ 00:35). Report pasted by
+Chin 27 Oct 10:49. Pre-run checks held: frames per user identical to §5.1i-R (36,409), mean re-centring shifts identical to the smoke
+test. **Claude recomputed** every per-subject mean ± SD, both group means, the R − B differences and the exact Wilcoxon from the 60
+per-model lines: same as the report within 0.02 pp (rounding of the 1-decimal per-model values).
+
+**Code review + independent check (26 Oct 23:05, before any result).** `train_phase55c.train_one` arm B = `train_phase55.train_one`
+arm B line for line; arm R differs only by `recentre()` on the flipped training frames and on the test frames; adoption rule in code =
+§5.1w text; B and R alternate per fold/seed (machine-speed drift hits both arms). `recentre.py` tested by Claude on 20,000 synthetic
+frames (random hand blobs, edges, empty frames): 0 mismatches vs a naive per-frame loop; C-style floor division (truncate, then correct)
+= Python `//` on every frame; centroids after shifting all in (3.0, 4.0]; applying it twice changes nothing. Synthetic data only.
+Minor: `summary.json` stores the sha256 of `train_st_cnn2d.py` but not of `recentre.py` / `train_phase55c.py` / data — covered by the
+clean-tree commit above.
+
+**Per-frame accuracy, mean ± SD over seeds 42–46 (%; our subjects tested on their main set only):**
+
+| Held-out | arm B (E5 recipe, re-run) | **arm R (B + re-centring)** | R − B | seed pairs R > B | mean shift dr (rows) |
+|---|---|---|---|---|---|
+| User1 | 71.4 ± 2.0 | **81.1 ± 1.1** | **+9.76** | 5/5 | −1.12 |
+| User2 | 92.4 ± 1.1 | 92.6 ± 1.4 | +0.25 | 3/5 | −0.92 |
+| User3 | 87.2 ± 2.4 | **93.4 ± 2.1** | **+6.22** | 5/5 | −0.99 |
+| User4 | 91.6 ± 3.5 | 94.1 ± 2.3 | +2.58 | 4/5 | −1.14 |
+| User5 | 82.8 ± 5.2 | 85.6 ± 6.1 | +2.75 | 3/5 | +0.02 |
+| User6 | 86.6 ± 6.0 | 91.2 ± 4.0 | +4.62 | 3/5 | −0.69 |
+| **ST-fold mean** | 85.61 | **90.32** | +4.71 | | |
+| **mean of 6** | 85.30 | **89.67** | **+4.36** | 23/30 | |
+
+Seed pairs where R < B (pp): User2 s42 −0.4, s43 −3.5 · User4 s43 −4.1 · User5 s44 −5.1, s46 −8.9 · User6 s44 −6.7, s45 −5.4.
+
+**Adoption rule (§5.1w, applied as written):** mean of 6 R − B = +4.36 ≥ +1.0 ✅ **and** ST-fold mean R 90.32 ≥ B − 1.0 = 84.61 ✅ →
+**R ADOPTED.**
+**Paired test over the 6 subjects:** R > B for all 6 → exact two-sided Wilcoxon **W = 0, p = 0.031** (the smallest attainable with
+n = 6), rank-biserial r = 1.0. This is the single pre-registered comparison of 5.5c, so no multiple-comparison correction applies. It is
+the first arm comparison in this project that reaches p < 0.05 (5.5: B − A p = 0.31, C − A p = 0.84, §5.1i-R). Still n = 6 subjects.
+
+**Pre-registered predictions:** P1 (mean of 6 R ≥ B + 1) +4.36 ✅ · P2 (User 5 R ≥ B + 3) +2.75 ❌ · P3 (User 5 Like under R > 50 %)
+30.7 ❌ · P4 (ST |R − B| ≤ 2) +4.71 ❌ — fails because R helped ST's users **more** than predicted · P5 (B re-run within ±1 pp of 85.30)
+85.30 ✅.
+
+**The B re-run reproduces 20 Oct exactly:** all 6 per-subject means and SDs, every seed range checked (User1 68.8–73.5, User5
+76.4–90.4, User6 80.7–94.1) and all 42 per-class recall cells are identical at the printed precision to §5.1i-R. On Chin's PC
+(TF 2.21.0 / Keras 3.15.1, CPU, oneDNN on) the same seeds produced the same models — the "TF on CPU may not reproduce"
+caveat (`train_phase55_final.py` failure mode 2, `[จำมา]`) did not show up here (one machine, one repeat). It also means the 20 Oct arm-B
+numbers and tonight's B are the same experiment, so the B–R comparison has no hidden code drift.
+
+**Per-class recall change R − B (mean over the 6 subjects, pp):** Fist +8.0 · FlatHand +1.0 · Dislike +6.8 · Like +2.7 · Love +4.4 ·
+CrossHands +0.7 · BreakTime +5.1. Arm R recall (Fist … BreakTime): User1 78.5 / 65.3 / 74.0 / 90.0 / 98.7 / 94.2 / 98.7 ·
+User2 84.6 / 97.1 / 91.8 / 92.7 / 97.7 / 94.9 / 89.1 · User3 92.7 / 97.8 / 92.7 / 84.7 / 96.6 / 97.6 / 91.6 · User4 98.4 / 99.3 / 83.7 /
+84.8 / 100 / 97.1 / 96.1 · User5 90.0 / 91.9 / 86.5 / **30.7** / 100 / 100 / 100 · User6 90.8 / 98.1 / 98.6 / **50.9** / 99.8 / 100 / 100.
+Arm B recall = §5.1i-R table unchanged. **Largest losses:** User6 Like 81.3 → 50.9 (−30.4), User5 Dislike 99.6 → 86.5 (−13.1),
+User1 FlatHand 70.5 → 65.3 (−5.2). **Largest gains:** User1 Dislike +28.1, User6 Fist +23.3, User6 BreakTime +19.2, User3 Like +16.2.
+
+**Reading (6 subjects; descriptive beyond the one test):**
+- Re-centring helps new people on average and never lowers a subject's 5-seed mean. The two largest gains are ST users whose hands sat
+  ≈ 1 row off centre (User1, User3); but User2 had a similar shift (−0.92) and gained only +0.25, so shift size alone does not predict
+  the gain.
+- **The risk named in advance partly happened:** re-centring removes absolute position, and for our two subjects that hurt the
+  Like/Dislike pair (vertical mirror images, §5.1e-E) — User6 Like and User5 Dislike fell. Position carried some Like/Dislike
+  information.
+- **Chin's Like for a model that has never seen him is still not fixed** (B 23.1 → R 30.7 %) → his LOSO Like failure is not only a
+  whole-zone offset. E5R will be trained on his data (as E5 is); whether his Like/Dislike hold up on the new-day sets is step (2) below,
+  with Like and Dislike as the classes to watch.
+- Limits: n = 6 subjects; our two folds confound new person with different sensor unit (§5.1e-A1); LOSO measures **new people**, the
+  deployed case is known users (§5.1p, §5.1u).
+
+**Deliverable (Rule 6, §5.1w chain):** (1) final E5R on all 6 subjects × 5 seeds; (2) old-data comparison + A6-sim sanity; (3)
+X-CUBE-AI; (4) `MY_TOF_RECENTRE` + board vs PC; (5) timing; (6) board-shift test decision; (7) deploy only if (4) = 100 % and (5) ≤ 33 ms.
+E5 stays deployed until then.
+
+**Commits of 26 Oct (later), from `git log --oneline -8` pasted 26 Oct 22:52:** `9e5e7a4` Phase 5.6 User 5 · `441c67a` A5 ·
+`343c8c2` A6 pre-registration · `184dd81` A13 + A14 pre-registration · `8ca9ae7` A14 result + A6-sim script · `4d92c4b` A6-sim result ·
+**`ab14058` 5.5c pre-registration (`recentre.py` + LOSO script, before any run)** · `1a4199d` handoff (the commit the 5.5c run used).
+
+### 5.1y Amendment A15 — deployment rule for E5R vs E5 (written 27 Oct 2026 11:15, revised 11:20 — both BEFORE any E5R model exists)
+
+**Why.** §5.1w step 7 deploys E5R on board parity + timing only; the new-day sets are "report only". After the LOSO result (§5.1x)
+Chin asked for the model that is best "in every respect" for real use on the board (27 Oct 11:08) `[STUDENT]`. Real use has two kinds of
+user: **new people** (e.g. committee members trying it at the defence, §5.1c) and **known users** (Chin, the friend). LOSO answers the first
+(R better for 6/6, §5.1x); nothing yet answers the second for E5R, and LOSO showed R can hurt our subjects' Like/Dislike.
+**Constraint (Chin, 11:12) `[STUDENT]`:** no more outside subjects can be recruited, and no new collection unless it is truly needed at the
+very end. The 11:15 draft required a fresh set (Phase 5.7); the 11:20 revision below avoids it by giving the two existing new-day sets
+different jobs.
+
+**Split of the existing new-day sets (fixed now):**
+| Set | Job | Why this one |
+|---|---|---|
+| `data\phase56` (sitting, 14 takes, 4,219 frames) | **choosing** (rules 1–2) | E5 is not at ceiling here (93.0 %) and it holds E5's two failure takes (Dislike 1, Like 2) — the Like/Dislike risk of R is visible here |
+| `data\phase56_stand` (standing, 14 takes, 4,221 frames) | **final known-user number**, scored once, after the decision, for the deployed model | standing = training and demo condition (§5.1p); never used for choosing, so it stays an untouched test set for E5R |
+
+**Rule (replaces §5.1w step 7; steps 1–6 unchanged):**
+1. **Bug guard (not a choice):** if E5R per-frame accuracy (PC, re-centred input) on `phase56` is **< 80 %**, stop and look for a pipeline
+   error (e.g. test frames not re-centred, wrong class order). 80 % = just below the lowest single arm-B model on that set (84.2 %, §5.1p).
+2. **Known-user non-inferiority:** E5R per-frame accuracy on `phase56` must be **≥ E5's − 3.0 pp**, E5 scored from its **own on-board
+   Y lines** in `*_board.csv` (93.0 % → threshold 90.0 %). One take ≈ 7 % of this set, so −3 pp ≈ less than half a take lost.
+3. **Deploy E5R iff** (2) holds **and** board vs PC = 100 % **and** per-frame work ≤ 33 ms (§5.1w steps 4–5). Otherwise E5 stays deployed;
+   the thesis reports both (R better for new people by LOSO; E5 kept by the known-user check).
+4. **No per-posture guard** — each posture has 2 takes here, so one take moves a class recall by ≈ 50 pp; a class rule would be decided by
+   noise. Per-posture recall, per-take accuracy and E5's failure takes are **reported**, Like and Dislike highlighted.
+5. **After the decision:** score the deployed model (and, report-only, the other one) on `phase56_stand` — that is the final known-user
+   figure. `a5_love` and A6-sim: report only (A6-sim is whole-zone-shift invariant for R by construction, §5.1v).
+6. **No new collection is required by this rule.** A new set is needed only if `phase56_stand` gets used for any choice (then it is no
+   longer untouched), or if a later physical check (board-shift with a ruler, §5.1w step 6, own pre-registration) is decided on.
+
+**Limits:** the known-user check is one subject (Chin), one sitting session, 2 takes per posture → a safety check, not a measurement of
+"better". User 6 has no new-day data. Order/practice caveats of §5.1p/§5.1u apply.
+
+**Predictions (Claude, before E5R exists):** N1 bug guard not triggered (90 %). N2 rule 2 holds — E5R on phase56 ≥ 90.0 % (60 %; risk:
+Like/Dislike, §5.1x). N3 E5R board vs PC 100 % on a fresh check (85 %; risk: C floor division / hand threshold). N4 per-frame work
+≤ E5's + 0.2 ms (90 %). N5 E5R on phase56_stand ≥ 95 % if deployed (70 %).
+
+**Added 11:30 (still before any E5R model) — live side-by-side look, at Chin's request (11:17–11:27) `[STUDENT]`.** Order of the chain:
+E5R trained → scored on `phase56` → **decision by rules 1–3** → *then* a live look → `phase56_stand` final number → (if E5R) conversion,
+firmware, parity, timing. Design: the **board runs E5** (its Y lines) and the **PC runs E5R on the same frame** with `recentre()`, both
+shown at once — so differences come from the models, not from two different hand placements. **Blind:** the screen shows "model A" /
+"model B"; the script draws the A/B assignment at random, stores it in the log, and does not reveal it until Chin has written down which
+looked better. Posture order randomised from a recorded seed, ≈ 10 s per posture, a standing block and a sitting block with a rest
+between (§9 #65). Every frame logged to CSV (time, frame, both models' class + 7 probabilities, raw zones, the prompted posture); a
+replay viewer (scrub frame by frame: 8×8 view, both answers, prompted posture, disagreement bar) replaces screen recording; a phone video
+of the hand is optional. **Status: anecdotal** — it cannot change the decision (already made from recorded data), is not reported as
+accuracy, and is not counted as a test set; the blind preference may be reported as such. Tools (`live_demo.py` extension + replay) to be
+written from the real `live_demo.py` and tested on a simulated board before use.
+
 ## 5.2 Dynamic-gesture datasets — what exists
 
 | Source | Gestures | Sensor | Data available? |
@@ -3439,3 +3566,6 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *2026-10-26 22:16 addendum: **A6-sim done** (§5.1v): strong asymmetry — row−1 standing 98.7 → 58.3 %, row−2 ≈ 32–35 %, row+1/+2 tolerated; decision rule TRIGGERED → pre-register 5.5c re-centring next (new chat). A6-sim is not a fair test of re-centring.*
 *2026-10-26 22:35 addendum: **5.5c pre-registered** (§5.1w): re-centring arm R vs re-run arm B, 60-model LOSO; tools `recentre.py`, `train_phase55c.py` tested on synthetic data.*
 *2026-10-26 22:50 addendum (chat handoff): QUICK STATUS rewritten for A5 / A13 / A14 / A6-sim / 5.5c; correction log now 66 entries (#63–#66). Handoff note: Project doc `claude/HANDOFF_2026-10-26_night.md`.*
+*2026-10-27 11:00 addendum: **5.5c done — R adopted** (§5.1x): mean of 6 85.30 → 89.67 %, R > B for all 6 subjects, Wilcoxon W = 0, p = 0.031; P1 P5 hold, P2 P3 P4 fail (P4 favourably); B re-run reproduces 20 Oct exactly; R hurts User 6 Like and User 5 Dislike. Commit hashes of 26 Oct recorded. Next: final E5R.*
+*2026-10-27 11:20 addendum: **A15 pre-registered** (§5.1y) before any E5R model exists — choose on `phase56` (sitting): E5R ≥ E5 − 3 pp + 80 % bug guard; `phase56_stand` kept untouched for the final known-user number; no new collection needed (Chin: no more subjects). An 11:15 draft that required a fresh Phase 5.7 set was replaced before commit.*
+*2026-10-27 11:30 addendum: §5.1y — blind live side-by-side look (board E5 vs PC E5R on the same frames, A/B hidden, logged + replay viewer) added; after the decision, anecdotal only.*
