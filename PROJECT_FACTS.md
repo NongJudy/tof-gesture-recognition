@@ -54,7 +54,7 @@ setup or a conversation the assistant cannot observe directly
 | **5.5c re-centring (pre-registered 22:35, §5.1w)** | `pc_tools\recentre.py` (integer-exact) + `pc_tools\train_phase55c.py` (arm B re-run vs arm R, 60-model LOSO). Smoke test passed 22:28 (accuracies meaningless). Mean row shift: ST users ≈ −1, User 5 ≈ 0 → re-centring removes exactly the ST-vs-us row offset. **Full LOSO run started/starting the night of 26 Oct** |
 | **5.5c LOSO result (26–27 Oct 2026, 60 models, §5.1x)** | **R ADOPTED by the pre-registered rule.** Mean of 6: B **85.30** → R **89.67** (+4.36 pp); ST-fold mean B 85.61 → R 90.32. R > B for **all 6 subjects** (+0.25 to +9.76 pp), exact Wilcoxon W = 0, **p = 0.031** (the smallest possible with n = 6). P1 ✅ P2 ❌ (+2.75) P3 ❌ (User 5 Like 30.7 %) P4 ❌ (+4.71, favourable direction) P5 ✅ (B re-run 85.30 — reproduces 20 Oct exactly). Losses: User 6 Like 81.3 → 50.9 %, User 5 Dislike 99.6 → 86.5 %. Run from clean `1a4199d` |
 | **A15 decision (27 Oct 2026 ≈ 14:18, §5.1y-R)** | **E5R_PASSES_A15** on `phase56`: E5R 92.34 % vs E5 (board) 93.01 %, −0.66 pp ≥ −3; self-checks A–C pass. Like 81.4 → **52.2 %** (→ Dislike), Dislike 69.6 → 94.2 %. **Then A16 (§5.1y-A16, 15:00, after seeing A15): deployment needs dominance over E5 on LOSO (+1 pp), phase56 overall and every posture (≤ 5 pp below), A6-sim row−1, board parity + timing → E5R fails (Like) and is NOT deployed; E5 stays.** Next: Like diagnosis → round-3 pre-registration (RP) → LOSO → A16 checks; `phase56_stand` stays closed until the final model is chosen |
-| **Next steps (as of 27 Oct 2026, 21:00)** | **E5R is deployed (A17 rules 1–5 passed, §5.1y-V):** replay board = PC 9,941/9,941, live 1,359/1,359, per-frame max 29.5 ms. Firmware: RECENTRE 1, REPLAY 0. (1) done (`fbca5e4`); (2) **phase57 done (§5.1y-X): board 100.00 % on 4,228 frames / 14 of 14 takes, board = PC on every frame, 29.33 ± 0.06 ms** (data `df9e171`); (3) optional blind live look; (4) report / slides / mock defence. Still open: stray `Inc\my_tof.c`; untracked file `python` in the repo root; `evaluate_phase56.py` header text; `a6sim_E5.png` polish; Flash 111.89 vs 112.61 KiB; `ai_conversion_project` is git-ignored (E5/E5R generated code kept as backups); reusable skill at project end |
+| **Next steps (as of 27 Oct 2026, 21:00)** | **E5R is deployed (A17 rules 1–5 passed, §5.1y-V):** replay board = PC 9,941/9,941, live 1,359/1,359, per-frame max 29.5 ms. Firmware: RECENTRE 1, REPLAY 0. (1) done (`fbca5e4`); (2) **phase57 done (§5.1y-X): board 100.00 % on 4,228 frames / 14 of 14 takes, board = PC on every frame, 29.33 ± 0.06 ms** (data `df9e171`); (3) optional blind live look; (4) report / slides / mock defence. Still open (stray `Inc\my_tof.c` and file `python` removed 27 Oct 23:21): `evaluate_phase56.py` header text; `a6sim_E5.png` polish; Flash 111.89 vs 112.61 KiB; `ai_conversion_project` is git-ignored (E5/E5R generated code kept as backups); reusable skill at project end |
 | Phase 5.5a (shift augmentation) | **negative**: −12.1 pp vs retrained baseline, paired over 3 seeds (§5.1g-R); not adopted |
 | Phase 4 data collection (`collect_own_data.py` **v5**) | ✅ **Done.** Chin (User 5) 42/42: main 14 (9 Oct) + extra 14 (9 Oct) + extra 14 (15 Oct, v5). Friend (User 6) 42/42: main 14 (14 Oct, v4) + extra 28 in one sitting (A10), file timestamps 18 Oct 2026 21:56–22:16 `[ตรวจแล้ว: xcopy listing 20 Oct]`; his first 14 extras (15 Oct) stay quarantined in `data\phase4_rejected` (A9, §9 #53). Manifest check of the 28 extras: missing frames 0, out-of-window 0, with warning 0 `[STUDENT]` (output pasted 20 Oct). `data\phase4_extra` holds 56 npz (28 + 28) + manifest = 57 files; `data\phase4` 28 npz + manifest = 29 files. Local backups on Chin's PC: `C:\Users\gaming\Documents\backup_phase4_20261020\phase4` (29) and `\phase4_extra` (57). Copy to Drive/USB: **not confirmed** |
 | Collection protocol | guided arming: hand must hold inside **220–320 mm for 3 s** before recording starts; take discarded if the hand leaves the window for **8 consecutive frames**; no frame-level filtering (§5.1e-A8) |
@@ -3000,7 +3000,7 @@ on the board", not new-person generalisation (that is LOSO: E5R 89.67 % mean, Us
 **Thesis wording:** "On a set collected after the model was frozen (known user, new day, standing), the board's own predictions were
 correct on all 4,228 frames (14/14 takes) and identical to the PC reference on every frame; per-frame processing 29.3 ms."
 
-### 5.1y-Y Live demo screen `pc_tools\live_demo.py` (27 Oct 2026 22:10–22:47)
+### 5.1y-Y Live view screen `pc_tools\live_view.py` (27 Oct 2026 22:10–22:52)
 
 Purpose: show / record the board's own live answers (for Chin and a clip for the advisor). **Draws only what the board sends** (F/S for the
 8×8 picture, Y for per-frame probabilities, P for the board's 15-frame-vote answer, Q for per-frame time, `MY_AI:` boot line for the model
@@ -3008,10 +3008,13 @@ name); loads no model, no TensorFlow. Before the first P line it applies the fir
 vote equals the firmware's P at all 13 P lines of a stream produced by the real `my_tof.c` compiled on the PC (13/13 checks passed).
 Not a measurement tool — no accuracy is computed. **On the real board (22:42–22:47)** `[ตรวจแล้ว: screenshots by Chin]`: 15.0–15.1 Hz,
 board time 29.3 ms (max 29.4–29.5), after RESET "E5R / model check OK"; Fist 96.9 % and Flat Hand 100.0 % frame confidence, 15/15 votes.
-**Orientation:** rows as stored (row 0 at the top = side away from the user, §5.1y-O — the forearm enters from the bottom row); **columns
+**Orientation:** rows as stored (row 0 at the top = side away from the user, from §5.1y-O — not from the screenshots); **columns
 are mirrored for a user standing at the board** — without a flip, moving the hand to the user's right moved the blob left; with
 `--flip-lr` it follows the hand `[STUDENT]` 22:47. Display only (the board's input is unchanged). Demo command:
-`python pc_tools\live_demo.py --port COM3 --flip-lr`.
+`python pc_tools\live_view.py --port COM3 --flip-lr`.
+**Name clash (§9 #71):** first committed as `live_demo.py` in `d0ac68b`, overwriting the existing **`live_demo.py` v3** (A5 tool,
+§5.1q, last version in `441c67a`; `--source both` = board answers + PC re-run of `E5.keras`). Fix: v3 restored unchanged at its path from
+`441c67a`, the new screen saved as `live_view.py`. v3's PC re-run uses E5 without re-centring — do not use its PC side with E5R.
 
 ### 5.1z E5R — final arm-R models and ensemble (27 Oct 2026) `[MEASURED]`
 
@@ -3380,25 +3383,25 @@ extracting and re-running the analysis).
 
 ---
 
-## 8.6 Open items — as of 20 Oct 2026 (night)
+## 8.6 Open items — as of 20 Oct 2026 (night), rows updated 27 Oct 2026 23:25
 
 | Item | State |
 |---|---|
 | Final training: arm B on all 6 subjects × 5 seeds, **models saved** | ✅ 20 Oct 2026, `results_phase55_final\`, commits `e1f08ee`/`b0bcc01` |
 | 5.5b pre-registration: rule for choosing 1 of 5 final models, or a seed ensemble | ✅ written §5.1l (E5 if it fits the board, else seed 42) |
-| Phase 5.6 new-day test set `data\phase56` (never for training) | ✅ User 5 (§5.1p, E5 93.0 %); ⬜ User 6 |
-| X-CUBE-AI conversion + on-board timing of the final model; compare a `padding="valid"` variant (D2) | ✅ E5 deployed 26 Oct (§5.1n: 29.3 ms per frame, 203/203 board vs PC); D2 `padding="valid"` / `-O2` comparison ⬜ |
-| A5 Love edge/centre live test with the new model | ⬜ |
-| 5.5c (round 2) pre-registration: re-centring / metric-size normalisation, `padding="valid"`, recomputed constants — each needs firmware parity | ⬜ candidates only |
+| Phase 5.6 new-day test set `data\phase56` (never for training) | ✅ User 5 (§5.1p, E5 93.0 %); ✅ User 6 new day = `data\phase57` with E5R on the board, 100 % / 14 of 14 takes (§5.1y-X, 27 Oct) |
+| X-CUBE-AI conversion + on-board timing of the final model; compare a `padding="valid"` variant (D2) | ✅ E5 deployed 26 Oct (§5.1n); **E5R deployed 27 Oct** (§5.1y-V: 29.32 ms per frame, board = PC on every frame); D2 `padding="valid"` / `-O2` comparison ⬜ |
+| A5 Love edge/centre live test with the new model | ✅ 26 Oct, E5: centre 5/5, edge 5/5, board = PC 1,501/1,501 (§5.1q, commit `441c67a`) |
+| 5.5c (round 2) pre-registration: re-centring / metric-size normalisation, `padding="valid"`, recomputed constants — each needs firmware parity | ✅ re-centring done → E5R (§5.1y-S/V); metric-size normalisation, `padding="valid"`, recomputed constants not tried |
 | Split-fixed ST-only model on User 6, several seeds (clean baseline for §5.1i-R's User 6 comparison) | ⬜ |
 | Read ST's `.keras` Conv2D config directly (closes §9 #56) | ⬜ |
-| Is row 0 physically "up" on our mount? | ⬜ `[ยังไม่ได้ตรวจ]` |
+| Is row 0 physically "up" on our mount? | ✅ row 0 = side of the sensor away from the user (§5.1y-O); columns are mirrored for a user standing at the board (§5.1y-Y) |
 | Disclose the quarantined friend takes (A9) in the thesis | ⬜ writing |
 | Copy `backup_phase4_20261020` to Drive/USB | ⬜ not confirmed; `phase4_for_claude.zip` (Documents) may be deleted |
 | Progress report 3 (sections 7–12) | ✅ finished by 25 Oct 2026 `[STUDENT]` (Word; Thai line-breaking fixed; 2-take sets called ชุดหลัก/ชุดเพิ่มเติม, §9 #60) |
 | Flash 111.89 KiB (analyze report) vs 112.61 KiB (CubeMX panel) for E5 | ⬜ unexplained, 0.72 KiB; settle from the build size in step 2.4 |
-| Stray `53L8A1_SimpleRanging\Inc\my_tof.c` (not compiled) — compare with `STM32CubeIDE\Application\User\my_tof.c`, then delete | ⬜ |
-| `collect_own_data.py` with `Y,` lines present (`MY_TOF_PRED_LINE = 1`) — check before `data\phase56`, or build with 0 | ⬜ `[ยังไม่ได้ตรวจ]` |
+| Stray `53L8A1_SimpleRanging\Inc\my_tof.c` (not compiled) — compare with `STM32CubeIDE\Application\User\my_tof.c`, then delete | ✅ 27 Oct 23:21: 20,566 B dated 21 Sep vs the compiled 34,706 B (27 Oct); removed with `git rm` (still in `c88c0d2`); Build after removal 0 errors / 0 warnings, text 245,004 · data 9,964 · bss 19,836 (E5R, RECENTRE 1, REPLAY 0) `[ตรวจแล้ว: build log 23:22]`. Also removed: empty file `python` (0 B, 27 Oct 18:45, never committed) |
+| `collect_own_data.py` with `Y,` lines present (`MY_TOF_PRED_LINE = 1`) — check before `data\phase56`, or build with 0 | ✅ collector v6.2 records Y/Q to `*_board.csv`, shows no predictions (§5.1y-W; used for phase56_stand and phase57) |
 | Single-frame worst-case per-frame work | ✅ 26 Oct: max 29,295 µs over 4,219 frames (§5.1p) |
 | **Reminder (Chin's explicit request, 20 Oct 2026):** when the project ends — or when thesis/defence wrap-up starts — remind Chin, even if he forgets, to build a **reusable skill** capturing every good working method of this project, from §9, the project memory's learnings and preferences | ⬜ at project end |
 
@@ -3716,6 +3719,7 @@ are not logged in this file — it lives in the repo.
 | 68 | Proposed (27 Oct 15:35) 'arm-dropout' augmentation on **every** posture to stop the model relying on the forearm | Chin pointed out (15:36) that other postures may legitimately depend on the wrist/forearm (two-hand postures: Love, CrossHands, BreakTime include forearms in their shape); erasing them could damage those classes. Revised: single-hand postures only, p < 1, plus a per-posture LOSO guard (§5.1y-D) | Designed a fix from the failing class alone — check what the change does to every other class before proposing it |
 | 69 | Read the re-centred mean hand map (§5.1y-D) as a forearm 'tail' at rows 6–7 and built the arm-dropout plan on it | The direction check (§5.1y-O) shows the protruding part is the **thumb** (ST and friend: Like → row 0, Dislike → row 7); Chin's shapes are nearly symmetric. Erasing the bottom rows would have removed Dislike's thumb. Caught before any training by the extra check added after Chin's objection (#68) | Do not infer an anatomical cause from a mean image; measure the direction/asymmetry it implies before designing a fix |
 | 70 | Wrote "Chin's thumb barely protrudes at 8×8" (≈ 16:00) from a near-zero *mean* asymmetry | A mean near 0 also fits takes that differ (some clear, some not) or thumb + wrist on opposite sides. Chin said (16:03) he made the thumb very clear in training. Re-worded as an open question with a per-take check (`thumb_per_take.py`) | A mean describes the group, not each take or frame; check the per-take distribution before naming a cause |
+| 71 | Told Chin (22:11) that no on-screen live view existed and wrote a new `pc_tools\live_demo.py`, without searching FACTS first (Rule 0) — FACTS §5.1q/§5.1l already describe `live_demo.py` v3 (A5 tool). Chin committed it (`d0ac68b`) over v3; caught from git output: "1 file changed, 303 deletions" with no "create mode" | v3 restored from `441c67a` at its path; new screen renamed `live_view.py` (§5.1y-Y); nothing lost (git history) | Before creating a file or saying a tool does not exist, grep FACTS and the repo listing for the name and the function; new files get names checked against `git log -- <path>` |
 
 **Real finding behind #36 (not an assistant mistake — a genuine project fact):**
 The `53L8A1_SimpleRanging` project's `.ioc` has always been configured for **STM32F401RETx / NUCLEO-F401RE**, while the physical board (confirmed by a photo of the chip marking) is **STM32F411RET6**. Confirmed via the linker script header: *"Linker script for NUCLEO-F401RE Board embedding STM32F401RETx Device... 96KBytes RAM"*. This has been true since the project was first created and was never the assistant's error to log — it predates this conversation.
