@@ -2879,6 +2879,41 @@ Rules: 1 LOSO 89.67 ≥ 86.30 ✅ · 2 100.00 ≥ 98.72 ✅ · 3 no posture belo
 compile-time switch, default 0) → `MY_TOF_REPLAY` and replay **E5 first** (must reproduce the recorded Y lines) → E5R board = PC on every
 frame (replay + live) → per-frame work ≤ 33 ms → only then E5R replaces E5 on the board → blind live look → friend's takes.
 
+### 5.1y-U Rule 5, steps 5.1–5.3 — X-CUBE-AI conversion of E5R (27 Oct 2026, 17:16–17:53) `[MEASURED]`
+
+Same tool, project and settings as E5 (§5.1m): STM32CubeMX + X-CUBE-AI 10.2.1 / ST Edge AI Core v2.2.0, `tof_ai_conversion.ioc`,
+"Non optimal boards parameters" → **No**, name `network`, TFLite, MCU runtime, compression none, optimisation balanced; model
+`results_phase55c_final\deploy\E5R.tflite` (path checked on Chin's screenshot before Analyze).
+**5.1 Analyze** (39.4 s; console text `e5r_analyze.txt`) — prediction written first (ครู): every number = E5's, only the hash differs.
+**All held:** model_name E5R, hash `0x402dab2e5f51bbfa2ba24fe36a0d09fc` (E5 `0xb3193840…`), params 22,556, MACC 73,762, weights 90,276 B
+(88.16 KiB), activations 1,736 B, Flash total 114,576 B = 111.89 KiB, RAM total 11,476 B = 11.21 KiB (CubeMX panel again 112.61 KiB — the
+same unexplained 0.72 KiB as E5). → E5R costs exactly what E5 costs; the only extra on-board time will be re-centring in firmware.
+**5.2 Validate on desktop** (38.4 s; `e5r_validate.txt`) with `board_check_inputs_R_200.npy` (re-centred; range −0.62…18.90) vs
+`board_check_E5R_probs_200.npy`: C-model vs our file **acc 100.00 %, rmse 1.4e-08**; tflite vs file 7e-09; C vs tflite 1.5e-08; classes
+29/29/29/27/29/29/28 (all 7). Agreement, not accuracy (training frames); 0.061 ms is the PC's time, never board latency (Rule 5).
+**5.3 Generate** (17:49): E5's 8 files first backed up to `C:\Users\gaming\Documents\backup_App_E5_conv_20261027\` (xcopy: 8 files);
+success dialog; `.ioc` saved. New files in `ai_conversion_project\tof_ai_conversion\X-CUBE-AI\App\`, all 27 Oct 17:49: network.c 64,485 ·
+network.h 9,348 (+1 vs E5) · network_config.h 1,553 · network_data.c 3,516 · network_data.h 2,331 · network_data_params.c 246,738 (same size,
+same weight count) · network_data_params.h 1,765 · network_generate_report.txt 60,220. **Content check:** `findstr` → `network.c`
+`AI_NETWORK_MODEL_SIGNATURE "0x402dab2e…"` and the report's hash = E5R; `b3193840` (E5) found nowhere; `fc /b` vs E5's
+`network_data_params.c` → **154,901 differing bytes** → the weights are new.
+Screenshots (Chin): Analyze/Validate settings, Validate metrics, Generate success.
+**5.4 Firmware `MY_TOF_RECENTRE` (27 Oct 18:05–18:25) `[MEASURED]`.** New `my_recentre.h` (integer floor division, shift with empty fill,
+header-only) + `my_tof.c` additions only (67 lines added, 0 removed; CRLF kept): switch `MY_TOF_RECENTRE` (default 0), hand mask
+`dist_out < 2000.0f` inside the preprocessing loop, re-centring inside the preprocess timing window, and a **model guard**: at boot
+`strcmp(AI_NETWORK_ORIGIN_MODEL_NAME, "e5r")` (the generated `network.h` holds `AI_NETWORK_ORIGIN_MODEL_NAME "e5r"` for E5R) must agree with the
+switch, else `MY_AI: ... check=MISMATCH`, model never run, every in-range frame prints `Y,<frame>,-3`.
+**Offline tests (ครู):** (a) `my_recentre()` compiled with gcc vs `recentre.py` on 50,000 synthetic frames: dr/dc identical, output
+**bit-identical**; negative shifts 16,487 frames; plain C `/` would differ on 3,183 → floor fix required and present; mask equivalence for every
+integer 0–4000 mm. (b) the real `my_tof.c` compiled on the PC with stubbed HAL/sensor/AI in 4 configurations (e5/e5r × switch 0/1), 6,000
+synthetic sensor frames: e5r+1 → model input = `recentre.py(st_dataset)` **bit-identical** on all 3,044 in-range frames; e5+0 → input =
+`st_dataset` bit-identical (unchanged E5 path); both mismatched pairs → `check=MISMATCH`, model never called, `-3` on every in-range frame.
+**Build (switch 0, E5 still in the firmware's `X-CUBE-AI\App`):** 0 errors, 0 warnings; text 243,948 (+608 vs §5.1n) · data 9,964 · bss 17,260
+(+8) → Flash 248.0 KiB. **Board:** boot `MY_AI: model=e5 recentre=0 check=OK` (so E5's origin name is "e5"); Y lines normal (FlatHand
+0.99…); `Q` per-frame total 29.20–29.28 ms (sensor 13.25, preprocess 0.12, inference 15.83–15.89 ms) = §5.1n's 29.3 ms → unchanged.
+`my_tof.c` before the change backed up in `C:\Users\gaming\Documents\backup_fw_E5_20261027\`.
+**Next: 5.5** `MY_TOF_REPLAY` (UART RX, binary frames, stop-and-wait, board echoes F/S/G) + PC replay script; replay **E5 first** on `phase56_stand` (must reproduce the recorded Y lines), then copy E5R's 8 files into the firmware, switch = 1, replay again.
+
 ### 5.1z E5R — final arm-R models and ensemble (27 Oct 2026) `[MEASURED]`
 
 **Training** `pc_tools\train_phase55c_final.py` (written + tested offline 27 Oct, 20/20 checks incl. "fit inputs identical to LOSO arm R"
@@ -3894,3 +3929,5 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *2026-10-27 16:33 addendum: sit vs stand, all 7 postures — only Like (6/10 metrics) and Dislike (5/10) leave the standing range when sitting; FlatHand/Love/CrossHands/BreakTime 0, Fist 1. A17 (standing as primary condition) proposed to Chin, not yet adopted.*
 *2026-10-27 16:40 addendum: **A17 written** (§5.1y-S) before E5R is scored on phase56_stand — standing primary, candidate = existing E5R, rules 1/4/5 kept, sitting = limitation, RP dropped unrun; disclosed as written after A15/A16.*
 *2026-10-27 16:45 addendum: **A17 run** (§5.1y-T, script `db5818e`): E5R passes rules 1–4 on phase56_stand — 100.00 % vs E5 board 98.72 %, A6-sim row−1 86.4 vs 58.3 %; self-checks A–E pass. Rule 5 (board) next; E5 stays on the board until then.*
+*2026-10-27 17:55 addendum: rule 5 steps 5.1–5.3 done (§5.1y-U): E5R Analyze = E5's numbers exactly (hash differs), Validate C vs PC 200/200 rmse 1.4e-08, Generate checked by hash + 154,901 differing weight bytes. Next 5.4 firmware MY_TOF_RECENTRE.*
+*2026-10-27 18:30 addendum: 5.4 done — `MY_TOF_RECENTRE` + model guard (offline bit-identical tests), build 0/0, board boots `model=e5 recentre=0 check=OK`, 29.2 ms unchanged. Next 5.5 replay.*

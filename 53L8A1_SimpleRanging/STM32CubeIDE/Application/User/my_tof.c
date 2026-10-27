@@ -9,6 +9,11 @@
  * แก้ไข 26 ต.ค. 2026 (Phase 5.6 แบบละเอียด): เพิ่มสวิตช์ MY_TOF_FRAME_TIMING
  *   = พิมพ์เวลาของ "ทุกเฟรมที่ทาย" เป็นบรรทัด Q (เดิมมีแค่ค่าเฉลี่ยทีละ 30 เฟรมในบรรทัด LAT)
  *     เพื่อหาค่าสูงสุดจริงและการกระจายของเวลาต่อเฟรม — การคำนวณและบรรทัดอื่นไม่เปลี่ยน
+ * แก้ไข 27 ต.ค. 2026 (กติกา A17 ข้อ 5, ขั้น 5.4): เพิ่มสวิตช์ MY_TOF_RECENTRE
+ *   = ย้ายมือมากลางภาพ (my_recentre.h) หลัง normalise ก่อนเข้าโมเดล — ต้องใช้คู่กับโมเดล E5R เท่านั้น
+ *   + ตัวกันใส่โมเดลผิดคู่: ตอนบูตเทียบชื่อโมเดลจาก network.h (AI_NETWORK_ORIGIN_MODEL_NAME)
+ *     ถ้าสวิตช์กับโมเดลไม่ตรงกัน บอร์ด "ไม่ทาย" (พิมพ์ Y,<เฟรม>,-3) แทนที่จะทายผิดแบบเงียบๆ
+ *   ส่วนอื่นของไฟล์ไม่เปลี่ยน ; MY_TOF_RECENTRE = 0 + โมเดล E5 ทำงานเหมือนเฟิร์มแวร์ 26 ต.ค. ทุกอย่าง
  */
 
 #include "my_tof.h"
@@ -18,8 +23,10 @@
 #include "app_tof_pin_conf.h"
 #include "vl53l8cx.h"
 #include "vl53l8cx_api.h"
+#include <string.h>
 #include "network.h"
 #include "network_data.h"
+#include "my_recentre.h"
 
 extern uint8_t  my_platform_i2c_probe(uint16_t address);
 extern void     my_platform_dwt_init(void);
@@ -60,6 +67,18 @@ extern void *VL53L8A1_RANGING_SENSOR_CompObj[];
 #if MY_TOF_FRAME_TIMING && MY_TOF_TIMING_MODE
   #error "MY_TOF_FRAME_TIMING ต้องใช้กับ MY_TOF_TIMING_MODE = 0"
 #endif
+
+/* ===== สวิตช์ย้ายมือมากลางภาพ (เพิ่ม 27 ต.ค. 2026, PROJECT_FACTS §5.1w / §5.1y-S) =====
+   1 = หลัง normalise ย้ายมือให้จุดศูนย์กลางอยู่กลางภาพ แบบเดียวกับ pc_tools/recentre.py ทุกบิต
+       ใช้คู่กับโมเดล E5R เท่านั้น (ไฟล์ X-CUBE-AI/App ที่สร้างจาก E5R.tflite)
+   0 = ไม่ย้าย ใช้คู่กับ E5 (โมเดลที่อยู่บนบอร์ดตั้งแต่ 26 ต.ค.)
+   เวลาที่ใช้ย้าย นับรวมใน preprocess_us (บรรทัด LAT / Q) */
+#ifndef MY_TOF_RECENTRE
+#define MY_TOF_RECENTRE      0
+#endif
+
+/* ชื่อโมเดลที่ต้องคู่กับสวิตช์ — X-CUBE-AI ตั้งจากชื่อไฟล์ .tflite เป็นตัวเล็ก (network.h) */
+#define MY_TOF_RECENTRE_MODEL  "e5r"
 
 #if MY_TOF_USE_4X4
   #define MY_TOF_STREAM_STEP   1U
@@ -371,6 +390,14 @@ static ai_float g_ai_out[AI_NETWORK_OUT_1_SIZE];
 static int8_t g_pred_class = -1;
 static float  g_pred_conf  = 0.0f;
 
+/* 1 = สวิตช์ MY_TOF_RECENTRE กับโมเดลใน network.h เข้าคู่กัน (ตรวจใน my_ai_init) */
+static uint8_t g_model_ok = 0;
+
+#if MY_TOF_RECENTRE
+AI_ALIGNED(4)
+static ai_float g_rc_tmp[AI_NETWORK_IN_1_SIZE];   /* บัฟเฟอร์ชั่วคราวตอนย้ายมือ */
+#endif
+
 /* ★ ลำดับนี้ตรงกับ CLASSES ใน train_st_cnn2d.py (สคริปต์ที่เทรน production_model.keras
    จริง) — ยืนยันแล้ว 21 ก.ย. 2026 ห้ามสลับกลับไปใช้ลำดับ sort ตามเลข label ของ ST */
 static const char *g_class_names[7] = {
@@ -423,6 +450,20 @@ uint8_t my_ai_init(void)
            AI_NETWORK_IN_1_SIZE, AI_NETWORK_OUT_1_SIZE,
            AI_NETWORK_DATA_ACTIVATIONS_SIZE, MY_AI_VOTE_WINDOW, MY_LAT_WINDOW,
            MY_TOF_PRED_LINE, MY_TOF_FRAME_TIMING);
+
+    /* ตัวกันใส่โมเดลผิดคู่: E5R ต้องย้ายมือ (สวิตช์ = 1) ; โมเดลอื่น (E5) ต้องไม่ย้าย (สวิตช์ = 0) */
+    {
+        uint8_t is_e5r = (strcmp(AI_NETWORK_ORIGIN_MODEL_NAME, MY_TOF_RECENTRE_MODEL) == 0) ? 1U : 0U;
+        g_model_ok = (is_e5r == (uint8_t)MY_TOF_RECENTRE) ? 1U : 0U;
+        printf("MY_AI: model=%s recentre=%d check=%s\r\n", AI_NETWORK_ORIGIN_MODEL_NAME,
+               MY_TOF_RECENTRE, g_model_ok ? "OK" : "MISMATCH");
+        if (!g_model_ok)
+        {
+            printf("ERROR: model '%s' needs MY_TOF_RECENTRE=%d - inference disabled (Y,<frame>,-3)\r\n",
+                   AI_NETWORK_ORIGIN_MODEL_NAME, (int)is_e5r);
+            return 1;
+        }
+    }
     return 0;
 }
 
@@ -456,9 +497,22 @@ void my_tof_infer(void)
         printf("Y,%lu,-1\r\n", (unsigned long)g_frame_count);
 #endif
     }
+    else if (!g_model_ok)
+    {
+        /* สวิตช์กับโมเดลไม่เข้าคู่ (ดูบรรทัด MY_AI: ตอนบูต) → ไม่ทาย ดีกว่าทายผิดแบบเงียบๆ */
+        g_pred_class = -1;
+        g_pred_conf  = 0.0f;
+#if MY_TOF_PRED_LINE
+        printf("Y,%lu,-3\r\n", (unsigned long)g_frame_count);
+#endif
+    }
     else
     {
         uint32_t t0, t1, t2, t3;
+#if MY_TOF_RECENTRE
+        uint8_t hand[MY_TOF_ZONES];               /* โซนมือ = ระยะหลังตัดฉากหลัง < 2000 มม. */
+        int32_t rc_dr, rc_dc;
+#endif
 
         t0 = my_platform_cycles();
 
@@ -473,7 +527,20 @@ void my_tof_infer(void)
 
             g_ai_in[i * 2 + 0] = (dist_out - MY_AI_DIST_MEAN) / MY_AI_DIST_STD;
             g_ai_in[i * 2 + 1] = (sig_out  - MY_AI_SIG_MEAN)  / MY_AI_SIG_STD;
+#if MY_TOF_RECENTRE
+            hand[i] = (dist_out < 2000.0f) ? 1U : 0U;   /* = recentre.py: X[...,0] < (2000-295)/196 */
+#endif
         }
+
+#if MY_TOF_RECENTRE
+        /* ย้ายมือมากลางภาพ — ค่าว่างคำนวณแบบเดียวกับโซนที่ไม่ใช่มือข้างบน (ระยะ 4000, signal 0) */
+        (void)my_recentre(g_ai_in, hand,
+                          (MY_AI_DEFAULT_DISTANCE - MY_AI_DIST_MEAN) / MY_AI_DIST_STD,
+                          (MY_AI_DEFAULT_SIGNAL - MY_AI_SIG_MEAN) / MY_AI_SIG_STD,
+                          g_rc_tmp, &rc_dr, &rc_dc);
+        (void)rc_dr;
+        (void)rc_dc;
+#endif
 
         t1 = my_platform_cycles();   /* จบ preprocess */
 
