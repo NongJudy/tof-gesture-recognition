@@ -1,0 +1,15 @@
+==================================================================================
+  Replay · board (e5) vs board · data\phase56_stand · FACTS §5.1y-S rule 5
+==================================================================================
+  frames sent 4,221 (all frames, in and out of range) · resends 0
+  PASS  board echoed every frame exactly (F/S/G = sent)   4,221/4,221
+  PASS  board class (or -1) = reference on every frame   4,221/4,221
+  PASS  no -3 (model/switch guard) and no -2 (run error)  0
+  PASS  max |board p − reference p| = 0.00e+00 (tolerance 2e-06)
+  VERDICT: PASS
+
+  board accuracy on in-range frames (vs labels): 98.72 %  (n = 4,221)
+  board inference 15.789 ms mean, 15.907 ms max · preprocess 128 µs mean, 133 µs max (replay: no sensor read in these numbers)
+  per-frame details: per_frame.csv · every line the board sent: board_lines.txt
+  output: results_replay\e5_phase56_stand_board_20261027_202012
+==================================================================================

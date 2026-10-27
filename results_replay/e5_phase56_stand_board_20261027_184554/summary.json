@@ -1,0 +1,41 @@
+{
+  "generated": "2026-10-27T18:45:54",
+  "verdict": "PASS",
+  "checks": {
+    "echo_all_frames": true,
+    "class_all_frames": true,
+    "no_guard_or_run_errors": true,
+    "probabilities_within_tol": true
+  },
+  "data_dir": "data\\phase56_stand",
+  "model": "e5",
+  "reference": "board",
+  "keras": null,
+  "keras_sha256": null,
+  "boot": {
+    "replay_mode": true,
+    "model": "e5",
+    "recentre": "0",
+    "check": "OK",
+    "packet_bytes": 454
+  },
+  "frames": 301,
+  "frames_compared": 301,
+  "class_agree": 301,
+  "echo_ok": 301,
+  "guard_or_run_errors": 0,
+  "prob_maxdiff": 0.0,
+  "prob_tol": 2e-06,
+  "resends": 0,
+  "board_accuracy_in_range_pct": 100.0,
+  "in_range_frames": 301,
+  "inference_us_mean_max": [
+    15760.262458471761,
+    15884
+  ],
+  "preprocess_us_mean_max": [
+    129.265780730897,
+    130
+  ],
+  "note": "replay = board computation on recorded frames; sensor time is not included (Q sensor_us = 0)"
+}

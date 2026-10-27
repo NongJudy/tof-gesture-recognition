@@ -2912,7 +2912,24 @@ synthetic sensor frames: e5r+1 → model input = `recentre.py(st_dataset)` **bit
 (+8) → Flash 248.0 KiB. **Board:** boot `MY_AI: model=e5 recentre=0 check=OK` (so E5's origin name is "e5"); Y lines normal (FlatHand
 0.99…); `Q` per-frame total 29.20–29.28 ms (sensor 13.25, preprocess 0.12, inference 15.83–15.89 ms) = §5.1n's 29.3 ms → unchanged.
 `my_tof.c` before the change backed up in `C:\Users\gaming\Documents\backup_fw_E5_20261027\`.
-**Next: 5.5** `MY_TOF_REPLAY` (UART RX, binary frames, stop-and-wait, board echoes F/S/G) + PC replay script; replay **E5 first** on `phase56_stand` (must reproduce the recorded Y lines), then copy E5R's 8 files into the firmware, switch = 1, replay again.
+**5.5 Replay (27 Oct 18:30–18:46) `[MEASURED]`.** Firmware: `my_uart.c` gains interrupt RX (1-byte `HAL_UART_Receive_IT`, 2 KiB ring,
+overflow/error counters, re-arm in `HAL_UART_ErrorCallback` and in `my_uart_rx_get`; idle unless `my_uart_rx_start()` is called);
+`my_tof.c` gains switch `MY_TOF_REPLAY` (**set to 1 for steps 5.5–5.6; must be 0 for live use/demo**): `my_tof_read_frame()` assembles
+454-byte packets (A5 5A | seq u16 | 64×u16 distance | 64×u8 status | 64×u32 signal | u16 byte-sum checksum), fills the same
+`g_distance_mm/g_status/g_signal`, sets `g_frame_count = seq`, prints `E,…` on checksum failure and `K,<seq>,rx_bytes,ovf,err` after the
+frame's F/S/G/Y/Q lines; `main.c` unchanged. PC: `pc_tools\replay_board.py` (stop-and-wait, resend on E/timeout, checks echo F/S/G =
+sent, class per frame, probability diff; refuses wrong `--model`, guard MISMATCH, normal firmware; `--reference board` = recorded Y lines,
+E5 only; `--reference pc` = .keras on the PC, E5R re-centred). **Offline tests:** real `my_tof.c` + `my_uart.c` compiled on the PC and driven
+by the real script: E5 vs recorded lines 280/280, p diff 0; E5R (C re-centring) vs PC 280/280, p diff 5e-7; corrupted packet → resend → PASS;
+wrong model / guard mismatch refused; one wrong reference frame → FAIL 279/280; UART RX unit tests 9/9.
+**Build** (REPLAY 1, RECENTRE 0, E5): 0 errors / 0 warnings; text 244,980 · data 9,964 · bss 19,268 → Flash 249.0 KiB, RAM 28.6 KiB.
+**Smoke run on the board** (`--limit-takes 1`, `phase56_stand` BreakTime 1, 301 frames, 0.2 min): echo 301/301, class 301/301, **probability
+difference 0.00** (bit-identical to the 26 Oct live run), no resends, board inference 15.76 ms mean / 15.88 max (replay, no sensor time) →
+**the replay method reproduces the board's live computation exactly.** Note: first attempt failed with `Access is denied` on COM3
+(port held by another program; fixed by closing it / replugging).
+**Full E5 replay (20:20, `results_replay\e5_phase56_stand_board_20261027_202012\`):** 14 takes, 4,221 frames, 2.5 min, resends 0 — echo 4,221/4,221 · class (incl. −1) 4,221/4,221 · **max probability difference 0.00** · no −2/−3 · board accuracy 98.72 % (= §5.1u) · inference 15.79 ms mean / 15.91 max, preprocess 128 / 133 µs (E5, replay, no sensor time). **Every prediction held → replay validated (the fallback 'new standing collection' is not needed).**
+**Next:** commit; then copy E5R's 8 files into the firmware's
+`X-CUBE-AI\App\` (back up E5's first), `MY_TOF_RECENTRE 1`, replay with `--model e5r --reference pc` on `phase56_stand`, `phase56`, `a5_love`.
 
 ### 5.1z E5R — final arm-R models and ensemble (27 Oct 2026) `[MEASURED]`
 
@@ -3931,3 +3948,5 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *2026-10-27 16:45 addendum: **A17 run** (§5.1y-T, script `db5818e`): E5R passes rules 1–4 on phase56_stand — 100.00 % vs E5 board 98.72 %, A6-sim row−1 86.4 vs 58.3 %; self-checks A–E pass. Rule 5 (board) next; E5 stays on the board until then.*
 *2026-10-27 17:55 addendum: rule 5 steps 5.1–5.3 done (§5.1y-U): E5R Analyze = E5's numbers exactly (hash differs), Validate C vs PC 200/200 rmse 1.4e-08, Generate checked by hash + 154,901 differing weight bytes. Next 5.4 firmware MY_TOF_RECENTRE.*
 *2026-10-27 18:30 addendum: 5.4 done — `MY_TOF_RECENTRE` + model guard (offline bit-identical tests), build 0/0, board boots `model=e5 recentre=0 check=OK`, 29.2 ms unchanged. Next 5.5 replay.*
+*2026-10-27 18:50 addendum: 5.5 replay built (offline end-to-end tests pass) and smoke-tested on the board: E5 replay = recorded live run on 301/301 frames, probability difference 0. Firmware now has MY_TOF_REPLAY = 1 (must be 0 for the demo). Uncommitted: my_tof.c, my_uart.c, pc_tools/replay_board.py, results_replay/. Next: full E5 replay, commit, then E5R.*
+*2026-10-27 20:25 addendum: full E5 replay on phase56_stand = the recorded live run on all 4,221 frames, probability difference 0 → replay method validated. Next: commit, then E5R into the firmware (RECENTRE 1) and replay vs PC.*

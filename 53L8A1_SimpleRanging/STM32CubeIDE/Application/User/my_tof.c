@@ -14,6 +14,15 @@
  *   + ตัวกันใส่โมเดลผิดคู่: ตอนบูตเทียบชื่อโมเดลจาก network.h (AI_NETWORK_ORIGIN_MODEL_NAME)
  *     ถ้าสวิตช์กับโมเดลไม่ตรงกัน บอร์ด "ไม่ทาย" (พิมพ์ Y,<เฟรม>,-3) แทนที่จะทายผิดแบบเงียบๆ
  *   ส่วนอื่นของไฟล์ไม่เปลี่ยน ; MY_TOF_RECENTRE = 0 + โมเดล E5 ทำงานเหมือนเฟิร์มแวร์ 26 ต.ค. ทุกอย่าง
+ * แก้ไข 27 ต.ค. 2026 (กติกา A17 ข้อ 5, ขั้น 5.5): เพิ่มสวิตช์ MY_TOF_REPLAY
+ *   = บอร์ด "ไม่อ่านเซ็นเซอร์" แต่รับเฟรมที่บันทึกไว้จาก PC ทาง UART (pc_tools/replay_board.py)
+ *     แล้วประมวลผลด้วยโค้ดเดียวกับตอนใช้งานจริงทุกบรรทัด (send_frame -> infer -> send_prediction)
+ *     ใช้ตรวจว่า "บอร์ดทายเหมือน PC ทุกเฟรม" บนข้อมูลชุดเดิม โดยไม่ต้องเก็บข้อมูลใหม่
+ *   แพ็กเก็ต 454 ไบต์: A5 5A | seq u16 | ระยะ 64×u16 | status 64×u8 | signal 64×u32 | checksum u16
+ *     (little-endian ; checksum = ผลรวมไบต์ seq..signal mod 65536)
+ *   บอร์ดตอบ F/S/G (ทวนเฟรมที่ได้รับ ให้ PC ตรวจ) Y Q ... แล้วปิดท้ายด้วย K,<seq>
+ *     checksum ผิด -> E,<seq>,<รับ>,<คำนวณ> และไม่ประมวลผล (PC ส่งซ้ำ)
+ *   MY_TOF_REPLAY = 0 ทำงานเหมือนเดิมทุกอย่าง (อ่านเซ็นเซอร์)
  */
 
 #include "my_tof.h"
@@ -80,6 +89,27 @@ extern void *VL53L8A1_RANGING_SENSOR_CompObj[];
 /* ชื่อโมเดลที่ต้องคู่กับสวิตช์ — X-CUBE-AI ตั้งจากชื่อไฟล์ .tflite เป็นตัวเล็ก (network.h) */
 #define MY_TOF_RECENTRE_MODEL  "e5r"
 
+/* ===== สวิตช์ replay (เพิ่ม 27 ต.ค. 2026, กติกา A17 ข้อ 5) =====
+   1 = รับเฟรมจาก PC ทาง UART แทนการอ่านเซ็นเซอร์ (ดูหัวไฟล์) — ใช้ทดสอบเท่านั้น ห้ามใช้ตอนเดโม
+   0 = อ่านเซ็นเซอร์ตามปกติ */
+#ifndef MY_TOF_REPLAY
+#define MY_TOF_REPLAY        1     /* ขั้น 5.5 (27 ต.ค.): 1 ชั่วคราวเพื่อ replay — ใช้งานจริง/เดโมต้องเป็น 0 */
+#endif
+
+#if MY_TOF_REPLAY && (MY_TOF_TIMING_MODE || !MY_TOF_PRED_LINE || MY_TOF_USE_4X4)
+  #error "MY_TOF_REPLAY ต้องใช้กับ MY_TOF_TIMING_MODE = 0, MY_TOF_PRED_LINE = 1 และโหมด 8x8"
+#endif
+
+#if MY_TOF_REPLAY
+extern void my_uart_rx_start(void);
+extern int  my_uart_rx_get(uint8_t *b);
+extern volatile uint32_t g_uart_rx_bytes, g_uart_rx_ovf, g_uart_rx_err;
+#define MY_RP_SYNC0        (0xA5U)
+#define MY_RP_SYNC1        (0x5AU)
+#define MY_RP_PAYLOAD      (2U + 64U * 2U + 64U * 1U + 64U * 4U)   /* seq + ระยะ + status + signal = 450 */
+#define MY_RP_FRAME_BYTES  (2U + MY_RP_PAYLOAD + 2U)               /* + sync 2 + checksum 2 = 454 */
+#endif
+
 #if MY_TOF_USE_4X4
   #define MY_TOF_STREAM_STEP   1U
 #else
@@ -108,10 +138,12 @@ static uint8_t  m_stream = 0, m_stream_prev = 0, m_stream_delta = 0;
 static uint32_t m_dup = 0, m_skip = 0;
 static uint32_t m_anomaly = 0;
 
+#if !MY_TOF_REPLAY                  /* replay ไม่อ่านเซ็นเซอร์ จึงไม่ต้องมีบัฟเฟอร์ผลวัด */
 #if MY_TOF_FAST_READ
 static VL53L8CX_ResultsData    RawData;
 #else
 static RANGING_SENSOR_Result_t Result;
+#endif
 #endif
 
 
@@ -204,6 +236,12 @@ uint8_t my_tof_init(void)
 
     printf("CLK,%lu\r\n", (unsigned long)SystemCoreClock);
 
+#if MY_TOF_REPLAY
+    my_uart_rx_start();
+    printf("MY_TOF: REPLAY mode - frames come from the PC over UART, the sensor is ignored "
+           "(packet %u bytes)\r\n", (unsigned int)MY_RP_FRAME_BYTES);
+#endif
+
 #if MY_TOF_TIMING_MODE
     printf("H,frame,rd_calls,rd_bytes,rd_us,max_bytes,max_us,uart_us,"
            "stream,delta,dup,skip,anomaly\r\n");
@@ -213,6 +251,94 @@ uint8_t my_tof_init(void)
     return 0;
 }
 
+
+#if MY_TOF_REPLAY
+/* ===== โหมด replay: ประกอบแพ็กเก็ตจากไบต์ที่รับทาง UART =====
+   คืน 1 เมื่อได้เฟรมครบและ checksum ถูก (ใส่ลง g_distance_mm / g_status / g_signal แบบเดียวกับเซ็นเซอร์)
+   ก่อนรับเฟรมถัดไป พิมพ์ K,<seq> ของเฟรมก่อนหน้า (= ประมวลผลและพิมพ์ทุกบรรทัดเสร็จแล้ว) */
+static uint8_t  g_rp_buf[MY_RP_PAYLOAD + 2U];   /* payload + checksum */
+static uint16_t g_rp_n = 0;
+static uint8_t  g_rp_state = 0;                 /* 0 = รอ A5, 1 = รอ 5A, 2 = รับ payload */
+static uint8_t  g_rp_ack = 0;
+static uint16_t g_rp_seq = 0;
+static uint8_t  g_rp_ready = 0;
+
+static uint32_t rp_u16(const uint8_t *p) { return (uint32_t)p[0] | ((uint32_t)p[1] << 8); }
+static uint32_t rp_u32(const uint8_t *p)
+{
+    return (uint32_t)p[0] | ((uint32_t)p[1] << 8) | ((uint32_t)p[2] << 16) | ((uint32_t)p[3] << 24);
+}
+
+uint8_t my_tof_read_frame(void)
+{
+    uint8_t b;
+    uint32_t i;
+
+    (void)m_stream; (void)m_stream_prev; (void)m_stream_delta;   /* ใช้เฉพาะตอนอ่านเซ็นเซอร์ */
+    (void)ToF_EventDetected;
+    if (!g_rp_ready)
+    {
+        printf("REPLAY,ready,%u\r\n", (unsigned int)MY_RP_FRAME_BYTES);
+        g_rp_ready = 1;
+    }
+    if (g_rp_ack)
+    {
+        printf("K,%u,%lu,%lu,%lu\r\n", (unsigned int)g_rp_seq, (unsigned long)g_uart_rx_bytes,
+               (unsigned long)g_uart_rx_ovf, (unsigned long)g_uart_rx_err);
+        g_rp_ack = 0;
+    }
+
+    while (my_uart_rx_get(&b))
+    {
+        if (g_rp_state == 0U)
+        {
+            g_rp_state = (b == MY_RP_SYNC0) ? 1U : 0U;
+        }
+        else if (g_rp_state == 1U)
+        {
+            g_rp_state = (b == MY_RP_SYNC1) ? 2U : ((b == MY_RP_SYNC0) ? 1U : 0U);
+            g_rp_n = 0;
+        }
+        else
+        {
+            g_rp_buf[g_rp_n++] = b;
+            if (g_rp_n >= MY_RP_PAYLOAD + 2U)
+            {
+                uint32_t sum = 0;
+                uint32_t got = rp_u16(&g_rp_buf[MY_RP_PAYLOAD]);
+                const uint8_t *p = g_rp_buf;
+                g_rp_state = 0;
+                for (i = 0; i < MY_RP_PAYLOAD; i++)
+                {
+                    sum += g_rp_buf[i];
+                }
+                sum &= 0xFFFFU;
+                if (sum != got)
+                {
+                    printf("E,%lu,%lu,%lu\r\n", (unsigned long)rp_u16(g_rp_buf),
+                           (unsigned long)got, (unsigned long)sum);
+                    continue;                      /* ทิ้งแพ็กเก็ตนี้ PC จะส่งซ้ำ */
+                }
+                g_rp_seq = (uint16_t)rp_u16(p);
+                p += 2;
+                for (i = 0; i < MY_TOF_ZONES; i++) { g_distance_mm[i] = (uint16_t)rp_u16(p + 2U * i); }
+                p += 2U * MY_TOF_ZONES;
+                for (i = 0; i < MY_TOF_ZONES; i++) { g_status[i] = p[i]; }
+                p += MY_TOF_ZONES;
+                for (i = 0; i < MY_TOF_ZONES; i++) { g_signal[i] = rp_u32(p + 4U * i); }
+
+                m_rd_calls = 0; m_rd_bytes = 0; m_rd_us = 0;   /* ไม่ได้อ่านเซ็นเซอร์ -> เวลาอ่าน = 0 */
+                m_max_bytes = 0; m_max_us = 0;
+                g_frame_count = g_rp_seq;                     /* บรรทัด F/S/G/Y/Q ใช้เลข seq ของ PC */
+                g_rp_ack = 1;
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+#else  /* MY_TOF_REPLAY == 0 : อ่านเซ็นเซอร์ตามปกติ */
 
 uint8_t my_tof_read_frame(void)
 {
@@ -296,6 +422,8 @@ uint8_t my_tof_read_frame(void)
     g_frame_count++;
     return 1;
 }
+
+#endif /* MY_TOF_REPLAY */
 
 
 #if MY_TOF_DELAY_US > 0

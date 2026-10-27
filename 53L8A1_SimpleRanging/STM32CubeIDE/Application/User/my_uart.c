@@ -13,6 +13,11 @@
  *
  * @note    _write() ใน syscalls.c ประกาศเป็น weak เราจึงเขียนทับได้
  *          โดยไม่ต้องแก้ไฟล์ของ ST เลย
+ *
+ * แก้ไข 27 ต.ค. 2026 (กติกา A17 ข้อ 5, ขั้น 5.5 replay): เพิ่ม "รับ" ข้อมูลแบบ interrupt (RX)
+ *   my_uart_rx_start() เริ่มรับทีละไบต์ด้วย HAL_UART_Receive_IT -> ไบต์ลง rx ring buffer
+ *   my_uart_rx_get()   หยิบไบต์ออกจากบัฟเฟอร์ (ไม่รอ คืน 0 ถ้าว่าง)
+ *   ถ้าไม่เรียก my_uart_rx_start() (โหมดปกติ) ส่วนรับไม่ทำงานเลย การส่งเหมือนเดิมทุกอย่าง
  ******************************************************************************
  */
 
@@ -49,6 +54,19 @@ static volatile uint8_t  tx_byte;
 volatile uint32_t g_uart_chars = 0;
 volatile uint32_t g_uart_full  = 0;
 
+/* ── ส่วนรับ (RX) สำหรับโหมด replay ─────────────────────────
+   ขนาดต้องเป็นเลขยกกำลัง 2 ; 2048 > 1 แพ็กเก็ต replay (454 ไบต์) หลายเท่า */
+#define UART_RX_BUF_SIZE     2048U
+#define UART_RX_BUF_MASK     (UART_RX_BUF_SIZE - 1U)
+static volatile uint8_t  rx_buf[UART_RX_BUF_SIZE];
+static volatile uint16_t rx_head = 0;   // ตำแหน่งเขียน (interrupt แก้)
+static volatile uint16_t rx_tail = 0;   // ตำแหน่งอ่าน  (โปรแกรมหลักแก้)
+static volatile uint8_t  rx_byte;       // ไบต์ที่ HAL กำลังรับ (ต้อง static เหตุผลเดียวกับ tx_byte)
+static volatile uint8_t  rx_active = 0; // 1 = เรียก my_uart_rx_start() แล้ว
+volatile uint32_t g_uart_rx_bytes = 0;  // ไบต์ที่รับได้ทั้งหมด
+volatile uint32_t g_uart_rx_ovf   = 0;  // ไบต์ที่ทิ้งเพราะ rx ring buffer เต็ม
+volatile uint32_t g_uart_rx_err   = 0;  // จำนวนครั้งที่ HAL แจ้ง error (overrun / noise / framing)
+
 /* ── เปิดใช้ interrupt ของ USART2 ───────────────────────────
    ต้องเรียกหลัง BSP_COM_Init() เพราะ UART ต้องถูกตั้งค่าก่อน */
 void my_uart_init(void)
@@ -61,6 +79,49 @@ void my_uart_init(void)
     HAL_NVIC_SetPriority(MY_UART_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(MY_UART_IRQn);
 #endif
+}
+
+/* ── ส่วนรับ (RX) ────────────────────────────────────────────
+   ต้องใช้คู่กับ MY_UART_USE_IRQ = 1 (USART2_IRQHandler อยู่ในไฟล์นี้) */
+
+/* สั่ง HAL ให้รับไบต์ถัดไป 1 ไบต์ — เรียกตอนเริ่ม และทุกครั้งที่รับเสร็จ/มี error */
+static void uart_rx_arm(void)
+{
+    (void)HAL_UART_Receive_IT(MY_UART_HANDLE, (uint8_t *)&rx_byte, 1U);
+}
+
+void my_uart_rx_start(void)
+{
+    uint32_t prim = __get_PRIMASK();
+    __disable_irq();                 // กันชนกับ interrupt ฝั่งส่งระหว่างตั้งค่า
+    rx_head = 0; rx_tail = 0;
+    g_uart_rx_bytes = 0; g_uart_rx_ovf = 0; g_uart_rx_err = 0;
+    rx_active = 1U;
+    uart_rx_arm();
+    __set_PRIMASK(prim);
+}
+
+/* หยิบ 1 ไบต์จากบัฟเฟอร์รับ: คืน 1 = ได้ไบต์ใน *b, 0 = ว่าง (ไม่รอ)
+   ถ้าการรับหยุดไปเอง (HAL ไม่พร้อม) จะสั่งรับใหม่ให้ — กันกรณี re-arm ใน interrupt ไม่สำเร็จ */
+int my_uart_rx_get(uint8_t *b)
+{
+    if (rx_active && MY_UART_HANDLE->RxState == HAL_UART_STATE_READY)
+    {
+        uint32_t prim = __get_PRIMASK();
+        __disable_irq();
+        if (MY_UART_HANDLE->RxState == HAL_UART_STATE_READY)
+        {
+            uart_rx_arm();
+        }
+        __set_PRIMASK(prim);
+    }
+    if (rx_tail == rx_head)
+    {
+        return 0;
+    }
+    *b = rx_buf[rx_tail];
+    rx_tail = (uint16_t)((rx_tail + 1U) & UART_RX_BUF_MASK);
+    return 1;
 }
 
 #if MY_UART_USE_IRQ
@@ -113,6 +174,36 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
         uart_send_next();            // ยังมีค้าง ส่งต่อ
     } else {
         tx_busy = 0U;                // หมดแล้ว หยุดพัก
+    }
+}
+
+/* ── รับเสร็จ 1 ไบต์ -> HAL เรียกฟังก์ชันนี้ (ใน interrupt) ── */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    uint16_t next;
+    if (huart->Instance != USART2) {
+        return;
+    }
+    next = (uint16_t)((rx_head + 1U) & UART_RX_BUF_MASK);
+    if (next == rx_tail) {
+        g_uart_rx_ovf++;             // บัฟเฟอร์เต็ม: ทิ้งไบต์นี้ (PC จะเห็นจาก checksum แล้วส่งซ้ำ)
+    } else {
+        rx_buf[rx_head] = rx_byte;
+        rx_head = next;
+    }
+    g_uart_rx_bytes++;
+    uart_rx_arm();                   // รับไบต์ถัดไปทันที
+}
+
+/* ── HAL แจ้ง error (เช่น overrun) -> นับไว้ แล้วสั่งรับต่อ ── */
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance != USART2) {
+        return;
+    }
+    g_uart_rx_err++;
+    if (rx_active && huart->RxState == HAL_UART_STATE_READY) {
+        uart_rx_arm();
     }
 }
 
