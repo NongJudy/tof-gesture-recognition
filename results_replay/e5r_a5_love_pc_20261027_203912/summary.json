@@ -1,0 +1,41 @@
+{
+  "generated": "2026-10-27T20:39:12",
+  "verdict": "PASS",
+  "checks": {
+    "echo_all_frames": true,
+    "class_all_frames": true,
+    "no_guard_or_run_errors": true,
+    "probabilities_within_tol": true
+  },
+  "data_dir": "data\\a5_love",
+  "model": "e5r",
+  "reference": "pc",
+  "keras": "results_phase55c_final\\deploy\\E5R.keras",
+  "keras_sha256": "3a583d0e8bcee9b22849c4759d291c2493f9f66e026bdeb8a9c422f833023575",
+  "boot": {
+    "replay_mode": true,
+    "model": "e5r",
+    "recentre": "1",
+    "check": "OK",
+    "packet_bytes": 454
+  },
+  "frames": 1501,
+  "frames_compared": 1501,
+  "class_agree": 1501,
+  "echo_ok": 1501,
+  "guard_or_run_errors": 0,
+  "prob_maxdiff": 4.932838436216044e-07,
+  "prob_tol": 2e-05,
+  "resends": 0,
+  "board_accuracy_in_range_pct": 100.0,
+  "in_range_frames": 1501,
+  "inference_us_mean_max": [
+    15768.319120586275,
+    15933
+  ],
+  "preprocess_us_mean_max": [
+    261.69620253164555,
+    331
+  ],
+  "note": "replay = board computation on recorded frames; sensor time is not included (Q sensor_us = 0)"
+}

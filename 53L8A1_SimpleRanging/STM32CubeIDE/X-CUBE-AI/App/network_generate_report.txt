@@ -1,33 +1,33 @@
 ST Edge AI Core v2.2.0-20266 2adc00962
-Created date          : 2026-10-26 15:50:59
-Parameters            : generate --target stm32f4 --name network -m C:/Users/gaming/Documents/GitHub/tof-gesture-recognition/results_phase55_final/deploy/E5.tflite --compression none --verbosity 1 --workspace C:/Users/gaming/AppData/Local/Temp/mxAI_workspace46221168366650018181768569351430373 --output C:/Users/gaming/.stm32cubemx/network_output
+Created date          : 2026-10-27 17:49:48
+Parameters            : generate --target stm32f4 --name network -m C:/Users/gaming/Documents/GitHub/tof-gesture-recognition/results_phase55c_final/deploy/E5R.tflite --compression none --verbosity 1 --workspace C:/Users/gaming/AppData/Local/Temp/mxAI_workspace132908749039006042243596628348198 --output C:/Users/gaming/.stm32cubemx/network_output
 
 Exec/report summary (generate)
--------------------------------------------------------------------------------------------------------------------------
-model file         :   C:\Users\gaming\Documents\GitHub\tof-gesture-recognition\results_phase55_final\deploy\E5.tflite   
-type               :   tflite                                                                                            
-c_name             :   network                                                                                           
-compression        :   none                                                                                              
-options            :   allocate-inputs, allocate-outputs                                                                 
-optimization       :   balanced                                                                                          
-target/series      :   stm32f4                                                                                           
-workspace dir      :   C:\Users\gaming\AppData\Local\Temp\mxAI_workspace46221168366650018181768569351430373              
-output dir         :   C:\Users\gaming\.stm32cubemx\network_output                                                       
-model_fmt          :   float                                                                                             
-model_name         :   E5                                                                                                
-model_hash         :   0xb3193840e74ed083a5f621d5790b9e6a                                                                
-params #           :   22,556 items (88.11 KiB)                                                                          
--------------------------------------------------------------------------------------------------------------------------
-input 1/1          :   'serving_default_input0', f32(1x8x8x2), 512 Bytes, activations                                    
-output 1/1         :   'eltwise_49', f32(1x7), 28 Bytes, activations                                                     
-macc               :   73,762                                                                                            
-weights (ro)       :   90,276 B (88.16 KiB) (1 segment) / +52(+0.1%) vs float model                                      
-activations (rw)   :   1,736 B (1.70 KiB) (1 segment) *                                                                  
-ram (total)        :   1,736 B (1.70 KiB) = 1,736 + 0 + 0                                                                
--------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------
+model file         :   C:\Users\gaming\Documents\GitHub\tof-gesture-recognition\results_phase55c_final\deploy\E5R.tflite   
+type               :   tflite                                                                                              
+c_name             :   network                                                                                             
+compression        :   none                                                                                                
+options            :   allocate-inputs, allocate-outputs                                                                   
+optimization       :   balanced                                                                                            
+target/series      :   stm32f4                                                                                             
+workspace dir      :   C:\Users\gaming\AppData\Local\Temp\mxAI_workspace132908749039006042243596628348198                  
+output dir         :   C:\Users\gaming\.stm32cubemx\network_output                                                         
+model_fmt          :   float                                                                                               
+model_name         :   E5R                                                                                                 
+model_hash         :   0x402dab2e5f51bbfa2ba24fe36a0d09fc                                                                  
+params #           :   22,556 items (88.11 KiB)                                                                            
+---------------------------------------------------------------------------------------------------------------------------
+input 1/1          :   'serving_default_input0', f32(1x8x8x2), 512 Bytes, activations                                      
+output 1/1         :   'eltwise_49', f32(1x7), 28 Bytes, activations                                                       
+macc               :   73,762                                                                                              
+weights (ro)       :   90,276 B (88.16 KiB) (1 segment) / +52(+0.1%) vs float model                                        
+activations (rw)   :   1,736 B (1.70 KiB) (1 segment) *                                                                    
+ram (total)        :   1,736 B (1.70 KiB) = 1,736 + 0 + 0                                                                  
+---------------------------------------------------------------------------------------------------------------------------
 (*) 'input'/'output' buffers are allocated in the activations buffer
 
-Model name - E5
+Model name - E5R
 ------ ------------------------------------------------ ------------------- -------------- ------- -------------------------------- --- --------------- ------------------ ------------------------------ 
 m_id   layer (type,original)                            oshape              param/size        macc                     connected to   | c_size          c_macc             c_type                         
 ------ ------------------------------------------------ ------------------- -------------- ------- -------------------------------- --- --------------- ------------------ ------------------------------ 
@@ -164,7 +164,7 @@ model/c-model: macc=73,755/73,762 +7(+0.0%) weights=90,224/90,276 +52(+0.1%) act
 
 Generated C-graph summary
 ------------------------------------------------------------------------------------------------------------------------
-model name            : E5
+model name            : E5R
 c-name                : network
 c-node #              : 30
 c-array #             : 73

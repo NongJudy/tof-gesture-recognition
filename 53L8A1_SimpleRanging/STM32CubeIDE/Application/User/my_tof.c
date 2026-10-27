@@ -83,7 +83,7 @@ extern void *VL53L8A1_RANGING_SENSOR_CompObj[];
    0 = ไม่ย้าย ใช้คู่กับ E5 (โมเดลที่อยู่บนบอร์ดตั้งแต่ 26 ต.ค.)
    เวลาที่ใช้ย้าย นับรวมใน preprocess_us (บรรทัด LAT / Q) */
 #ifndef MY_TOF_RECENTRE
-#define MY_TOF_RECENTRE      0
+#define MY_TOF_RECENTRE      1     /* ขั้น 5.6 (27 ต.ค.): 1 = คู่กับ E5R ใน X-CUBE-AI/App */
 #endif
 
 /* ชื่อโมเดลที่ต้องคู่กับสวิตช์ — X-CUBE-AI ตั้งจากชื่อไฟล์ .tflite เป็นตัวเล็ก (network.h) */
