@@ -12,11 +12,19 @@
 เฟิร์มแวร์ที่ใช้ได้: MY_TOF_REPLAY = 0, MY_TOF_PRED_LINE = 1 (ค่าปัจจุบัน commit fbca5e4: E5R, RECENTRE 1)
 
 วิธีรัน (ที่ root ของ repo, ปิด PuTTY ก่อน):
-    python pc_tools\\live_view.py --port COM3 --flip-lr
+    python pc_tools\\live_view.py --port COM3 --flip-lr      (NUCLEO-F411RE)
+    python pc_tools\\live_view.py --port COM5 --flip-lr      (NUCLEO-G474RE)
   --flip-lr: ทดสอบแล้ว 27 ต.ค. — ไม่ใส่แล้วภาพกลับซ้าย-ขวาเมื่อยืนฝั่งผู้ใช้ (FACTS §5.1y-Y)
   ลองหน้าจอโดยไม่ต่อบอร์ด (เล่นไฟล์บรรทัดที่ live_check บันทึกไว้):
     python pc_tools\\live_view.py --from-log results_live\\<โฟลเดอร์>\\board_lines.txt
   ในหน้าต่าง: กด F = เต็มจอ, Q = ปิด
+
+แก้ไข 7 พ.ย. 2026 (ย้ายไป G474, G474_MIGRATION_PINMAP §10): หัวจอและบรรทัดล่างเคยเขียนตายตัวว่า
+  "NUCLEO-F411RE" / "STM32F411RE (Cortex-M4, 84 MHz)" → ผิดเมื่อเดโมด้วย G474
+  ตอนนี้ชื่อบอร์ดและความถี่มาจากบรรทัดบูต "CLK,<Hz>" ของบอร์ดเอง (84 MHz = F411RE, 170 MHz = G474RE ในโปรเจกต์นี้)
+  ก่อนเห็นบรรทัด CLK (ยังไม่กด RESET) จอเขียนกลาง ๆ ว่า "STM32 board" — ไม่เดาชื่อบอร์ด
+  --board f411/g474 = บังคับชื่อเอง (ถ้าความถี่จากบอร์ดไม่ตรงกับที่บังคับ จอขึ้นคำเตือน)
+  ค่าเริ่มต้น --port ยังเป็น COM3 (ตั้งใจ: ให้ F411 สำรองใช้ได้เหมือนเดิม) — G474 ใส่ --port COM5 เอง
 """
 from __future__ import annotations
 
@@ -42,6 +50,10 @@ VOTE_WINDOW = 15                    # เหมือนเฟิร์มแว
 BUDGET_MS = 33.0
 STALE_S = 1.0                       # ไม่มีบรรทัดเกินนี้ = บอร์ดไม่ส่งข้อมูล
 
+# ความถี่ที่บอร์ดพิมพ์ตอนบูต (CLK,<Hz>) → ชื่อบอร์ด ; มีแค่สองบอร์ดในโปรเจกต์นี้ ค่าอื่น = ไม่รู้ (ไม่เดา)
+BOARDS = {84_000_000: ("NUCLEO-F411RE", "STM32F411RE"), 170_000_000: ("NUCLEO-G474RE", "STM32G474RE")}
+BOARD_ARG = {"f411": 84_000_000, "g474": 170_000_000}
+
 BG, PANEL, TEXT, DIM, GOOD, WARN, BAD = "#0f1216", "#181d24", "#e8eaed", "#9aa0a6", "#51cf66", "#fcc419", "#ff6b6b"
 
 
@@ -59,6 +71,7 @@ class BoardState:
     p_seen: bool = False                    # เคยได้บรรทัด P แล้วหรือยัง
     q_ms: deque = field(default_factory=lambda: deque(maxlen=45))
     frame_times: deque = field(default_factory=lambda: deque(maxlen=60))
+    clk_hz: int | None = None               # จากบรรทัดบูต CLK,<Hz> (ต้องกด RESET หลังเปิดหน้าต่าง)
     model: str | None = None                # จากบรรทัดบูต MY_AI: model=… check=…
     check: str | None = None
     warning: str | None = None
@@ -79,6 +92,27 @@ def firmware_vote(buf: Iterable[int]) -> int:
         if n > best_n:
             best, best_n = k, n
     return best
+
+
+def board_text(clk_hz: int | None, forced: str = "auto") -> tuple[str, str, str | None]:
+    """(ชื่อบอร์ดบนหัวจอ, ประโยคบรรทัดล่าง, คำเตือนหรือ None) จากความถี่ที่บอร์ดรายงาน
+
+    forced = "auto" → ใช้ความถี่ล้วน ; "f411"/"g474" → ใช้ชื่อตามที่สั่ง แต่เตือนถ้าความถี่จากบอร์ดไม่ตรง
+    """
+    tail = "The PC only draws what the board sends over USB."
+    hz = BOARD_ARG.get(forced) if forced != "auto" else clk_hz
+    warn = None
+    if forced != "auto" and clk_hz is not None and clk_hz != hz:
+        warn = f"--board {forced} but the board reports {clk_hz / 1e6:g} MHz — check which board is connected"
+    if hz in BOARDS:
+        nucleo, mcu = BOARDS[hz]
+        mhz = f"{(clk_hz if clk_hz is not None and forced == 'auto' else hz) / 1e6:g} MHz"
+        return f"the STM32 {nucleo}", f"All recognition is computed on the {mcu} (Cortex-M4, {mhz}). {tail}", warn
+    if hz is not None:                      # ความถี่อื่น: บอกความถี่จริง แต่ไม่ตั้งชื่อบอร์ด
+        return ("the STM32 board", f"All recognition is computed on the STM32 board (Cortex-M4, {hz / 1e6:g} MHz). {tail}",
+                warn)
+    return ("the STM32 board (press RESET to identify)",
+            f"All recognition is computed on the STM32 board (Cortex-M4). {tail}", warn)
 
 
 def parse_line(line: str, st: BoardState, now: float) -> None:
@@ -125,6 +159,8 @@ def parse_line(line: str, st: BoardState, now: float) -> None:
                 name = line.split(",", 2)[2].strip()
                 st.p_label = name if name in CLASSES else None
                 st.p_seen = True
+            elif head == "CLK":
+                st.clk_hz = int(line.split(",")[1])
             elif line.startswith("MY_AI: model="):
                 kv = dict(p.split("=", 1) for p in line[len("MY_AI: "):].split() if "=" in p)
                 st.model, st.check = kv.get("model"), kv.get("check")
@@ -152,7 +188,7 @@ def snapshot(st: BoardState, now: float) -> dict:
                 "q_last": st.q_ms[-1] if st.q_ms else None, "q_mean": float(np.mean(st.q_ms)) if st.q_ms else None,
                 "q_max": float(np.max(st.q_ms)) if st.q_ms else None,
                 "hz": (len(ft) - 1) / (ft[-1] - ft[0]) if len(ft) > 2 and ft[-1] > ft[0] else None,
-                "model": st.model, "check": st.check, "warning": st.warning,
+                "model": st.model, "check": st.check, "warning": st.warning, "clk_hz": st.clk_hz,
                 "stale": (now - st.last_line_t) > STALE_S, "n_lines": st.n_lines}
     hand = None
     if d is not None and s is not None:
@@ -212,7 +248,7 @@ def log_readline(path: Path, loop: bool) -> Callable[[], str | None]:
     return rd
 
 
-def build_figure(flip_lr: bool, flip_ud: bool, source_note: str):
+def build_figure(flip_lr: bool, flip_ud: bool, source_note: str, board: str = "auto"):
     """สร้างหน้าต่างและคืนฟังก์ชัน draw(snap) ที่อัปเดตทุกอย่าง"""
     import matplotlib.pyplot as plt
     from matplotlib.colors import Normalize
@@ -225,8 +261,9 @@ def build_figure(flip_lr: bool, flip_ud: bool, source_note: str):
     except AttributeError:
         pass
     fig.text(0.03, 0.945, "Hand Posture Recognition", fontsize=26, weight="bold", color=TEXT)
-    fig.text(0.03, 0.905, "VL53L8CA Time-of-Flight sensor (8×8 zones)  ·  AI model runs on the STM32 NUCLEO-F411RE",
-             fontsize=13, color=DIM)
+    head0, foot0, _ = board_text(None, board)
+    subtitle_fmt = "VL53L8CA Time-of-Flight sensor (8×8 zones)  ·  AI model runs on {}"
+    subtitle_txt = fig.text(0.03, 0.905, subtitle_fmt.format(head0), fontsize=13, color=DIM)
     live_txt = fig.text(0.97, 0.945, "● LIVE", fontsize=16, weight="bold", color=BAD, ha="right")
     fig.text(0.97, 0.908, source_note, fontsize=11, color=DIM, ha="right")
 
@@ -280,11 +317,14 @@ def build_figure(flip_lr: bool, flip_ud: bool, source_note: str):
         v = fig.text(x0 + 0.008, 0.093, "–", fontsize=17, weight="bold", color=TEXT)
         n = fig.text(x0 + 0.008, 0.065, "", fontsize=9, color=DIM)
         tiles.append((v, n))
-    fig.text(0.035, 0.014, "All recognition is computed on the STM32F411RE (Cortex-M4, 84 MHz). "
-             "The PC only draws what the board sends over USB.", fontsize=10.5, color=DIM)
+    footer_txt = fig.text(0.035, 0.014, foot0, fontsize=10.5, color=DIM)
     warn_txt = fig.text(0.72, 0.868, "", fontsize=11.5, weight="bold", color=BAD, ha="center")
 
     def draw(sn: dict) -> None:
+        # ชื่อบอร์ด/ความถี่ จากบรรทัด CLK ของบอร์ด (เปลี่ยนเองหลังกด RESET)
+        head, foot, board_warn = board_text(sn.get("clk_hz"), board)
+        subtitle_txt.set_text(subtitle_fmt.format(head))
+        footer_txt.set_text(foot)
         live_txt.set_color(BAD if not sn["stale"] and int(time.monotonic() * 2) % 2 == 0 else "#5c2b2b")
         # ภาพเซ็นเซอร์
         if sn["dist"] is not None and sn["status"] is not None:
@@ -383,7 +423,7 @@ def build_figure(flip_lr: bool, flip_ud: bool, source_note: str):
             warn_txt.set_text("No data from the board — check USB cable / COM port"
                               if sn["n_lines"] == 0 or not sn["warning"] else sn["warning"])
         else:
-            warn_txt.set_text(sn["warning"] or "")
+            warn_txt.set_text(sn["warning"] or board_warn or "")
 
     return fig, draw
 
@@ -396,6 +436,8 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--no-loop", action="store_true", help="ใช้กับ --from-log: เล่นจบแล้วหยุด")
     ap.add_argument("--flip-lr", action="store_true", help="กลับภาพซ้าย-ขวา")
     ap.add_argument("--flip-ud", action="store_true", help="กลับภาพบน-ล่าง")
+    ap.add_argument("--board", choices=["auto", "f411", "g474"], default="auto",
+                    help="ชื่อบอร์ดบนจอ: auto = ดูจากบรรทัด CLK ตอนบูต (แนะนำ)")
     args = ap.parse_args(argv)
 
     import matplotlib.pyplot as plt
@@ -417,7 +459,7 @@ def main(argv: list[str] | None = None) -> None:
         ser.reset_input_buffer()
         reader = SerialReader(st, lambda: ser.readline().decode("ascii", errors="replace"))
         note = f"{args.port} @ {args.baud} baud"
-    fig, draw = build_figure(args.flip_lr, args.flip_ud, note)
+    fig, draw = build_figure(args.flip_lr, args.flip_ud, note, args.board)
     reader.start()
 
     def tick(_):
@@ -447,4 +489,6 @@ if __name__ == "__main__":
 #  4. ขึ้น NO PREDICTION / MODEL CHECK → เฟิร์มแวร์กับโมเดลไม่เข้าคู่ (§5.1y-U) ต้องแก้ที่เฟิร์มแวร์ ไม่ใช่ที่สคริปต์
 #  5. หน้าจอช้ากว่าบอร์ดเล็กน้อย (วาดทุก 66 ms) — ตัวเลขทุกตัวมาจากบอร์ด ไม่ได้คำนวณใหม่ ยกเว้นระยะมือ (โซนใกล้สุด
 #     ที่ status 5/9 = กติกาเดียวกับเฟิร์มแวร์) และเฟรมเรต
+#  6. หัวจอขึ้น "STM32 board (press RESET to identify)" → ยังไม่เห็นบรรทัด CLK ; กด RESET หลังหน้าต่างเปิด ชื่อบอร์ดจะขึ้นเอง
+#  7. G474 อยู่ COM5 ไม่ใช่ COM3 — ลืมใส่ --port COM5 → "cannot open COM3" หรือไปเปิดบอร์ดอีกตัว
 # ─────────────────────────────────────────────────────────────────────────

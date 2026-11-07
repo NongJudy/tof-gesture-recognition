@@ -1,0 +1,80 @@
+{
+  "generated": "2026-11-07T14:58:13",
+  "verdict": "PASS",
+  "checks": {
+    "class_all_frames": true,
+    "no_guard_or_run_errors": true,
+    "probabilities_within_tol": true,
+    "enough_timed_frames": true,
+    "max_total_within_budget": true
+  },
+  "boot": {
+    "model": "e5r",
+    "recentre": "1",
+    "check": "OK",
+    "clk_hz": 170000000,
+    "clk_src": "HSE"
+  },
+  "model": "e5r",
+  "keras": "results_phase55c_final\\deploy\\E5R.keras",
+  "keras_sha256": "3a583d0e8bcee9b22849c4759d291c2493f9f66e026bdeb8a9c422f833023575",
+  "seconds": 90.0,
+  "frames_complete": 1358,
+  "frames_incomplete_dropped": 1,
+  "frames_missing_in_sequence": 0,
+  "in_range_frames": 1357,
+  "class_agree": 1358,
+  "guard_or_run_errors": 0,
+  "prob_maxdiff": 9.639778136838473e-07,
+  "timing_us": {
+    "total": {
+      "n": 1357,
+      "mean": 22038.182756079586,
+      "sd": 43.2670130953355,
+      "p99": 22077.0,
+      "max": 22079.0
+    },
+    "sensor_us": {
+      "n": 1357,
+      "mean": 12737.67207074429,
+      "sd": 1.2670871879607217,
+      "p99": 12740.0,
+      "max": 12742.0
+    },
+    "preprocess_us": {
+      "n": 1357,
+      "mean": 168.2704495210022,
+      "sd": 43.4315973315993,
+      "p99": 204.0,
+      "max": 204.0
+    },
+    "inference_us": {
+      "n": 1357,
+      "mean": 9130.47383935151,
+      "sd": 3.5123382710831277,
+      "p99": 9135.0,
+      "max": 9142.0
+    },
+    "decision_us": {
+      "n": 1357,
+      "mean": 1.7663964627855564,
+      "sd": 2.2569047902120007,
+      "p99": 9.0,
+      "max": 9.0
+    }
+  },
+  "budget_us": 33000,
+  "board_class_counts": {
+    "none": 1,
+    "Fist": 352,
+    "FlatHand": 340,
+    "Dislike": 214,
+    "Like": 149,
+    "Love": 87,
+    "CrossHands": 58,
+    "BreakTime": 157
+  },
+  "clock": "DWT cycle counter, SystemCoreClock 170 MHz (170000000 Hz, board boot line 'CLK,'), clock source HSE",
+  "clock_hz": 170000000,
+  "note": "live parity + timing, not accuracy"
+}

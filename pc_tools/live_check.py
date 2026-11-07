@@ -10,7 +10,13 @@
 ไม่ใช่การวัดความแม่นยำ (ไม่มีป้ายท่า) และไม่ใช่ชุดข้อมูล — ไฟล์ที่บันทึกไว้ใช้ตรวจย้อนหลังเท่านั้น
 
 วิธีรัน (ที่ root ของ repo, ปิด PuTTY ก่อน):
-    python pc_tools\\live_check.py --port COM3 --model e5r --seconds 90
+    python pc_tools\\live_check.py --port COM3 --model e5r --seconds 90     (NUCLEO-F411RE)
+    python pc_tools\\live_check.py --port COM5 --model e5r --seconds 90     (NUCLEO-G474RE)
+
+แก้ไข 7 พ.ย. 2026 (ย้ายไป G474, G474_MIGRATION_PINMAP §10.1b): บรรทัด "clock" ในรายงานเคยเขียนตายตัวว่า 84 MHz
+  → ผิดเมื่อใช้กับ G474 (170 MHz). ตอนนี้อ่านจากบรรทัดบูตของบอร์ดเอง: "CLK,<Hz>" และ "clk=<แหล่ง>" ในบรรทัด MY_TOF: init
+  ถ้าไม่เห็นบรรทัด CLK → เขียนว่า "not reported" (ไม่เดา). ส่วนตัวเลขเวลาไม่เปลี่ยน: บอร์ดแปลง DWT เป็น µs ด้วยนาฬิกาของตัวเองอยู่แล้ว
+  ค่าเริ่มต้น --port ยังเป็น COM3 (ตั้งใจ: ให้ F411 สำรองใช้ได้เหมือนเดิม) — G474 ใส่ --port COM5 เอง
 ผลลัพธ์: results_live\\<model>_<วันเวลา>\\  report.txt, summary.json, per_frame.csv, board_lines.txt, live_frames.npz
 """
 from __future__ import annotations
@@ -36,6 +42,17 @@ PROB_TOL = 2e-5                     # บอร์ดเทียบ PC (float32
 DEFAULT_KERAS = {"e5": Path("results_phase55_final/deploy/E5.keras"),
                  "e5r": Path("results_phase55c_final/deploy/E5R.keras")}
 MIN_TIMED_FRAMES = 300              # เฟรมที่ทายอย่างน้อยเท่านี้ถึงจะสรุปเรื่องเวลา
+
+
+def clock_text(hz: int | None, source: str | None) -> tuple[str, str]:
+    """ข้อความนาฬิกาจากบรรทัดบูตของบอร์ด -> (แบบยาวสำหรับ summary.json, แบบสั้นสำหรับ report.txt)"""
+    if hz is None:
+        return ("DWT cycle counter; MCU clock not reported by the board (no 'CLK,' boot line)",
+                "DWT, MCU clock not reported")
+    mhz = f"{hz / 1e6:g} MHz"
+    src = source or "source not reported"
+    return (f"DWT cycle counter, SystemCoreClock {mhz} ({hz} Hz, board boot line 'CLK,'), clock source {src}",
+            f"DWT, {mhz} {src}")
 
 
 class SerialLink:
@@ -68,12 +85,22 @@ class SerialLink:
 def capture(link, model: str, seconds: float, boot_timeout: float, log: list[str], clock=time.monotonic) -> tuple[dict, dict]:
     """รอบรรทัดบูต (ต้องกด RESET) แล้วเก็บบรรทัด F/S/G/Y/Q ต่อเฟรม --seconds วินาที"""
     boot: dict = {}
+    clk_hz: int | None = None          # จากบรรทัด "CLK,<Hz>" (บอร์ดพิมพ์ก่อน MY_AI:)
+    clk_src: str | None = None         # จาก "clk=<HSE/HSI>" ในบรรทัด "MY_TOF: init OK (...)"
     deadline = clock() + boot_timeout
     while clock() < deadline:
         line = link.readline(0.5)
         if not line:
             continue
         log.append(line)
+        if line.startswith("CLK,"):
+            try:
+                clk_hz = int(line.split(",", 1)[1])
+            except ValueError:
+                clk_hz = None          # บรรทัดเสีย → ถือว่าไม่รู้ ไม่เดา
+            continue
+        if line.startswith("MY_TOF: init OK") and "clk=" in line:
+            clk_src = line.split("clk=", 1)[1].split(")")[0].split(",")[0].strip() or None
         if line.startswith("MY_TOF: REPLAY mode"):
             raise SystemExit("the board runs the REPLAY build — flash the MY_TOF_REPLAY = 0 build for a live check. Stop.")
         if line.startswith("MY_AI: model="):
@@ -82,6 +109,7 @@ def capture(link, model: str, seconds: float, boot_timeout: float, log: list[str
             break
     if not boot:
         raise SystemExit("no 'MY_AI: model=' boot line — press RESET when asked (close PuTTY first). Stop.")
+    boot.update(clk_hz=clk_hz, clk_src=clk_src)
     if boot["model"] != model or boot["check"] != "OK" or boot["recentre"] != ("1" if model == "e5r" else "0"):
         raise SystemExit(f"board says model={boot['model']} recentre={boot['recentre']} check={boot['check']} — "
                          f"does not fit --model {model}. Stop.")
@@ -149,7 +177,8 @@ def main(argv: list[str] | None = None, link=None, load_model: Callable | None =
     finally:
         if own:
             link.close()
-    print(f"  board: model={boot['model']} recentre={boot['recentre']} check={boot['check']}")
+    clock_long, clock_short = clock_text(boot.get("clk_hz"), boot.get("clk_src"))
+    print(f"  board: model={boot['model']} recentre={boot['recentre']} check={boot['check']} · clock: {clock_short}")
 
     # ---- เฟรมที่ได้ครบ F/S/G/Y (ตัดเฟรมแรก/สุดท้ายที่อาจขาดเพราะเริ่ม/หยุดกลางเฟรม) ----
     nos = sorted(k for k, f in frames.items() if all(x in f for x in ("F", "S", "G", "y")))
@@ -214,7 +243,7 @@ def main(argv: list[str] | None = None, link=None, load_model: Callable | None =
                "timing_us": {"total": stat(tot), **{k: stat(v) for k, v in parts.items()}}, "budget_us": BUDGET_US,
                "board_class_counts": {("none" if c < 0 else CLASSES[c]): int(sum(r["board_class"] == c for r in rows))
                                       for c in sorted({r["board_class"] for r in rows})},
-               "clock": "DWT cycle counter, SystemCoreClock 84 MHz from HSE (§3.1)", "note": "live parity + timing, not accuracy"}
+               "clock": clock_long, "clock_hz": boot.get("clk_hz"), "note": "live parity + timing, not accuracy"}
     (out / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
 
     yes = lambda b: "PASS" if b else "FAIL"   # noqa: E731
@@ -236,7 +265,7 @@ def main(argv: list[str] | None = None, link=None, load_model: Callable | None =
     else:
         L.append("  FAIL  no Q lines — was the hand in 100–400 mm? is MY_TOF_FRAME_TIMING = 1?")
     L += [f"  VERDICT: {verdict}", "  board answers: " + ", ".join(f"{k} {v}" for k, v in summary["board_class_counts"].items()),
-          "  clock: DWT, 84 MHz HSE · not an accuracy test (no labels)", f"  output: {out}", "=" * 82]
+          f"  clock: {clock_short} · not an accuracy test (no labels)", f"  output: {out}", "=" * 82]
     text = "\n".join(L)
     (out / "report.txt").write_text(text + "\n", encoding="utf-8")
     print("\n" + text)
@@ -253,4 +282,6 @@ if __name__ == "__main__":
 #  3. มือไม่อยู่ในช่วง 100–400 มม. นานพอ → เฟรมที่จับเวลาน้อยกว่า 300 → FAIL ด้วยเหตุนั้น (ทำใหม่ ยื่นมือนานขึ้น)
 #  4. PC อ่าน serial ไม่ทัน (เครื่องช้ามาก) → เฟรมขาดตอน (missing) — ไม่กระทบการเทียบเฟรมที่ได้ครบ
 #  5. ผลนี้ไม่ใช่ความแม่นยำ — ความแม่นยำบนบอร์ดมาจาก replay (§5.1y-U) และข้อมูลเพื่อนตอนท้าย
+#  6. เฟิร์มแวร์เก่าที่ไม่พิมพ์ "CLK," → รายงานเขียน "MCU clock not reported" (ตั้งใจ ไม่เดาเป็น 84 MHz) ; ตัวเลขเวลาไม่กระทบ
+#  7. G474 อยู่ COM5 ไม่ใช่ COM3 — ลืมใส่ --port COM5 → เปิดพอร์ตไม่ได้ หรือไปเปิดบอร์ดอีกตัว
 # ─────────────────────────────────────────────────────────────────────────
