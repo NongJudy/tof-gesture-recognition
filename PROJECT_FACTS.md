@@ -35,7 +35,7 @@ setup or a conversation the assistant cannot observe directly
 
 | Item | State |
 |---|---|
-| **Board migration F411 → G474 (6–7 Nov 2026, §11)** | Advisor took the NUCLEO-F411RE on 3 Nov and gave a **NUCLEO-G474RE** (170 MHz, HSE 24 MHz crystal). Firmware ported into the advisor's project `proj-01`; X-CUBE-AI 10.2.1 + E5R converted in-project (Analyze/Validate identical to F411). **E5R on G474 = PC on 14,169/14,169 replayed frames** (phase56_stand, phase56 92.34 %, a5_love, phase57 100 %) and **2,716/2,716 live frames**; **Y lines identical to F411 on 9,941/9,941 frames** (6-decimal printout). Per-frame work **22.05 ms** (2 sessions, max 22.08) vs F411 29.32 ms. Inference 9.13 ms vs 15.80 ms (1.73×, less than the 2.02× clock ratio — cause untested) |
+| **Board migration F411 → G474 (6–7 Nov 2026, §11)** | Advisor took the NUCLEO-F411RE on 3 Nov and gave a **NUCLEO-G474RE** (170 MHz, HSE 24 MHz crystal). Firmware ported into the advisor's project `proj-01`; X-CUBE-AI 10.2.1 + E5R converted in-project (Analyze/Validate identical to F411). **E5R on G474 = PC on 14,169/14,169 replayed frames** (phase56_stand, phase56 92.34 %, a5_love, phase57 100 %) and **2,716/2,716 live frames**; **Y lines identical to F411 on 9,941/9,941 frames** (6-decimal printout). Per-frame work **22.05 ms** (2 sessions, max 22.08) vs F411 29.32 ms. Inference 9.13 ms vs 15.80 ms (1.73×, less than the 2.02× clock ratio). **Prefetch ON (7 Nov, §11.8): inference 8.84 ms, per-frame 21.75 ms (max 21.79), outputs unchanged (Y lines identical on 14,169 replayed frames vs prefetch-off and on 9,941 vs F411) → current G474 firmware** |
 | F411 exam firmware | Binary kept untouched in `C:\Users\gaming\Documents\F411_final_firmware_E5R_20261027\` (.elf/.list/.map, 27 Oct 23:22); git tag **`f411-final`** on `675476c` (pushed). Never rebuild for the exam (§11.6) |
 | Deployed model | **E5R** (§5.1y-V) — on F411 (27 Oct) and on G474 (7 Nov); the "Deployed model file" row further down is stale (says E5) |
 | Phases 0–3 | ✅ complete (Phase 3 deployed on-board inference, 21 Sep 2026) |
@@ -135,7 +135,7 @@ at 300 mm → one zone ≈ 30 mm; a 100 mm hand covers ≈ 3 zones
 | Fact | Value | Source |
 |---|---|---|
 | Board | **NUCLEO-G474RE, MB1367-G474RE-C04**, STM32G474RET6U, STLINK-V3E | `[STUDENT]` photo + UM2505 Rev 7 |
-| Core / clock | Cortex-M4F @ **170 MHz**: HSE **X3 24 MHz crystal** (20 ppm; SB25/SB26 ON, SB27 OFF) → PLLM /6 · N 85 · R /2; `FLASH_LATENCY_4`, voltage scale 1 boost; ART I-cache + D-cache ON, **Prefetch OFF** | `[CODE]` proj-01 `main.c`; UM2505 p.22 |
+| Core / clock | Cortex-M4F @ **170 MHz**: HSE **X3 24 MHz crystal** (20 ppm; SB25/SB26 ON, SB27 OFF) → PLLM /6 · N 85 · R /2; `FLASH_LATENCY_4`, voltage scale 1 boost; ART I-cache + D-cache ON; **Prefetch ON since 7 Nov 2026** (was OFF; §11.8) | `[CODE]` proj-01 `main.c`; UM2505 p.22 |
 | Boot line | `CLK,170000000` and `clk=HSE` | `[MEASURED]` 6 Nov |
 | Flash / RAM | 512 KB / 128 KB | DS12288 |
 | I2C | I2C1 PB8/PB9, Fast mode 400 kHz, `Timing = 0x40621236` (PCLK1 170 MHz); FM+ 1 MHz exists on this MCU (DS12288 p.41) — **not used / not tested** | `[CODE]`, DS12288 |
@@ -3757,7 +3757,7 @@ First live run (13:19, PuTTY, n = 252 Q lines): total 22,022 ± 56 µs, inferenc
 **Prediction check** (written 6 Nov before measuring): sensor 12.7–13.3 ✅, preprocess 0.13–0.20 ✅, total 20–23 ms ✅,
 **inference 6.3–8.7 ms ❌ (9.13)**. Speed-up 15.80 → 9.13 ms = 1.73× vs clock 2.02×. Hypotheses, untested: H1 flash wait
 states on the 88 KiB of weights (G474 4 WS @ 170 MHz vs F411 2 WS @ 84 MHz `[จำมา]`); H2 Prefetch OFF in `proj-01` (F411
-setting not checked). Optional one-variable experiment: Prefetch ON.
+setting not checked). Prefetch tested 7 Nov → §11.8 (H2 explains part of the gap).
 
 ## 11.6 Tools and procedures
 - `live_check.py` and `live_view.py` (commit in the F411 repo, 7 Nov, with the results): clock / board name now read from the
@@ -3775,7 +3775,42 @@ setting not checked). Optional one-variable experiment: Prefetch ON.
 ## 11.7 Open
 Publish `proj-01` (Private) · conversion-steps document (F411 separate project + G474 in-project) · import the F411 conversion
 project into the IDE for the advisor · unknown workspace folders `gg`, `pro`, `project-01` (do not delete) · skip fix (TRAP #13b,
-optional) · Prefetch experiment (optional) · F411 `CLK,` line on the real board (FACTS §4 says the firmware prints it once at boot).
+optional) · H1 (flash wait states on weight reads) untested · F411 `CLK,` line on the real board (FACTS §4 says the firmware prints
+it once at boot).
+
+## 11.8 Prefetch experiment (7 Nov 2026, one variable) `[MEASURED]`
+**Question:** does the disabled Prefetch explain why inference sped up only 1.73× for a 2.02× clock (H2)?
+**Pre-registered (before measuring):** prediction 0–5 % faster (I-cache already on; weights are data reads); decision rule — keep
+Prefetch only if inference improves ≥ 2 % **and** board = PC on every frame. Chin gave no prediction.
+**Mechanism checked in code:** `stm32g4xx_hal.c` `HAL_Init()`: `#if (PREFETCH_ENABLE != 0U) __HAL_FLASH_PREFETCH_BUFFER_ENABLE();`;
+`stm32g4xx_hal_conf.h` had `PREFETCH_ENABLE 0U`.
+**Step 1 (hand edit `0U → 1U`, not generated):** build text 251,416 → **251,432 (+16 B)**, data/bss unchanged (prediction +4–16 B).
+**Step 2 (adopted properly):** hand edit discarded; CubeMX RCC Parameter Settings **Prefetch Buffer = Enabled** (I-/D-cache Enabled,
+4 WS unchanged) → commit → Generate → `hal_conf.h` diff = exactly that one line. Generate also re-wrote the X-CUBE-AI files: only
+`@date`/`AI_TOOLS_DATE_TIME` lines and `.signature` 0x5d7e2c9d → 0x9f658da6 (4 places in `network.c`); `network_data_params.c`
+(weights) changed only its date line; model hash `0x402dab2e…` untouched; `.cproject` gained `useByScannerDiscovery="false"` on the
+printf-float option (value still true); `platform.h`/`vl53l8cx.c` overwritten again (TRAP #21) → discarded. Build **251,432 · 9,952 ·
+21,448** = the hand-edit build. Commits in `proj-01`: "RCC: Prefetch Buffer Enabled (before Generate)", "Generate with Prefetch
+Enabled …". Flashed 255.29 KB (≈ 20 B more than expected from text + data — not explained, probably programmer padding `[ยังไม่ได้ตรวจ]`).
+
+| live_check (90 s, E5R, G474 @ 170 MHz HSE) | inference mean / max | total mean ± SD, max | board = PC |
+|---|---|---|---|
+| Prefetch OFF 14:19 / 14:58 | 9.130 / 9.143 · 9.130 / 9.142 ms | 22.053 ± 0.034, 22.077 · 22.038 ± 0.043, 22.079 | 1,358/1,358 · 1,358/1,358 |
+| Prefetch ON 15:59 (hand edit) / 16:24 (CubeMX) | **8.842 / 8.849 · 8.841 / 8.850 ms** | **21.751 ± 0.041, 21.789 · 21.750 ± 0.042, 21.789** | 1,358/1,358 · 1,358/1,358 |
+
+Within each arm the two sessions differ by ≤ 1 µs (inference); between arms **−289 µs (−3.2 %)**; total −0.29 ms (−1.3 %); sensor
+12.738 → 12.743 ms (I2C-bound). **Decision rule met → Prefetch ON adopted.** Prediction (0–5 %) held.
+**Replay with Prefetch ON** (`results_replay\e5r_*_20261107_16*`): phase56_stand 4,221/4,221 (100.00 %), phase56 4,219/4,219
+(**92.34 %**), a5_love 1,501/1,501 (100.00 %), phase57 4,228/4,228 (100.00 %); max p diff 7.47e-07 / 7.84e-07 / 4.93e-07 /
+6.53e-07 — identical to prefetch-off; replay inference 9.120 → **8.769 ms** (max 8.780). **`Y,` lines vs the prefetch-off G474 replay:
+0 different on all four sets (14,169 lines); vs F411: 0 different on phase56_stand, phase56, a5_love (9,941 lines).** → Prefetch
+and the regenerated signature do not change any output.
+**Reading:** H2 explains part of the gap — speed-up vs F411 is now 15.80 / 8.84 = **1.79×** (clock 2.02×); the rest is unexplained
+(H1, flash wait states on the 88 KiB of weights read every frame, untested).
+**Tooling note:** a PowerShell helper named `Diff` silently called the built-in alias `diff` (= `Compare-Object`) and printed blank
+counts (§9 #81); renamed `CountDiff` and re-run.
+**Current G474 firmware:** `proj-01` commit "Generate with Prefetch Enabled …" (REPLAY 0, ENABLE_AI 1, Prefetch ON) — per-frame
+**21.75 ms**, max 21.79 ms.
 
 ---
 
@@ -3867,6 +3902,7 @@ are not logged in this file — it lives in the repo.
 | 78 | Told Chin to commit before the TIMING_MODE diagnostic | Nothing had changed since the last commit (the port was committed before flashing); Chin: "ไม่เห็นมีไรให้ commit" | Check the working-tree state before instructing a commit |
 | 79 | §3.2b (written in Phase 1) said "subtraction in `uint8_t` handles wraparound automatically" | False at 8×8: the streamcount cycles 127 → 251 (TRAP #13b), so `skip` adds 32 every 32 frames. Found on G474 6 Nov (self-caught while diagnosing) | Stated a property of a counter from its data type, without observing the counter wrap |
 | 80 | Predicted (6 Nov) G474 inference 6.3–8.7 ms (40–55 % of F411) and ~10–15 files changed by the X-CUBE-AI Generate | Measured 9.13 ms (58 %); 113 files (93 headers) | Not an error in the record — kept to calibrate: speed-ups were scaled from the clock alone, ignoring flash wait states; generated-file counts were guessed without knowing the pack layout |
+| 81 | Gave Chin (7 Nov) a PowerShell compare with a helper function named `Diff` | PowerShell resolves aliases before functions; `diff` is a built-in alias of `Compare-Object`, so the counts printed blank; caught by reading the empty output, re-run as `CountDiff` → 0 on all 7 comparisons | Do not name helpers after common commands (`diff`, `sort`, `type`, `where`…); test a snippet's output shape on dummy data before handing it over |
 
 **Real finding behind #36 (not an assistant mistake — a genuine project fact):**
 The `53L8A1_SimpleRanging` project's `.ioc` has always been configured for **STM32F401RETx / NUCLEO-F401RE**, while the physical board (confirmed by a photo of the chip marking) is **STM32F411RET6**. Confirmed via the linker script header: *"Linker script for NUCLEO-F401RE Board embedding STM32F401RETx Device... 96KBytes RAM"*. This has been true since the project was first created and was never the assistant's error to log — it predates this conversation.
@@ -4189,3 +4225,4 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *2026-10-27 21:02 addendum: friend (User 6) stood for phase4 `[STUDENT]` — open question in §5.1p/§5.1y closed.*
 *2026-10-27 21:15 addendum: §5.1y-W — phase57 (User 6 new day, standing) pre-registered before collection: collector v6.2 unchanged (no live predictions shown), `score_phase57.py` (offline 6/6), report-only, bug guard 80 % / parity.*
 *2026-11-07 15:50 addendum: **board migration F411 → G474 recorded (§11, §1.2b, QUICK STATUS)**. E5R on NUCLEO-G474RE @ 170 MHz: replay = PC 14,169/14,169 (phase57 100 %, phase56 92.34 % = F411), live = PC 2,716/2,716, Y lines identical to F411 on 9,941/9,941, per-frame 22.05 ms (F411 29.32). TRAP #13b (8×8 streamcount cycles 127→251; `skip` artefact, no frame loss) and TRAP #21 (Generate overwrites `platform.h`/`vl53l8cx.c`) added; §3.2b corrected; correction log #72–#80. Full record: `claude/G474_MIGRATION_PINMAP_2026-11-06.md`.*
+*2026-11-07 17:00 addendum: **Prefetch experiment (§11.8)** — pre-registered 0–5 %, rule ≥ 2 % + parity; result inference 9.13 → 8.84 ms (−3.2 %, n = 2 sessions per arm), per-frame 21.75 ms; replay 14,169/14,169 = PC and Y lines identical to prefetch-off (14,169) and F411 (9,941) → **Prefetch ON adopted** (CubeMX + Generate, TRAP #21 handled). §9 #81 (`Diff` alias).*
