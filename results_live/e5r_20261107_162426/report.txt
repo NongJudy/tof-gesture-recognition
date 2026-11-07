@@ -1,0 +1,18 @@
+==================================================================================
+  Live check · board (e5r) with the real sensor · 90 s · FACTS §5.1y-S rule 5
+==================================================================================
+  frames 1,358 complete (dropped incomplete 1, missing in sequence 0) · in range 1,357
+  PASS  board class (or -1) = PC (st_dataset → recentre → E5R.keras) on every frame   1,358/1,358
+  PASS  no -3 / -2 answers   0
+  PASS  max |board p − PC p| = 8.69e-07 (tolerance 2e-05)
+  PASS  timed frames (hand in range) n = 1,357 (need ≥ 300)
+  PASS  per-frame work total: mean 21.750 ± 0.042 ms, p99 21.785, max 21.789 ms (budget 33 ms)
+        sensor      mean  12.744 ms   max  12.747 ms
+        preprocess  mean   0.164 ms   max   0.198 ms
+        inference   mean   8.841 ms   max   8.850 ms
+        decision    mean   0.001 ms   max   0.008 ms
+  VERDICT: PASS
+  board answers: none 1, Fist 260, FlatHand 207, Dislike 211, Like 210, Love 149, CrossHands 148, BreakTime 172
+  clock: DWT, 170 MHz HSE · not an accuracy test (no labels)
+  output: results_live\e5r_20261107_162426
+==================================================================================
