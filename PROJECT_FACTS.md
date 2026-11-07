@@ -1,7 +1,7 @@
 # PROJECT_FACTS.md
 
 **Verified facts for: Hand Gesture Recognition using Time-of-Flight Sensor**
-Student: Chin · Board: NUCLEO-F411RE + X-NUCLEO-53L8A1 · Repo: github.com/NongJudy/tof-gesture-recognition
+Student: Chin · Board: NUCLEO-F411RE + X-NUCLEO-53L8A1 (until 3 Nov 2026) → **NUCLEO-G474RE + the same shield (from 6 Nov 2026, §11)** · Repo: github.com/NongJudy/tof-gesture-recognition (F411) + local repo `C:\Stm32Proj\Gesture\proj-01` (G474, not yet published)
 
 ---
 
@@ -31,10 +31,13 @@ setup or a conversation the assistant cannot observe directly
 
 ---
 
-## QUICK STATUS — as of 27 Oct 2026
+## QUICK STATUS — as of 7 Nov 2026 (rows below the first three are as of 27 Oct 2026)
 
 | Item | State |
 |---|---|
+| **Board migration F411 → G474 (6–7 Nov 2026, §11)** | Advisor took the NUCLEO-F411RE on 3 Nov and gave a **NUCLEO-G474RE** (170 MHz, HSE 24 MHz crystal). Firmware ported into the advisor's project `proj-01`; X-CUBE-AI 10.2.1 + E5R converted in-project (Analyze/Validate identical to F411). **E5R on G474 = PC on 14,169/14,169 replayed frames** (phase56_stand, phase56 92.34 %, a5_love, phase57 100 %) and **2,716/2,716 live frames**; **Y lines identical to F411 on 9,941/9,941 frames** (6-decimal printout). Per-frame work **22.05 ms** (2 sessions, max 22.08) vs F411 29.32 ms. Inference 9.13 ms vs 15.80 ms (1.73×, less than the 2.02× clock ratio — cause untested) |
+| F411 exam firmware | Binary kept untouched in `C:\Users\gaming\Documents\F411_final_firmware_E5R_20261027\` (.elf/.list/.map, 27 Oct 23:22); git tag **`f411-final`** on `675476c` (pushed). Never rebuild for the exam (§11.6) |
+| Deployed model | **E5R** (§5.1y-V) — on F411 (27 Oct) and on G474 (7 Nov); the "Deployed model file" row further down is stale (says E5) |
 | Phases 0–3 | ✅ complete (Phase 3 deployed on-board inference, 21 Sep 2026) |
 | Phase 4 pre-flight check 6 (21-trial live test) | ✅ done 24–25 Sep 2026, 21/21 correct **with per-posture hand positioning** (§5.1e-R) |
 | **Phase 4 first result (User 5 only)** | per-frame **66.3 %**, vote 67.6 %; five postures 70–100 %, **Like 0.3 % (→ Dislike), Love 0.0 % (→ BreakTime)**; P2 and H9 do not hold; n = 1, descriptive. Diagnosis: our hand sits ~1–2 rows off ST's position (§5.1e-E). **Revised 10 Oct: Love's 0 % is now attributed mainly to a validation-split bug in Phase 2 that starved Love (§5.1g-R, §9 #51); the deployed model and the Phase 2 LOSO numbers must be re-made** |
@@ -127,6 +130,19 @@ at 300 mm → one zone ≈ 30 mm; a 100 mm hand covers ≈ 3 zones
 | **I2C max clock** | **400 kHz — Fast Mode only** | `[WEB]` |
 | Fast Mode Plus (1 MHz) | **NOT available on any STM32F4** (exists on F410/F412/F413/F446, L4, F7) | `[WEB]` |
 
+## 1.2b MCU — STM32G474RE (from 6 Nov 2026, §11)
+
+| Fact | Value | Source |
+|---|---|---|
+| Board | **NUCLEO-G474RE, MB1367-G474RE-C04**, STM32G474RET6U, STLINK-V3E | `[STUDENT]` photo + UM2505 Rev 7 |
+| Core / clock | Cortex-M4F @ **170 MHz**: HSE **X3 24 MHz crystal** (20 ppm; SB25/SB26 ON, SB27 OFF) → PLLM /6 · N 85 · R /2; `FLASH_LATENCY_4`, voltage scale 1 boost; ART I-cache + D-cache ON, **Prefetch OFF** | `[CODE]` proj-01 `main.c`; UM2505 p.22 |
+| Boot line | `CLK,170000000` and `clk=HSE` | `[MEASURED]` 6 Nov |
+| Flash / RAM | 512 KB / 128 KB | DS12288 |
+| I2C | I2C1 PB8/PB9, Fast mode 400 kHz, `Timing = 0x40621236` (PCLK1 170 MHz); FM+ 1 MHz exists on this MCU (DS12288 p.41) — **not used / not tested** | `[CODE]`, DS12288 |
+| UART to PC | **LPUART1** PA2/PA3 → STLINK-V3E VCP, 460800 baud, **COM5** on Chin's PC | UM2505 p.24; `[MEASURED]` |
+| PB8 = PB8-BOOT0 | boots our firmware after NRST and after a real power-cycle (n = 1); option bytes not changed | `[MEASURED]` 6 Nov |
+| GCC | GNU Tools for STM32 **13.3.rel1** (reinstalled IDE). GCC of the F411 exam build: **unknown** (old IDE removed) | `[MEASURED]` screenshot 6 Nov |
+
 ### ⚠️ TRAP #2 — the I2C ceiling is the MCU's, not the sensor's
 
 The sensor accepts 1 MHz. **Our board cannot produce it.**
@@ -154,6 +170,7 @@ was 1.36% too high.** Superseded values are in §3. Do not quote the old numbers
 | Sensor INT | **PA4**, EXTI4, falling edge, NVIC priority 0 | `[CODE]` `app_tof_pin_conf.c` |
 | UART | USART2 / PA2, **460800 baud**, COM3 | `[CODE]` |
 | I2C address | **0x52, sent directly, NOT shifted** | HAL expects 8-bit format |
+| **G474 (from 6 Nov)** | same Arduino positions: PB8/PB9 I2C1, PA4 INT (EXTI4, falling, prio 0), PA7 PWR_EN, PB0 LPn (both init High); UART = **LPUART1** PA2/PA3, **COM5** | `[CODE]` proj-01, UM2505 Tables 11/15; full map `claude/G474_MIGRATION_PINMAP_2026-11-06.md` §1 |
 
 **No ADC is used anywhere in this project** — the firmware uses only I2C, the INT pin,
 USART2 and (in Phase 1 only) TIM3 by direct register writes (§3.1b, §9 #17). The MCU
@@ -668,7 +685,8 @@ Bypassing the BSP removed `vl53l8cx_check_data_ready`, which was the only thing
 confirming that a read returned *new* data. Replacement check: read the sensor's
 own `streamcount` (`vl53l8cx_api.h:277`, "auto-incremented at each range") and
 compare consecutive values. Subtraction is done in `uint8_t` so wraparound is
-handled automatically.
+handled automatically. **⚠️ Corrected 6 Nov 2026 (§9 #79): the last sentence is false for 8×8 — the
+sensor's streamcount does not wrap 255 → 0 (TRAP #13b). `dup` is unaffected; `skip` mis-counts.**
 
 | Mode | Expected delta | dup observed |
 |---|---|---|
@@ -681,6 +699,18 @@ The first version of the checker assumed delta should always be 1 and counted
 everything above that as a dropped frame, so `skip` climbed by 3 every frame in
 8×8 for no reason. **`dup` is the meaningful signal; `skip` must be compared
 against the mode's expected delta.**
+
+### ⚠️ TRAP #13b — at 8×8 the streamcount cycles 127 → 251, so `skip` mis-counts (found 6 Nov 2026 on G474)
+
+`[MEASURED]` G474, 8×8 @ 15 Hz, `MY_TOF_TIMING_MODE 1`, 270 T lines (log `g474_run2.log`): delta 4 × 262,
+**delta 132 × 7**, 3 × 1 (frame 1 after a reset, excluded by the checker). Every non-4 event was **251 → 127**.
+After init the counter runs 3, 7, …, 251 (63 frames), then cycles **127 → 251 → 127** (32 values = 32 frames).
+`uint8_t` subtraction gives (127 − 251) mod 256 = 132 → the checker adds 132/4 − 1 = **32 to `skip` every 32 frames**
+(R lines: 0, 64, 64, …, 32 per 60 frames). **No frame is lost:** 64 real losses per window would make 60 received
+frames take ≈ 8.2 s; measured 3.965 s (15.13 Hz); dup = 0, anomaly = 0. F411 very likely identical (same sensor,
+same driver and checker) — **not tested** (FACTS never recorded skip on F411). Fix, deferred (keeps the firmware
+equal to F411): compute the 8×8 delta modulo 128, e.g. `(uint8_t)(m_stream - m_stream_prev) & 0x7F`; 4×4 wrap
+behaviour not observed — do not apply blindly. **Use `dup`, not `skip`.**
 
 ### ⚠️ TRAP #14 — `MY_TOF_FAST_READ` is only safe with INT
 
@@ -797,6 +827,7 @@ across 5 runs / 625 frames, 0 dropped frames.
 | `MY_TOF_TIMING_MODE` | `my_tof.c` | 1 = `T,` timing lines · 0 = `F,` + `S,` data lines |
 | `MY_TOF_DELAY_US` | `my_tof.c` | injected delay for the dose-response experiment |
 | `MY_UART_USE_IRQ` | `my_uart.c` | 1 = interrupt TX |
+| `MY_TOF_ENABLE_AI` | `my_tof.c` (G474 `proj-01` only, added 6 Nov 2026) | 1 = network + AI code compiled (normal) · 0 = sensor-only build with stub `my_ai_init()` ("MY_AI: disabled") |
 
 **Timing budget must be < the frame period.** 4×4 @ 60 Hz → 10 ms. 8×8 @ 15 Hz → 30 ms.
 
@@ -3641,6 +3672,113 @@ Hybrid CNN–SVM Framework With FPGA Acceleration", IEEE Trans. Radar Systems, V
 
 ---
 
+# 11. BOARD MIGRATION — NUCLEO-F411RE → NUCLEO-G474RE (6–7 Nov 2026) `[MEASURED]`
+
+Full working record (every step, screenshot-level detail): Project doc `claude/G474_MIGRATION_PINMAP_2026-11-06.md`.
+This section keeps the verified facts. All timings: E5R, **STM32G474RE @ 170 MHz from HSE 24 MHz**, DWT, `-O0`,
+X-CUBE-AI 10.2.1 (ST Edge AI Core v2.2.0), GCC 13.3.rel1 — never mix with the F411 figures (84 MHz) without saying so.
+
+## 11.1 Why and what
+- 3 Nov 2026: the advisor took the F411 board and gave a NUCLEO-G474RE to try `[STUDENT]`. He created `proj-01`
+  (CubeMX-fresh, HSI 170 MHz) at `C:\Stm32Proj\Gesture\proj-01` (workspace "Gesture"). Kept there (Chin's decision); own
+  local git repo, **not yet published** (publish as Private).
+- The F411 work is frozen: tag `f411-final` (`675476c`), exam binary folder (QUICK STATUS), project imported in the same
+  IDE workspace with "Copy projects into workspace" OFF. A Clean+Build of it in the new IDE gives text 244,860 vs 245,004
+  (−144 B, data/bss equal) — **that rebuild is not parity-tested; never use it for the exam.**
+
+## 11.2 Port method ("C+")
+- CubeMX in `proj-01`: HSE 170 MHz, I2C1 PB8/PB9 400 kHz (CubeMX first auto-picked PB7/PA15 — wrong, moved), PA4 EXTI
+  falling prio 0, PA7/PB0 outputs High, LPUART1 460800; X-CUBE-TOF1 3.4.3 + Board Extension 53L8A1 1.0.2 (BUS IO = I2C1),
+  **no SimpleRanging demo** (its generated `while(1)` would block our loop).
+- Chip-independent driver files **16/16 byte-identical to F411** (PowerShell compare) after restoring the F411 edits
+  (`platform.h` DISABLE ×5, `vl53l8cx.c` ambient guard). ST `porting/platform.c` excluded from the build (`my_platform.c`
+  replaces it, as on F411).
+- **⚠️ TRAP #21 — CubeMX Generate overwrites `platform.h` and `vl53l8cx.c` every time.** Rule: commit before every
+  Generate; afterwards check those two files + the `.cproject` exclusion; restore with GitHub Desktop "Discard changes"
+  per file. Seen twice (6 Nov). X-CUBE-AI's Generate also raised `_Min_Heap_Size` 0x200 → 0x800 and `_Min_Stack_Size`
+  0x400 → 0x800 in the linker script (accepted; F411 main project likely still 0x200/0x400 — not recorded).
+- Ported files: `my_platform.c` (g4 HAL; comment fixed — F411 used **PULLUP**), `my_uart.c` (LPUART1, `LPUART1_IRQHandler`),
+  `my_tof.c` (no `BSP_COM_Init`; new switch `MY_TOF_ENABLE_AI`), `my_tof.h`, `my_recentre.h`, `app_tof_pin_conf.c/.h`
+  (now defines `ToF_EventDetected`). `my_calib.c/.h` not ported. `main.c`: 3 USER CODE blocks only.
+- X-CUBE-AI inside `proj-01`: Core only, **Device Application = Not selected**; model
+  `results_phase55c_final\deploy\E5R.tflite`, name `network`, compression none, balanced. `main.c` untouched by Generate.
+  Linker option "Use float with printf (-u _printf_float)" ON (Y lines print `%.6f`). IDE dialog "build context check:
+  proj-01.ioc is requiring code generation" → **OK** (build without regenerating). An `isbadioc=false → true` change to the
+  `.ioc` appeared once after a build — meaning unknown, discarded, did not reappear.
+
+## 11.3 Sensor-only results (AI off, 6 Nov)
+- Boot `T1 PASS: sensor ACK at 0x52`, `init OK (... read=direct, clk=HSE)`, `CLK,170000000`.
+- 60-frame windows **3965.0 ± 0.93 ms (n = 8) → 15.13 Hz** (F411 authoritative 15.1150 Hz, logic analyser; −0.12 %,
+  different instruments, not interpreted). dup = 0, anomaly = 0; `skip` artefact → TRAP #13b.
+- Sensor read (`rd_us`, T lines) **12,733–12,735 µs** for 580 B — I2C-bound (580 × 9 bit / 400 kHz ≈ 13.05 ms); the CPU
+  clock does not help here.
+
+## 11.4 Conversion check (6 Nov) — identical to F411 (§5.1y-U)
+Analyze (target stm32g4): hash `0x402dab2e5f51bbfa2ba24fe36a0d09fc`, params 22,556, MACC 73,762, weights 90,276 B,
+activations 1,736 B, RAM 11,476 B — all = F411; runtime library Flash 24,206 B (F411 24,300) → total 114,482 B.
+Validate on desktop (`board_check_inputs_R_200.npy` vs `board_check_E5R_probs_200.npy`): C vs file 100.00 %, rmse 1.4e-08;
+tflite vs file 7e-09; C vs tflite 1.5e-08; classes 29/29/29/27/29/29/28 — all = F411.
+Build (AI on): **text 251,416 · data 9,952 · bss 21,448** (F411 E5R 245,004 · 9,964 · 19,836); Flash 255.2 KiB (51 %),
+RAM 30.7 KiB (24 %). Commits in `proj-01`: "Add X-CUBE-AI…", "Generate with X-CUBE-AI (E5R), restore F411 driver edits",
+"Enable AI (MY_TOF_ENABLE_AI 1) + -u _printf_float; build 251416/9952/21448".
+
+## 11.5 On-board results (7 Nov) — A17 rule 5 reproduced on G474
+**Replay** (`MY_TOF_REPLAY 1`, flashed 255.88 KB, not committed; `replay_board.py --port COM5 --model e5r --reference pc`;
+results in the F411 repo `results_replay\e5r_*_20261107_*`):
+
+| set (never trained on) | frames | board = PC | max p diff G474 / F411 | board accuracy G474 / F411 | inference mean / max |
+|---|---|---|---|---|---|
+| phase56_stand | 4,221 | 4,221/4,221 | 7.47e-07 / 7.5e-07 | 100.00 / 100.00 % | 9.120 / 9.127 ms |
+| phase56 (sitting) | 4,219 | 4,219/4,219 | 7.84e-07 / 7.8e-07 | **92.34 / 92.34 %** | 9.118 / 9.128 |
+| a5_love | 1,501 | 1,501/1,501 | 4.93e-07 / 4.9e-07 | 100.00 / 100.00 % | 9.119 / 9.127 |
+| phase57 (User 6, the only untouched set) | 4,228 | 4,228/4,228 | 6.53e-07 / 6.5e-07 | **100.00 / 100.00 %** | 9.117 / 9.128 |
+| **total** | **14,169** | **14,169/14,169** | | | |
+
+Resends 0, no −2/−3, echo exact. Caveats unchanged from §5.1y-X (phase57 = known user, n = 1, take-level CP 95 % lower
+bound 76.8 %; phase56_stand was the A17 selection set; phase56 = sitting).
+
+**F411 vs G474 output identity** (PowerShell, `Y,` lines of `board_lines.txt`, same replay input): phase56_stand
+4,221/4,221, phase56 4,219/4,219, a5_love 1,501/1,501 lines **identical character for character** → 9,941/9,941.
+Thesis wording: *identical at the printed 6-decimal resolution* (not "bit-identical in memory"). phase57 has no F411
+replay to compare (it was collected live).
+
+**Live** (`live_check.py --port COM5 --model e5r --seconds 90`, `MY_TOF_REPLAY 0` = the "Enable AI" commit, 255.25 KB):
+
+| session | board = PC | max p diff | per-frame work (mean ± SD, p99, max) | n timed | sensor / preprocess / inference / decision (mean, ms) |
+|---|---|---|---|---|---|
+| 7 Nov 14:19 (`results_live\e5r_20261107_141939`) | 1,358/1,358 | 6.66e-07 | 22.053 ± 0.034 · 22.075 · 22.077 ms | 1,340 | 12.738 / 0.183 / 9.130 / 0.002 |
+| 7 Nov 14:58 (`results_live\e5r_20261107_145813`) | 1,358/1,358 | 9.64e-07 | 22.038 ± 0.043 · 22.077 · 22.079 ms | 1,357 | 12.738 / 0.168 / 9.130 / 0.002 |
+
+F411 (§5.1y-V): 29.320 ± 0.057, max 29.503 ms → **−7.27 ms (−24.8 %)**. Session means differ by 15 µs (n = 2 sessions).
+**The 14:19 report's footer says "84 MHz HSE" — an old hard-coded label (fixed in `live_check.py` at 14:50); the numbers are
+valid** (the board converts cycles with its own clock; sensor 12.74 ms matches the I2C estimate).
+First live run (13:19, PuTTY, n = 252 Q lines): total 22,022 ± 56 µs, inference 9,137 ± 27 µs — same picture.
+
+**Prediction check** (written 6 Nov before measuring): sensor 12.7–13.3 ✅, preprocess 0.13–0.20 ✅, total 20–23 ms ✅,
+**inference 6.3–8.7 ms ❌ (9.13)**. Speed-up 15.80 → 9.13 ms = 1.73× vs clock 2.02×. Hypotheses, untested: H1 flash wait
+states on the 88 KiB of weights (G474 4 WS @ 170 MHz vs F411 2 WS @ 84 MHz `[จำมา]`); H2 Prefetch OFF in `proj-01` (F411
+setting not checked). Optional one-variable experiment: Prefetch ON.
+
+## 11.6 Tools and procedures
+- `live_check.py` and `live_view.py` (commit in the F411 repo, 7 Nov, with the results): clock / board name now read from the
+  `CLK,` boot line (84 MHz → NUCLEO-F411RE, 170 MHz → NUCLEO-G474RE; none → "not reported" / "press RESET to identify";
+  `live_view.py --board auto|f411|g474`). Default `--port` left **COM3** on purpose (F411 fallback); G474 needs `--port COM5`.
+  Offline tests: `live_check` 5/5 cases; `live_view` 7/7, F411 screen identical to the old file on all 23 texts. Live on G474:
+  header NUCLEO-G474RE, footer STM32G474RE 170 MHz, 15.2 Hz, 22.0 ms, E5R check OK. Plot scripts with "84 MHz" (F411 figures /
+  paper citations) deliberately unchanged.
+- **Running the F411 again** (when returned): not re-flashed → `live_view.py --port COM3`, RESET, expect NUCLEO-F411RE / 84 MHz /
+  E5R OK / ≈ 29.3 ms. Re-flashed → write the **exam .elf** (IDE Run Configuration with build disabled and the .elf selected,
+  or STM32CubeProgrammer, both with verify). A plain IDE Run rebuilds = not the exam firmware. Details: PINMAP doc §10.3.
+- Chin's own hand tries on the G474 screen ("all correct when the hand is placed well") = anecdotal (no count, no labels,
+  feedback visible).
+
+## 11.7 Open
+Publish `proj-01` (Private) · conversion-steps document (F411 separate project + G474 in-project) · import the F411 conversion
+project into the IDE for the advisor · unknown workspace folders `gg`, `pro`, `project-01` (do not delete) · skip fix (TRAP #13b,
+optional) · Prefetch experiment (optional) · F411 `CLK,` line on the real board (FACTS §4 says the firmware prints it once at boot).
+
+---
+
 # 9. CORRECTION LOG — mistakes the assistant actually made
 
 Kept so the same errors are not repeated. Each was caught by the student.
@@ -3720,6 +3858,15 @@ are not logged in this file — it lives in the repo.
 | 69 | Read the re-centred mean hand map (§5.1y-D) as a forearm 'tail' at rows 6–7 and built the arm-dropout plan on it | The direction check (§5.1y-O) shows the protruding part is the **thumb** (ST and friend: Like → row 0, Dislike → row 7); Chin's shapes are nearly symmetric. Erasing the bottom rows would have removed Dislike's thumb. Caught before any training by the extra check added after Chin's objection (#68) | Do not infer an anatomical cause from a mean image; measure the direction/asymmetry it implies before designing a fix |
 | 70 | Wrote "Chin's thumb barely protrudes at 8×8" (≈ 16:00) from a near-zero *mean* asymmetry | A mean near 0 also fits takes that differ (some clear, some not) or thumb + wrist on opposite sides. Chin said (16:03) he made the thumb very clear in training. Re-worded as an open question with a per-take check (`thumb_per_take.py`) | A mean describes the group, not each take or frame; check the per-take distribution before naming a cause |
 | 71 | Told Chin (22:11) that no on-screen live view existed and wrote a new `pc_tools\live_demo.py`, without searching FACTS first (Rule 0) — FACTS §5.1q/§5.1l already describe `live_demo.py` v3 (A5 tool). Chin committed it (`d0ac68b`) over v3; caught from git output: "1 file changed, 303 deletions" with no "create mode" | v3 restored from `441c67a` at its path; new screen renamed `live_view.py` (§5.1y-Y); nothing lost (git history) | Before creating a file or saying a tool does not exist, grep FACTS and the repo listing for the name and the function; new files get names checked against `git log -- <path>` |
+| 72 | Did the G474 setup work (Nov 2026) without explaining each step | Chin could not answer the advisor's questions about what had been done; work had to be re-explained | Speed over understanding — the session goal is that Chin can explain and justify each step (Quality Bar) |
+| 73 | Attributed the advisor's failure to find the AI conversion to the wrong-level project import | The advisor looked during the original work, before the reinstall; the real gap: the conversion project is not in the IDE and the main `.ioc` has no X-CUBE-AI | Explained an observation without asking when it happened |
+| 74 | Told Chin to Build the old project before saving the tested binary, one message after listing "keep the .elf" as the protection | Clean deleted the tested `.elf`; recovered from `tof_backup_20261027.zip` → `F411_final_firmware_E5R_20261027\` | Gave an order of steps that contradicted the safeguard just stated — check each instruction against the protection rule before sending |
+| 75 | Said a conversion-steps document was required "for completeness" for the advisor | The advisor reads the IDE directly; the document is for Chin and the method chapter | Over-claimed a requirement |
+| 76 | Declared "Generate finished" from the IDE label `proj-01.ioc [Code Gen…]` | Chin had not pressed Generate | Evidence for a generated change = GitHub Desktop Changes or the generated file, not an IDE label |
+| 77 | Told Chin (6 Nov) "F411 had skip = 0 in 600+ frames" | §3.2b records **dup** = 0 only; skip was never recorded on F411 | Quoted a table column that does not exist — re-read the table, not the memory of it |
+| 78 | Told Chin to commit before the TIMING_MODE diagnostic | Nothing had changed since the last commit (the port was committed before flashing); Chin: "ไม่เห็นมีไรให้ commit" | Check the working-tree state before instructing a commit |
+| 79 | §3.2b (written in Phase 1) said "subtraction in `uint8_t` handles wraparound automatically" | False at 8×8: the streamcount cycles 127 → 251 (TRAP #13b), so `skip` adds 32 every 32 frames. Found on G474 6 Nov (self-caught while diagnosing) | Stated a property of a counter from its data type, without observing the counter wrap |
+| 80 | Predicted (6 Nov) G474 inference 6.3–8.7 ms (40–55 % of F411) and ~10–15 files changed by the X-CUBE-AI Generate | Measured 9.13 ms (58 %); 113 files (93 headers) | Not an error in the record — kept to calibrate: speed-ups were scaled from the clock alone, ignoring flash wait states; generated-file counts were guessed without knowing the pack layout |
 
 **Real finding behind #36 (not an assistant mistake — a genuine project fact):**
 The `53L8A1_SimpleRanging` project's `.ioc` has always been configured for **STM32F401RETx / NUCLEO-F401RE**, while the physical board (confirmed by a photo of the chip marking) is **STM32F411RET6**. Confirmed via the linker script header: *"Linker script for NUCLEO-F401RE Board embedding STM32F401RETx Device... 96KBytes RAM"*. This has been true since the project was first created and was never the assistant's error to log — it predates this conversation.
@@ -4041,3 +4188,4 @@ of arm B with saved models → 5.5b → X-CUBE-AI.*
 *2026-10-27 21:00 addendum: **Rule 5 passed live** (§5.1y-V): board = PC 1,359/1,359, per-frame 29.32 ± 0.06 ms (max 29.50) → **E5R replaces E5 (A17 complete).** Next: commit, friend's takes, write-up.*
 *2026-10-27 21:02 addendum: friend (User 6) stood for phase4 `[STUDENT]` — open question in §5.1p/§5.1y closed.*
 *2026-10-27 21:15 addendum: §5.1y-W — phase57 (User 6 new day, standing) pre-registered before collection: collector v6.2 unchanged (no live predictions shown), `score_phase57.py` (offline 6/6), report-only, bug guard 80 % / parity.*
+*2026-11-07 15:50 addendum: **board migration F411 → G474 recorded (§11, §1.2b, QUICK STATUS)**. E5R on NUCLEO-G474RE @ 170 MHz: replay = PC 14,169/14,169 (phase57 100 %, phase56 92.34 % = F411), live = PC 2,716/2,716, Y lines identical to F411 on 9,941/9,941, per-frame 22.05 ms (F411 29.32). TRAP #13b (8×8 streamcount cycles 127→251; `skip` artefact, no frame loss) and TRAP #21 (Generate overwrites `platform.h`/`vl53l8cx.c`) added; §3.2b corrected; correction log #72–#80. Full record: `claude/G474_MIGRATION_PINMAP_2026-11-06.md`.*
